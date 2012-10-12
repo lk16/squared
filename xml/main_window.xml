@@ -1,0 +1,17 @@
+<ui>
+  <menubar name='MenuBar'>
+    <menu action='GameMenu'>
+      <menuitem action='GameNew' />
+      <separator />
+      <menuitem action='GameUndo' />
+      <menuitem action='GameRedo' />
+      <separator />
+      <menuitem action='GameQuit' />
+    </menu>
+    <menu action='SettingsMenu'>
+      <menuitem action='SettingsFullscreen'/>
+      <separator />
+      <menuitem action='SettingsSettings' />
+    </menu>
+  </menubar>
+</ui>
