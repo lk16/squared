@@ -15,7 +15,7 @@
 
 
 const std::string IMAGE_PATH = "./images/";
-const std::string UI_PATH = "./ui/";
+const std::string UI_PATH = "./xml/";
 
 
 
