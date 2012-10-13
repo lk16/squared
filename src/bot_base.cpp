@@ -1,9 +1,9 @@
 #include "bot_base.hpp"
 
-bot_base::bot_base(color c, int max_depth, int max_endgame_depth):
-  c(c),
-  max_depth(max_depth),
-  max_endgame_depth(max_endgame_depth),
+bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
+  c(_c),
+  max_depth(_max_depth),
+  max_endgame_depth(_max_endgame_depth),
   look_ahead(5)
 {
 }
@@ -89,6 +89,7 @@ int bot_base::negamax_internal_loop(std::list<board_with_id>& list, int moves_re
     delete list.back().b;
     list.pop_back();
   }
+  SHOW_VAR(best_heur);
   
   return best_move_id;
 }
@@ -102,11 +103,20 @@ int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
   
   
   
-  if(depth_remaining==0 || b->test_game_ended()){
-    if(b->count_moves(WHITE)==0 && b->count_moves(BLACK)==0){
-      return 100*(b->count_discs(WHITE)-b->count_discs(BLACK));
+  if(b->test_game_ended()){
+    if(b->discs[BLACK]==0x0){
+      return 6400;
     }
-    return (b->turn==WHITE ? 1 : -1) * heuristic(b);
+    if(b->discs[WHITE]==0x0){
+      return -6400;
+    }
+    return 100 * (b->count_discs(WHITE) - b->count_discs(BLACK));
+  }
+  if(depth_remaining==0){
+    if(b->count_moves(WHITE)==0 && b->count_moves(BLACK)==0){
+      return 100*(b->count_discs(WHITE) - b->count_discs(BLACK));
+    }
+    return heuristic(b);
   }
   
   move_found = false;

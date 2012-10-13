@@ -1,7 +1,7 @@
 #include "bot_ali.hpp"
 
-bot_ali::bot_ali(color c, int max_depth, int max_endgame_depth):
-  bot_base(c, max_depth, max_endgame_depth)
+bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
+  bot_base(_c, _max_depth, _max_endgame_depth)
 {
 }
 

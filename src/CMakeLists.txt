@@ -8,8 +8,17 @@ link_directories(
   ${GTKMM_LIBRARY_DIRS}
 )
 
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra -g -O0") 
- set(CMAKE_CXX_FLAGS "-Wall -Wextra -O3 -DNDEBUG") 
+  set(DEBUG_FLAGS "-g -O0 -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing ")
+
+  
+
+  set(OPTIMIZING_FLAGS
+    "-march=native -O3 -NDEBUG -pipe -msse2 -fomit-frame-pointer -fforce-addr -fprefetch-loop-arrays" 
+  )
+
+
+#set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS}) 
+set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS}) 
 
 SET(objects
   board.cpp

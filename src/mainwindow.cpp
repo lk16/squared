@@ -54,9 +54,6 @@ void main_window::start_new_game()
   status_bar.pop();
   status_bar.push("A new game has started.");
   
-  if(control.bot[BLACK]){
-    control.on_bot_do_move();
-  }
 }
 
 void main_window::init_ui(){

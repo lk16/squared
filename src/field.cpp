@@ -2,11 +2,11 @@
 #include "mainwindow.hpp"
 
 
-field::field(main_window* par, int x, int y, const std::string& imagefile): 
+field::field(main_window* par, int _x, int _y, const std::string& imagefile): 
   Gtk::EventBox(),
   image(imagefile),
-  x(x),
-  y(y),
+  x(_x),
+  y(_y),
   parent(par)
 {
   add(image);
@@ -19,9 +19,9 @@ void field::update_image(const char* imagefile)
 }
 
 
-bool field::on_button_press_event(GdkEventButton* event)
+bool field::on_button_press_event(GdkEventButton* _event)
 {
   parent->control.on_human_do_move(x,y);
-  event = NULL; /* prevent compiler complaining */  
+  _event = NULL; /* prevent compiler complaining */  
   return true;
 }

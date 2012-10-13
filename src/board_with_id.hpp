@@ -20,9 +20,9 @@ inline board_with_id::board_with_id()
 
 
 
-inline board_with_id::board_with_id(const board* b,int id):
-  b(b),
-  id(id)
+inline board_with_id::board_with_id(const board* _b,int _id):
+  b(_b),
+  id(_id)
 {
 }
 
