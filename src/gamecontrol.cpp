@@ -1,12 +1,12 @@
 #include "gamecontrol.hpp"
 #include "mainwindow.hpp"
 
-game_control::game_control(main_window* mw):
-  mw(mw)
+game_control::game_control(main_window* _mw):
+  mw(_mw)
 {
   current = new board();
-  bot[BLACK] = new bot_ali(BLACK,4,10);
-  bot[WHITE] = NULL;
+  bot[BLACK] = NULL;
+  bot[WHITE] = new bot_ali(WHITE,1,1);
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),100);
 }
 
@@ -34,9 +34,6 @@ void game_control::on_bot_do_move()
   if(!current->has_moves(turn())){
     return;
   }
-  
-  
-  
   move = bot[turn()]->do_move(current);
   on_any_move(move);
 }
@@ -116,6 +113,8 @@ void game_control::on_new_game()
 void game_control::on_game_ended()
 {
   std::cout << "Game has ended.\n";
+  std::cout << "White (" << current->count_discs(WHITE) << ") - (";
+  std::cout << current->count_discs(BLACK) << ") Black" << std::endl;
 }
 
 bool game_control::timeout_handler()

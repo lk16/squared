@@ -58,7 +58,7 @@ struct board{
   int get_mobility(color c) const;
   
   /// returns number of flipped discs for move (x,y) and player c, if (x,y) is not valid, 0 is returned
-  int get_flipped(int x,int y,color c) const;
+  int count_flipped(int x,int y,color c) const;
 
   /// returns the color if disc (x,y)
   color get_color(int x,int y) const;
@@ -72,8 +72,8 @@ struct board{
   /// tests whether (x,y) is on the board
   static bool on_board(int x,int y);
     
-  /// prints this to standard output
-  void show(color c,bool mark_moves) const;
+  /// prints this to standard output, mark moves for current turn with '.'
+  void show() const;
 };
 
 
@@ -154,7 +154,13 @@ inline bool board::on_board(int x, int y)
 
 inline bool board::has_moves(color c) const
 {
-  return count_moves(c)!=0;
+  int x,y;
+  for(x=0;x<8;x++){
+    for(y=0;y<8;y++){
+      if(is_valid_move(x,y,c)) return true;
+    }
+  }
+  return false;
 }
 
 inline bool board::test_game_ended() const

@@ -103,7 +103,7 @@ bool board::is_valid_move(int x, int y, color c) const
   return 0;
 }
 
-void board::show(color c, bool mark_moves) const
+void board::show() const
 {
   int x,y;
   char mark;
@@ -115,23 +115,16 @@ void board::show(color c, bool mark_moves) const
     for(x=0;x<8;x++){
       switch(get_color(x,y)){
         case BLACK: 
-          std::cout << "@";
+          std::cout << "\033[31;1m@\033[0m";
           break;
         case WHITE:
-          std::cout << "O";
+          std::cout << "\033[34;1m@\033[0m";
           break;
         case EMPTY: 
-          if(is_valid_move(x,y,c)){
-            if(mark_moves){
-              std::cout << mark; 
-              mark++;
-              break;              
-            }
-            else{
-              std::cout << '.';
-              break;
-            }
-          }
+          if(is_valid_move(x,y,turn)){
+            std::cout << '.';
+            break;
+          }  
           else{
             std::cout << ' ';
             break;
@@ -160,18 +153,21 @@ std::list<board*> board::get_children() const
   return res;
 }
 
-int board::get_flipped(int x, int y, color c) const
+int board::count_flipped(int x, int y, color c) const
 {
-  int dx,dy,dist,curx,cury,ax,ay;
+  int dx,dy,dist,curx,cury;
   int res;
   
   res = 0;
   
-  if(has_color(x,y,EMPTY)){
+  if(!has_color(x,y,EMPTY)){
     return 0;
   }
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
+      if(!on_board(x+2*dx,y+2*dy)){
+        continue;
+      }
       if(dx!=0 || dy!=0){
         dist = 0;
         curx = x;
@@ -188,10 +184,7 @@ int board::get_flipped(int x, int y, color c) const
           }
           if(has_color(curx,cury,c)){
             if(dist>=2){
-             
-              ax = x;
-              ay = y;
-              res += max(abs(curx-x),abs(cury-y));
+              res += (dist-1);
             }
             break;
           }
@@ -208,7 +201,7 @@ int board::get_mobility(color c) const
   res = 0;
   for(x=0;x<8;x++){
     for(y=0;y<8;y++){
-      res = get_flipped(x,y,c);
+      res += count_flipped(x,y,c);
     }
   }
   return res;

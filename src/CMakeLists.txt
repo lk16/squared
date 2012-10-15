@@ -13,12 +13,12 @@ link_directories(
   
 
   set(OPTIMIZING_FLAGS
-    "-march=native -O3 -NDEBUG -pipe -msse2 -fomit-frame-pointer -fforce-addr -fprefetch-loop-arrays" 
+    "-O3 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
   )
 
 
-#set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS}) 
-set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS}) 
+set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS}) 
+#set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS}) 
 
 SET(objects
   board.cpp

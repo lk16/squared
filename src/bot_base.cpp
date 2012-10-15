@@ -31,7 +31,7 @@ board* bot_base::do_move(const board* b)
   
   
   id = 0;
-  if(depth_limit - look_ahead < 2){
+  if(depth_limit - look_ahead < 2 || true){
     /* if lookahead is not useful (enough) dont do it */
     for(it=children.begin();it!=children.end();it++){
       ahead.push_back(board_with_id(new board(**it),id));
@@ -73,49 +73,50 @@ board* bot_base::do_move(const board* b)
 
 int bot_base::negamax_internal_loop(std::list<board_with_id>& list, int moves_remaining)
 {
-  int tmp_heur,best_heur,best_move_id;
+  int tmp_heur,best_move_id,alpha,beta;
   
-  best_heur = -9999;
+  alpha = -9999;
+  beta = 9999;
+  
   best_move_id = -1;
   
   while(!list.empty()){
     
     // TODO parallelize this v
-    tmp_heur = negamax(list.back().b,best_heur,9999,moves_remaining);
-    if(tmp_heur > best_heur){
-      best_heur = tmp_heur;
+    tmp_heur = -negamax(list.back().b,-beta,-alpha,moves_remaining);
+    if(tmp_heur > alpha){
+      alpha = tmp_heur;
       best_move_id = list.back().id;
     }
     delete list.back().b;
     list.pop_back();
   }
-  SHOW_VAR(best_heur);
-  
   return best_move_id;
 }
 
 
 int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
 {
-  int x,y,val;
+  int x,y,val,count[2];
   bool move_found;
   board *next,tmp;
   
   
   
-  if(b->test_game_ended()){
-    if(b->discs[BLACK]==0x0){
-      return 6400;
+  if(b->test_game_ended()){ 
+    count[BLACK] = b->count_discs(BLACK);
+    count[WHITE] = b->count_discs(WHITE);
+    if(count[BLACK] > count[WHITE]){ /* black wins */
+      return 100*(64-(2*count[WHITE]));
     }
-    if(b->discs[WHITE]==0x0){
-      return -6400;
+    else if(count[BLACK] < count[WHITE]){ /* white wins */
+      return 100*(64-(2*count[BLACK]));
     }
-    return 100 * (b->count_discs(WHITE) - b->count_discs(BLACK));
+    else{ /* draw */
+      return 0;
+    }
   }
   if(depth_remaining==0){
-    if(b->count_moves(WHITE)==0 && b->count_moves(BLACK)==0){
-      return 100*(b->count_discs(WHITE) - b->count_discs(BLACK));
-    }
     return heuristic(b);
   }
   
@@ -127,7 +128,7 @@ int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
         next = b->do_move(x,y);
         move_found = true;
         val = -negamax(next,-beta,-alpha,depth_remaining-1);
-        if(val >= beta){
+        if(val > beta){
           return val;
         }
         if(val >= alpha){
@@ -141,7 +142,7 @@ int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
     assert(b->has_moves(opponent(b->turn)));
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return -negamax(&tmp,-beta,-alpha,depth_remaining);
+    return -negamax(&tmp,-beta,-alpha,depth_remaining-1);
   }
   return alpha; 
 }
