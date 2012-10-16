@@ -17,8 +17,8 @@ link_directories(
   )
 
 
-set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS}) 
-#set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS}) 
+#set(CMAKE_CXX_FLAGS ${DEBUG_FLAGS}) 
+set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS}) 
 
 SET(objects
   board.cpp

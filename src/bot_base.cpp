@@ -14,8 +14,8 @@ board* bot_base::do_move(const board* b)
   unsigned int id,best_move_id;
   board *res;
   std::list<board_with_id> ahead;
-  std::list<board*> children;
-  std::list<board*>::const_iterator it;
+  std::list<board> children;
+  std::list<board>::const_iterator it;
   
   nodes = 0;
   start_time = std::time(NULL);
@@ -29,7 +29,7 @@ board* bot_base::do_move(const board* b)
   res = NULL;
   
   if(children.size()==1){
-    return children.front();
+    return new board(children.front());
   } 
   
   
@@ -37,17 +37,17 @@ board* bot_base::do_move(const board* b)
   if(depth_limit - look_ahead < 2 || true){
     /* if lookahead is not useful (enough) dont do it */
     for(it=children.begin();it!=children.end();it++){
-      ahead.push_back(board_with_id(new board(**it),id));
+      ahead.push_back(board_with_id(new board(*it),id));
       id++;
     }
     
     /* negamax_internal_loop deletes all its pointers */
-    best_move_id = negamax_internal_loop(ahead,depth_limit-1);
+    best_move_id = alpha_beta_internal(ahead,depth_limit-1);
   }
   else{
     /* do lookahead search */
     for(it=children.begin();it!=children.end();it++){
-      add_moves_ahead(ahead,id,*it,look_ahead-1);
+      add_moves_ahead(ahead,id,&*it,look_ahead-1);
       id++;
     }
     
@@ -55,16 +55,16 @@ board* bot_base::do_move(const board* b)
     ahead.sort();
 
     /* negamax_internal_loop deletes all its pointers */
-    best_move_id = negamax_internal_loop(ahead,depth_limit-look_ahead);
+    best_move_id = alpha_beta_internal(ahead,depth_limit-look_ahead);
   }
  
   /* delete all non-optimal moves from memory */
   id = 0;
   while(!children.empty()){
     if(id==best_move_id){
-      res = new board(*children.front());
+      res = new board(children.front());
+      break;
     }
-    delete children.front();
     children.pop_front();
     id++;
   }
@@ -78,34 +78,53 @@ board* bot_base::do_move(const board* b)
 }
 
 
-int bot_base::negamax_internal_loop(std::list<board_with_id>& list, int moves_remaining)
+int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int moves_remaining)
 {
-  int tmp_heur,best_move_id,alpha,beta;
+  int best_move_id,alpha,beta,best_heur;
   
-  alpha = -9999;
-  beta = 9999;
   
   best_move_id = -1;
   
-  while(!list.empty()){
-    
-    // TODO parallelize this v
-    tmp_heur = -negamax(list.back().b,-beta,-alpha,moves_remaining);
-    if(tmp_heur > alpha){
-      alpha = tmp_heur;
-      best_move_id = list.back().id;
+  if(c==WHITE){
+    best_heur = -9999;
+    while(!list.empty()){
+      alpha = best_heur;
+      beta = 9999;
+      
+      // TODO parallelize this v
+      alpha = alpha_beta(list.front().b,alpha,beta,moves_remaining-1);
+      
+      if(alpha > best_heur){
+        best_heur = alpha;
+        best_move_id = list.front().id;
+      }
+      list.pop_front();
     }
-    delete list.back().b;
-    list.pop_back();
+  }
+  else{
+    best_heur = 9999;
+    assert(c==BLACK);    
+    while(!list.empty()){
+      alpha = -9999;
+      beta = best_heur;
+      
+      // TODO parallelize this v
+      alpha = alpha_beta(list.front().b,alpha,beta,moves_remaining-1);
+      
+      if(beta < best_heur){
+        beta = best_heur;
+        best_move_id = list.front().id;
+      }
+      list.pop_front();
+    }
   }
   return best_move_id;
 }
 
 
-int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
+int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
 {
-  int val,count[2];
-  std::list<board*> children;
+  std::list<board> children;
   board tmp;
   
   nodes++;
@@ -117,25 +136,32 @@ int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
     return heuristic(b);
   }
   
-    children = b->get_children();
-  
+  children = b->get_children();
   if(children.empty()){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return -negamax(&tmp,-beta,-alpha,depth_remaining-1);
+    return alpha_beta(&tmp,alpha,beta,depth_remaining-1);
   }
-  while(!children.empty()){
-    val = -negamax(children.front(),-beta,-alpha,depth_remaining-1);
-    if(val > beta){
-      return val;
+  
+  if(b->turn == WHITE){
+    while(!children.empty()){
+      alpha = max(alpha,alpha_beta(&children.back(),alpha,beta,depth_remaining-1));
+      if(alpha>=beta){
+        break;
+      }
     }
-    if(val >= alpha){
-      alpha = val;
-    }
-    delete children.front();
-    children.pop_front();
+    return alpha; 
   }
-  return alpha; 
+  else{
+    assert(b->turn == BLACK);
+    while(!children.empty()){
+      beta = min(beta,alpha_beta(&children.back(),alpha,beta,depth_remaining-1));
+      if(alpha>=beta){
+        break;
+      }
+    }
+    return beta;
+  }
 }
 
 int bot_base::heuristic(const board* b)
@@ -150,7 +176,7 @@ void bot_base::add_moves_ahead(std::list<board_with_id>& vec,unsigned id,
                                const board* b,int moves_remaining)
 {
   int x,y;
-  board* next;
+  board next;
     
   nodes++;
   
@@ -162,8 +188,7 @@ void bot_base::add_moves_ahead(std::list<board_with_id>& vec,unsigned id,
     for(y=0;y<8;y++){
       if(b->is_valid_move(x,y,c)){
         next = b->do_move(x,y);
-          add_moves_ahead(vec,id,next,moves_remaining-1);
-          delete next;
+        add_moves_ahead(vec,id,&next,moves_remaining-1);
       }
     }
   }

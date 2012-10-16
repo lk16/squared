@@ -16,12 +16,11 @@ int board::count_moves(color c) const
   return res;
 }
 
-board* board::do_move(int x, int y) const
+board board::do_move(int x, int y) const
 {
   int dx,dy,dist,curx,cury,ax,ay;
-  board *result;
+  board result;
   
-  result = new board(*this);
   
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
@@ -33,22 +32,22 @@ board* board::do_move(int x, int y) const
           dist++;
           curx += dx;
           cury += dy;
-          if(!on_board(curx,cury) || result->has_color(curx,cury,EMPTY)){
+          if(!on_board(curx,cury) || result.has_color(curx,cury,EMPTY)){
             break;
           }
-          if(result->has_color(curx,cury,opponent(turn))){
+          if(result.has_color(curx,cury,opponent(turn))){
             continue;
           }
-          if(result->has_color(curx,cury,turn)){
+          if(result.has_color(curx,cury,turn)){
             if(dist>=2){
               ax = x;
               ay = y;
               while(!(ax==curx && ay==cury)){
-                result->set_color(ax,ay,turn);
+                result.set_color(ax,ay,turn);
                 ax+=dx;
                 ay+=dy;
               }
-              result->set_color(x,y,turn);
+              result.set_color(x,y,turn);
             }
             break;
           }
@@ -56,7 +55,7 @@ board* board::do_move(int x, int y) const
       }
     }
   }
-  result->turn = opponent(turn);
+  result.turn = opponent(turn);
   return result;
 }
 
@@ -137,10 +136,10 @@ void board::show() const
   std::cout << "+-----------------+\n";
 }
 
-std::list<board*> board::get_children() const
+std::list<board> board::get_children() const
 {
   int x,y;
-  std::list<board*> res;
+  std::list<board> res;
   
   /* find out all possible moves */
   for(y=0;y<8;y++){
@@ -207,7 +206,7 @@ int board::get_mobility(color c) const
   return res;
 }
 
-int board::get_disc_diff()
+int board::get_disc_diff() const
 {
   int count[2];
   

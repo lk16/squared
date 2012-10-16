@@ -22,11 +22,11 @@ class bot_base{
   /// overridable function that should return positive heuristic if the move is better for white
   virtual int heuristic(const board* b);
   
-  /// calculates the heuristic for b using negamax
-  int negamax(const board* b,int alpha,int beta,int depth_remaining);
+  /// calculates the heuristic for b using alpha beta pruning
+  int alpha_beta(const board* b,int alpha, int beta,int depth_remaining);
   
-  /// internal negamax function, returns index of best move
-  int negamax_internal_loop(std::list<board_with_id>& vec,int moves_remaining);
+  /// internal alpha beta function, returns index of best move
+  int alpha_beta_internal(std::list<board_with_id>& vec,int moves_remaining);
   
   
   /// recursively adds moves ahead of b to vec,

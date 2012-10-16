@@ -28,13 +28,13 @@ struct board{
   void reset();
   
   /// does move (x,y) for current turn
-  board* do_move(int x,int y) const;
+  board do_move(int x,int y) const;
   
   /// counts the number of valid moves for color c
   int count_moves(color c) const;
   
   /// gets all children from this board
-  std::list<board*> get_children() const;
+  std::list<board> get_children() const;
   
   /// counts number of discs of a given player
   int count_discs(color c) const;
@@ -76,7 +76,7 @@ struct board{
   void show() const;
   
   /// returns disc count difference, positive means white has more
-  int get_disc_diff();
+  int get_disc_diff() const;
   
 };
 

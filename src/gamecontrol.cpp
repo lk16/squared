@@ -23,7 +23,7 @@ void game_control::on_human_do_move(int x, int y)
     return;
   }  
   if(current->is_valid_move(x,y,turn())){
-    move = current->do_move(x,y);
+    move = new board(current->do_move(x,y));
     on_any_move(move);
    }
 }
