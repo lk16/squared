@@ -207,3 +207,20 @@ int board::get_mobility(color c) const
   return res;
 }
 
+int board::get_disc_diff()
+{
+  int count[2];
+  
+  count[BLACK] = count_discs(BLACK);
+  count[WHITE] = count_discs(WHITE);
+  
+  if(count[BLACK] > count[WHITE]){ /* black wins */
+    return (64-(2*count[WHITE]));
+  }
+  else if(count[BLACK] < count[WHITE]){ /* white wins */
+    return (64-(2*count[BLACK]));
+  }
+  else{ /* draw */
+    return 0;
+  }
+}

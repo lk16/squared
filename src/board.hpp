@@ -74,6 +74,10 @@ struct board{
     
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
+  
+  /// returns disc count difference, positive means white has more
+  int get_disc_diff();
+  
 };
 
 

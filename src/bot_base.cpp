@@ -10,7 +10,7 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
 
 board* bot_base::do_move(const board* b) 
 {
-  int depth_limit;
+  int depth_limit,time_diff;
   unsigned int id,best_move_id;
   board *res;
   std::list<board_with_id> ahead;
@@ -30,8 +30,7 @@ board* bot_base::do_move(const board* b)
   
   if(children.size()==1){
     return children.front();
-  }
-  
+  } 
   
   
   id = 0;
@@ -70,9 +69,9 @@ board* bot_base::do_move(const board* b)
     id++;
   }
   
-  
-  std::cout << nodes << "nodes in " << (std::time(NULL)-start_time) << "seconds: ";
-  std::cout << nodes/(std::time(NULL)-start_time) << "nodes / sec\n";
+  time_diff = (std::time(NULL)-start_time);
+  std::cout << nodes << " nodes in " << time_diff << " seconds: ";
+  std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
   
   assert(res);
   return res;
@@ -105,52 +104,36 @@ int bot_base::negamax_internal_loop(std::list<board_with_id>& list, int moves_re
 
 int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
 {
-  int x,y,val,count[2];
-  bool move_found;
-  board *next,tmp;
+  int val,count[2];
+  std::list<board*> children;
+  board tmp;
   
   nodes++;
   
   if(b->test_game_ended()){ 
-    count[BLACK] = b->count_discs(BLACK);
-    count[WHITE] = b->count_discs(WHITE);
-    if(count[BLACK] > count[WHITE]){ /* black wins */
-      return 100*(64-(2*count[WHITE]));
-    }
-    else if(count[BLACK] < count[WHITE]){ /* white wins */
-      return 100*(64-(2*count[BLACK]));
-    }
-    else{ /* draw */
-      return 0;
-    }
+    return 100 * b->get_disc_diff();
   }
   if(depth_remaining==0){
     return heuristic(b);
   }
   
-  move_found = false;
+    children = b->get_children();
   
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
-      if(b->is_valid_move(x,y,b->turn)){
-        next = b->do_move(x,y);
-        move_found = true;
-        val = -negamax(next,-beta,-alpha,depth_remaining-1);
-        if(val > beta){
-          return val;
-        }
-        if(val >= alpha){
-          alpha = val;
-        }
-        delete next;
-      }
-    }
-  }
-  if(!move_found){
-    assert(b->has_moves(opponent(b->turn)));
+  if(children.empty()){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
     return -negamax(&tmp,-beta,-alpha,depth_remaining-1);
+  }
+  while(!children.empty()){
+    val = -negamax(children.front(),-beta,-alpha,depth_remaining-1);
+    if(val > beta){
+      return val;
+    }
+    if(val >= alpha){
+      alpha = val;
+    }
+    delete children.front();
+    children.pop_front();
   }
   return alpha; 
 }
