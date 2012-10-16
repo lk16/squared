@@ -2,8 +2,9 @@
 #define SQUARED_BOT_BASE_HPP
 
 #include <algorithm>
-#include <vector>
+#include <ctime>
 #include <list>
+#include <vector>
 
 #include "shared.hpp"
 #include "board_with_id.hpp"
@@ -13,6 +14,9 @@ class bot_base{
   
   color c;
   int max_depth,max_endgame_depth,look_ahead;
+  
+  /// for timing purposes
+  int nodes,start_time;
   
   
   /// overridable function that should return positive heuristic if the move is better for white

@@ -17,6 +17,10 @@ board* bot_base::do_move(const board* b)
   std::list<board*> children;
   std::list<board*>::const_iterator it;
   
+  nodes = 0;
+  start_time = std::time(NULL);
+  
+  
   depth_limit = (b->max_moves_left() <= max_endgame_depth) ? b->max_moves_left() : max_depth;
   children = b->get_children();
   assert(children.size()>0);
@@ -66,6 +70,10 @@ board* bot_base::do_move(const board* b)
     id++;
   }
   
+  
+  std::cout << nodes << "nodes in " << (std::time(NULL)-start_time) << "seconds: ";
+  std::cout << nodes/(std::time(NULL)-start_time) << "nodes / sec\n";
+  
   assert(res);
   return res;
 }
@@ -101,7 +109,7 @@ int bot_base::negamax(const board* b,int alpha, int beta, int depth_remaining)
   bool move_found;
   board *next,tmp;
   
-  
+  nodes++;
   
   if(b->test_game_ended()){ 
     count[BLACK] = b->count_discs(BLACK);
@@ -161,6 +169,8 @@ void bot_base::add_moves_ahead(std::list<board_with_id>& vec,unsigned id,
   int x,y;
   board* next;
     
+  nodes++;
+  
   if(moves_remaining == 0){
     vec.push_back(board_with_id(b,id));
   }
