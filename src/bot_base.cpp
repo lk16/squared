@@ -41,8 +41,7 @@ board* bot_base::do_move(const board* b)
       id++;
     }
     
-    /* negamax_internal_loop deletes all its pointers */
-    best_move_id = alpha_beta_internal(ahead,depth_limit-1);
+    best_move_id = alpha_beta_internal(ahead,depth_limit);
   }
   else{
     /* do lookahead search */
@@ -84,6 +83,9 @@ int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int depth_rema
   
   
   best_move_id = -1;
+  
+  
+  
   
   if(c==WHITE){
     best_heur = -9999;

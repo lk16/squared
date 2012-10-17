@@ -19,7 +19,7 @@ int board::count_moves(color c) const
 board board::do_move(int x, int y) const
 {
   int dx,dy,dist,curx,cury,ax,ay;
-  board result;
+  board result(*this);
   
   
   for(dx=-1;dx<=1;dx++){
@@ -146,6 +146,7 @@ std::list<board> board::get_children() const
     for(x=0;x<8;x++){
       if(is_valid_move(x,y,turn)){
         res.push_back(do_move(x,y));
+        res.back().show();
       }
     }
   }
