@@ -7,19 +7,25 @@
 #include <string>
 
 #ifndef NDEBUG
+
 #define SHOW_VAR(a) std::cout << __FILE__ << ':' << __LINE__ << '\t' << #a << " = " << (a) << std::endl 
 #define SHOW_VAR2(a,b)     SHOW_VAR(a);      SHOW_VAR(b)
 #define SHOW_VAR3(a,b,c)   SHOW_VAR2(a,b);   SHOW_VAR(c)
 #define SHOW_VAR4(a,b,c,d) SHOW_VAR3(a,b,c); SHOW_VAR(d)
+#define CONTAINS_BUG std::cout << __FILE__ << ':' << __LINE__ << '\t' << "Do not use this function, it contains bugs!\n"
+#define PING std::cout << __FILE__ << ':' << __LINE__ << "\t PING!\n"
+
 #else
+
 #define SHOW_VAR(a)
 #define SHOW_VAR2(a,b)
 #define SHOW_VAR3(a,b,c)
 #define SHOW_VAR4(a,b,c,d)
+#define CONTAINS_BUG
+#define PING
+
 #endif
 
-#define CONTAINS_BUG() std::cout << __FILE__ << ':' << __LINE__ << '\t' \
-<< "Do not use this function, it contains bugs!\n"
 
 
 const std::string IMAGE_PATH = "./images/";

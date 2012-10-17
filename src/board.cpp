@@ -104,6 +104,7 @@ bool board::is_valid_move(int x, int y, color c) const
 
 void board::show() const
 {
+#ifndef NDEBUG
   int x,y;
   char mark;
   
@@ -134,6 +135,7 @@ void board::show() const
     std::cout << "|\n";
   }
   std::cout << "+-----------------+\n";
+#endif
 }
 
 std::list<board> board::get_children() const
@@ -146,7 +148,6 @@ std::list<board> board::get_children() const
     for(x=0;x<8;x++){
       if(is_valid_move(x,y,turn)){
         res.push_back(do_move(x,y));
-        res.back().show();
       }
     }
   }

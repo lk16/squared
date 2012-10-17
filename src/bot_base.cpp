@@ -34,16 +34,17 @@ board* bot_base::do_move(const board* b)
   
   
   id = 0;
-  if(depth_limit - look_ahead < 2 || true){
-    /* if lookahead is not useful (enough) dont do it */
+  if(depth_limit - look_ahead < 2){
+    PING;
+   /* if lookahead is not useful (enough) dont do it */
     for(it=children.begin();it!=children.end();it++){
       ahead.push_back(board_with_id(new board(*it),id));
       id++;
     }
-    
     best_move_id = alpha_beta_internal(ahead,depth_limit);
   }
   else{
+    PING;
     /* do lookahead search */
     for(it=children.begin();it!=children.end();it++){
       add_moves_ahead(ahead,id,&*it,look_ahead-1);
@@ -54,6 +55,7 @@ board* bot_base::do_move(const board* b)
     ahead.sort();
 
     /* negamax_internal_loop deletes all its pointers */
+    assert(depth_limit-look_ahead > 0);
     best_move_id = alpha_beta_internal(ahead,depth_limit-look_ahead);
   }
  
@@ -94,6 +96,7 @@ int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int depth_rema
       beta = 9999;
       
       // TODO parallelize this v
+      assert(list.front().b->turn != EMPTY);
       alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
       
       if(alpha > best_heur){
@@ -111,6 +114,7 @@ int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int depth_rema
       beta = best_heur;
       
       // TODO parallelize this v
+      assert(list.front().b->turn != EMPTY);
       alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
       
       if(beta < best_heur){
@@ -184,8 +188,12 @@ void bot_base::add_moves_ahead(std::list<board_with_id>& vec,unsigned id,
     
   nodes++;
   
+  assert(moves_remaining >= 0);
+  
   if(moves_remaining == 0){
+    assert(b->turn != EMPTY);
     vec.push_back(board_with_id(b,id));
+    return;
   }
   
   for(x=0;x<8;x++){
