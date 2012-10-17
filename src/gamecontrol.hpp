@@ -38,7 +38,7 @@ struct game_control{
   board* current;
   
   /* used as stack */
-  std::vector<board*> undo_stack,redo_stack;
+  std::stack<board*> undo_stack,redo_stack;
   
   
 };

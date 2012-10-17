@@ -41,10 +41,10 @@ void game_control::on_bot_do_move()
 void game_control::on_any_move(board* next)
 {
   while(!redo_stack.empty()){
-    delete redo_stack.back();
-    redo_stack.pop_back();
+    delete redo_stack.top();
+    redo_stack.pop();
   }
-  undo_stack.push_back(current);
+  undo_stack.push(current);
   
   current = next;
   mw->update_fields();
@@ -67,15 +67,15 @@ void game_control::on_undo()
   if(undo_stack.empty()){
     return;
   }
-  while(bot[undo_stack.back()->turn]){
-    redo_stack.push_back(current);
-    current = undo_stack.back();
-    undo_stack.pop_back();
+  while(bot[undo_stack.top()->turn]){
+    redo_stack.push(current);
+    current = undo_stack.top();
+    undo_stack.pop();
     mw->update_fields();
   }  
-  redo_stack.push_back(current);
-  current = undo_stack.back();
-  undo_stack.pop_back();
+  redo_stack.push(current);
+  current = undo_stack.top();
+  undo_stack.pop();
   mw->update_fields();
 }
 
@@ -84,27 +84,27 @@ void game_control::on_redo()
   if(redo_stack.empty()){
     return;
   } 
-  while(bot[undo_stack.back()->turn]){
-    redo_stack.push_back(current);
-    current = undo_stack.back();
-    undo_stack.pop_back();
+  while(bot[undo_stack.top()->turn]){
+    redo_stack.push(current);
+    current = undo_stack.top();
+    undo_stack.pop();
     mw->update_fields();
   }
-  undo_stack.push_back(current);
-  current = redo_stack.back();
-  redo_stack.pop_back();
+  undo_stack.push(current);
+  current = redo_stack.top();
+  redo_stack.pop();
   mw->update_fields();
 }
 
 void game_control::on_new_game()
 {
   while(!redo_stack.empty()){
-    delete redo_stack.back();
-    redo_stack.pop_back();
+    delete redo_stack.top();
+    redo_stack.pop();
   } 
   while(!undo_stack.empty()){
-    delete undo_stack.back();
-    undo_stack.pop_back();
+    delete undo_stack.top();
+    undo_stack.pop();
   } 
   
   current->reset();
