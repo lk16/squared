@@ -78,7 +78,7 @@ board* bot_base::do_move(const board* b)
 }
 
 
-int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int moves_remaining)
+int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int depth_remaining)
 {
   int best_move_id,alpha,beta,best_heur;
   
@@ -92,7 +92,7 @@ int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int moves_rema
       beta = 9999;
       
       // TODO parallelize this v
-      alpha = alpha_beta(list.front().b,alpha,beta,moves_remaining-1);
+      alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
       
       if(alpha > best_heur){
         best_heur = alpha;
@@ -109,7 +109,7 @@ int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int moves_rema
       beta = best_heur;
       
       // TODO parallelize this v
-      alpha = alpha_beta(list.front().b,alpha,beta,moves_remaining-1);
+      alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
       
       if(beta < best_heur){
         beta = best_heur;
@@ -145,20 +145,22 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   
   if(b->turn == WHITE){
     while(!children.empty()){
-      alpha = max(alpha,alpha_beta(&children.back(),alpha,beta,depth_remaining-1));
+      alpha = max(alpha,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
+      children.pop_front();      
     }
     return alpha; 
   }
   else{
     assert(b->turn == BLACK);
     while(!children.empty()){
-      beta = min(beta,alpha_beta(&children.back(),alpha,beta,depth_remaining-1));
+      beta = min(beta,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
+      children.pop_front();
     }
     return beta;
   }
