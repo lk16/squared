@@ -61,7 +61,6 @@ board* bot_base::do_move(const board* b)
  
   /* delete all non-optimal moves from memory */
   id = 0;
-  SHOW_VAR(children.size());
   while(!children.empty()){
     if(id==best_move_id){ 
       res = new board(children.front());
@@ -82,19 +81,20 @@ board* bot_base::do_move(const board* b)
 
 int bot_base::alpha_beta(std::list<board_with_id>& list, int depth_remaining)
 {
-  int best_move_id,beta,best_heur;
+  int best_move_id,alpha,best_heur;
   
   best_move_id = -1;
-  beta = 9999;
+  best_heur = -9999;
   
   while(!list.empty()){
     
     // TODO parallelize this v
-    beta = alpha_beta_recursive(list.front().b,-9999,beta,depth_remaining-1);
+    alpha = alpha_beta_recursive(list.front().b,alpha,9999,depth_remaining-1);
 
-    SHOW_VAR(beta);
-    if(beta < best_heur){
-      best_heur = beta;
+
+    if(alpha > best_heur){   
+      best_heur = alpha; 
+      SHOW_VAR(best_heur);
       best_move_id = list.front().id;
     }
     list.pop_front();
