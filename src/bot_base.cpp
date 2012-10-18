@@ -81,23 +81,34 @@ board* bot_base::do_move(const board* b)
 
 int bot_base::alpha_beta(std::list<board_with_id>& list, int depth_remaining)
 {
-  int best_move_id,alpha,best_heur;
+  int best_move_id,alpha,beta,best_heur,tmp;
   
   best_move_id = -1;
-  best_heur = -9999;
+  alpha = -9999;
+  beta = 9999;
   
   while(!list.empty()){
-    
-    // TODO parallelize this v
-    alpha = alpha_beta_recursive(list.front().b,alpha,9999,depth_remaining-1);
+    if(list.front().b->turn == c){
+      // TODO parallelize this v
+      tmp = alpha_beta_recursive(list.front().b,alpha,beta,depth_remaining-1);
 
-
-    if(alpha > best_heur){   
-      best_heur = alpha; 
-      std::cout << "best heuristic: " << best_heur << std::endl;
-      best_move_id = list.back().id;
+      if(tmp > alpha){   
+        alpha = tmp; 
+        best_move_id = list.back().id;
+      }
+      list.pop_back();
     }
-    list.pop_back();
+    else{
+      // TODO parallelize this v
+      tmp = alpha_beta_recursive(list.front().b,alpha,beta,depth_remaining-1);
+      
+      if(tmp < beta){   
+        beta = tmp; 
+        best_move_id = list.back().id;
+      }
+      list.pop_back();
+    }
+    
   }
   return best_move_id;
 }
