@@ -18,44 +18,49 @@ int board::count_moves(color c) const
 
 board board::do_move(int x, int y) const
 {
-  int dx,dy,dist,curx,cury,ax,ay;
+  int dx,dy,dist,curx,cury;
   board result(*this);
+  unsigned long mask;
   
   
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
-      if(dx!=0 || dy!=0){
-        dist = 0;
-        curx = x;
-        cury = y;
-        while(1){
-          dist++;
-          curx += dx;
-          cury += dy;
-          if(!on_board(curx,cury) || result.has_color(curx,cury,EMPTY)){
-            break;
-          }
-          if(result.has_color(curx,cury,opponent(turn))){
-            continue;
-          }
-          if(result.has_color(curx,cury,turn)){
-            if(dist>=2){
-              ax = x;
-              ay = y;
-              while(!(ax==curx && ay==cury)){
-                result.set_color(ax,ay,turn);
-                ax+=dx;
-                ay+=dy;
-              }
-              result.set_color(x,y,turn);
-            }
-            break;
-          }
+      if(!on_board(x+2*dx,y+2*dy) || (dx==0 && dy==0)){
+        continue;
+      }
+      mask = 0ul;
+      dist = 0;
+      curx = x;
+      cury = y;
+      while(1){
+        dist++;
+        curx += dx;
+        cury += dy;
+        if(!on_board(curx,cury) || result.has_color(curx,cury,EMPTY)){
+          break;
+        }
+        if(result.has_color(curx,cury,opponent(turn))){
+          mask |= (1ul << (8*cury + curx));
+          continue;
+        }
+        if(result.has_color(curx,cury,turn)){
+          if(dist>=2){
+          /*  assert(result.discs[turn].to_ulong() & mask == 0ul);
+            assert(result.discs[opponent(turn)].to_ulong() & mask == mask);
+            */
+            result.discs[turn] |= mask;
+            result.discs[opponent(turn)] &= (~mask);
+            /*
+            assert(result.discs[turn].to_ulong() & mask == mask);
+            assert(result.discs[opponent(turn)].to_ulong() & mask == 0ul);
+          */}
+          break;
         }
       }
     }
   }
   result.turn = opponent(turn);
+  result.discs[turn] |= (1ul << (8*y+x));
   return result;
 }
 

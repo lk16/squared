@@ -53,6 +53,7 @@ board* bot_base::do_move(const board* b)
     
     /* sort found moves in ascending (heuristic) order, O(n log n) complexity */
     ahead.sort();
+       
 
     /* negamax_internal_loop deletes all its pointers */
     assert(depth_limit-look_ahead > 0);
@@ -62,7 +63,7 @@ board* bot_base::do_move(const board* b)
   /* delete all non-optimal moves from memory */
   id = 0;
   while(!children.empty()){
-    if(id==best_move_id){
+    if(id==best_move_id){ 
       res = new board(children.front());
       break;
     }
@@ -187,8 +188,6 @@ void bot_base::add_moves_ahead(std::list<board_with_id>& vec,unsigned id,
   board next;
     
   nodes++;
-  
-  assert(moves_remaining >= 0);
   
   if(moves_remaining == 0){
     assert(b->turn != EMPTY);
