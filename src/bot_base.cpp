@@ -94,10 +94,10 @@ int bot_base::alpha_beta(std::list<board_with_id>& list, int depth_remaining)
 
     if(alpha > best_heur){   
       best_heur = alpha; 
-      SHOW_VAR(best_heur);
-      best_move_id = list.front().id;
+      std::cout << "best heuristic: " << best_heur << std::endl;
+      best_move_id = list.back().id;
     }
-    list.pop_front();
+    list.pop_back();
   }
   return best_move_id;
 }

@@ -9,7 +9,7 @@ struct bot_ali:
 {
   bot_ali(color c, int max_depth, int max_endgame_depth);
 
-  /* positive is good for white */
+  /* positive is good for current turn */
   virtual int heuristic(const board* b);
   
 };

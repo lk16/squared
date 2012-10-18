@@ -7,37 +7,36 @@ bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
 
 int bot_ali::heuristic(const board* b)
 {
-  int disc_count_factor,mobility_factor,corner_factor,xsquare_factor,i;
+  int disc_count_factor,mobility_factor,i;
   int res = 0;
-  int corners[4] = {0,7,56,63};
-  int xsquares[4] = {9,14,49,54};
+  
+  int location[64] = 
+  {99,-20,-5,-5,-5,-5,-20, 99,
+  -20,-40, 0, 0, 0, 0,-40,-20,
+   -5,  0, 5, 5, 5, 5,  0, -5,
+   -5,  0, 5,10,10, 5,  0, -5,
+   -5,  0, 5,10,10, 5,  0, -5,
+   -5,  0, 5, 5, 5, 5,  0, -5,
+   -20,-40, 0, 0, 0, 0,-40,-20,
+    99,-20,-5,-5,-5,-5,-20, 99,
+  };
   
   disc_count_factor = 5;
   mobility_factor = 1;
-  corner_factor = 100;
-  xsquare_factor = -40;
   
-  for(i=0;i<3;i++){
-    if(b->has_color(corners[i]%8,corners[i]/8,WHITE)){
-      res += corner_factor;
+  for(i=0;i<64;i++){
+    if(b->discs[c].to_ulong() & (1ul << i)){
+      res += location[i];
+    }
+    else if(b->discs[opponent(c)].to_ulong() & (1ul << i)){
+      res -= location[i];
     } 
-    if(b->has_color(corners[i]%8,corners[i]/8,BLACK)){
-      res -= corner_factor;
-    }
-    if(b->has_color(xsquares[i]%8,xsquares[i]/8,WHITE)){
-      res += xsquare_factor;
-    }
-    if(b->has_color(xsquares[i]%8,xsquares[i]/8,BLACK)){
-      res -= xsquare_factor;
-    }
   }
-  res += mobility_factor * b->get_mobility(WHITE);
-  res -= mobility_factor * b->get_mobility(BLACK);
+  res += mobility_factor * b->get_mobility(c);
+  res -= mobility_factor * b->get_mobility(opponent(c));
 
-/*  
-  res += disc_count_factor * b->count_discs(WHITE);
-  res -= disc_count_factor * b->count_discs(BLACK);
-*/  
+  res += disc_count_factor * b->count_discs(c);
+  res -= disc_count_factor * b->count_discs(opponent(c));
   
 
 
