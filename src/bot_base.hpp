@@ -23,10 +23,10 @@ class bot_base{
   virtual int heuristic(const board* b);
   
   /// calculates the heuristic for b using alpha beta pruning
-  int alpha_beta(const board* b,int alpha, int beta,int depth_remaining);
+  int alpha_beta_recursive(const board* b,int alpha, int beta,int depth_remaining);
   
   /// internal alpha beta function, returns index of best move
-  int alpha_beta_internal(std::list<board_with_id>& vec,int moves_remaining);
+  int alpha_beta(std::list<board_with_id>& vec,int moves_remaining);
   
   
   /// recursively adds moves ahead of b to vec,

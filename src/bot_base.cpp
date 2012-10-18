@@ -34,17 +34,15 @@ board* bot_base::do_move(const board* b)
   
   
   id = 0;
-  if(depth_limit - look_ahead < 2){
-    PING;
+  if(depth_limit - look_ahead < 3){
    /* if lookahead is not useful (enough) dont do it */
     for(it=children.begin();it!=children.end();it++){
       ahead.push_back(board_with_id(new board(*it),id));
       id++;
     }
-    best_move_id = alpha_beta_internal(ahead,depth_limit);
+    best_move_id = alpha_beta(ahead,depth_limit);
   }
   else{
-    PING;
     /* do lookahead search */
     for(it=children.begin();it!=children.end();it++){
       add_moves_ahead(ahead,id,&*it,look_ahead-1);
@@ -57,11 +55,13 @@ board* bot_base::do_move(const board* b)
 
     /* negamax_internal_loop deletes all its pointers */
     assert(depth_limit-look_ahead > 0);
-    best_move_id = alpha_beta_internal(ahead,depth_limit-look_ahead);
+    best_move_id = alpha_beta(ahead,depth_limit-look_ahead);
   }
+ 
  
   /* delete all non-optimal moves from memory */
   id = 0;
+  SHOW_VAR(children.size());
   while(!children.empty()){
     if(id==best_move_id){ 
       res = new board(children.front());
@@ -80,56 +80,30 @@ board* bot_base::do_move(const board* b)
 }
 
 
-int bot_base::alpha_beta_internal(std::list<board_with_id>& list, int depth_remaining)
+int bot_base::alpha_beta(std::list<board_with_id>& list, int depth_remaining)
 {
-  int best_move_id,alpha,beta,best_heur;
-  
+  int best_move_id,beta,best_heur;
   
   best_move_id = -1;
+  beta = 9999;
   
-  
-  
-  
-  if(c==WHITE){
-    best_heur = -9999;
-    while(!list.empty()){
-      alpha = best_heur;
-      beta = 9999;
-      
-      // TODO parallelize this v
-      assert(list.front().b->turn != EMPTY);
-      alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
-      
-      if(alpha > best_heur){
-        best_heur = alpha;
-        best_move_id = list.front().id;
-      }
-      list.pop_front();
+  while(!list.empty()){
+    
+    // TODO parallelize this v
+    beta = alpha_beta_recursive(list.front().b,-9999,beta,depth_remaining-1);
+
+    SHOW_VAR(beta);
+    if(beta < best_heur){
+      best_heur = beta;
+      best_move_id = list.front().id;
     }
-  }
-  else{
-    best_heur = 9999;
-    assert(c==BLACK);    
-    while(!list.empty()){
-      alpha = -9999;
-      beta = best_heur;
-      
-      // TODO parallelize this v
-      assert(list.front().b->turn != EMPTY);
-      alpha = alpha_beta(list.front().b,alpha,beta,depth_remaining-1);
-      
-      if(beta < best_heur){
-        beta = best_heur;
-        best_move_id = list.front().id;
-      }
-      list.pop_front();
-    }
+    list.pop_front();
   }
   return best_move_id;
 }
 
 
-int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
+int bot_base::alpha_beta_recursive(const board* b,int alpha, int beta,int depth_remaining)
 {
   std::list<board> children;
   board tmp;
@@ -137,22 +111,22 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   nodes++;
   
   if(b->test_game_ended()){ 
-    return 100 * b->get_disc_diff();
+    return (c==WHITE ? 1 : -1) * 100 * b->get_disc_diff();
   }
   if(depth_remaining==0){
-    return heuristic(b);
+    return (c==WHITE ? 1 : -1) * heuristic(b);
   }
   
   children = b->get_children();
   if(children.empty()){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return alpha_beta(&tmp,alpha,beta,depth_remaining-1);
+    return alpha_beta_recursive(&tmp,alpha,beta,depth_remaining-1);
   }
   
-  if(b->turn == WHITE){
+  if(b->turn == c){
     while(!children.empty()){
-      alpha = max(alpha,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
+      alpha = max(alpha,alpha_beta_recursive(&children.front(),alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
@@ -161,9 +135,8 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
     return alpha; 
   }
   else{
-    assert(b->turn == BLACK);
     while(!children.empty()){
-      beta = min(beta,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
+      beta = min(beta,alpha_beta_recursive(&children.front(),alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }

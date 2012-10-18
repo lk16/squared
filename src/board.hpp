@@ -180,7 +180,7 @@ inline int board::count_discs(color c) const
 
 inline int board::max_moves_left() const
 {
-  return 64 - std::bitset<64>(discs[0] | discs[1]).count();
+  return 64 - std::bitset<64>(discs[BLACK] | discs[WHITE]).count();
 }
 
 

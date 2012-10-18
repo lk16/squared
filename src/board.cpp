@@ -45,22 +45,16 @@ board board::do_move(int x, int y) const
         }
         if(result.has_color(curx,cury,turn)){
           if(dist>=2){
-          /*  assert(result.discs[turn].to_ulong() & mask == 0ul);
-            assert(result.discs[opponent(turn)].to_ulong() & mask == mask);
-            */
             result.discs[turn] |= mask;
             result.discs[opponent(turn)] &= (~mask);
-            /*
-            assert(result.discs[turn].to_ulong() & mask == mask);
-            assert(result.discs[opponent(turn)].to_ulong() & mask == 0ul);
-          */}
+          }
           break;
         }
       }
     }
   }
   result.turn = opponent(turn);
-  result.discs[turn] |= (1ul << (8*y+x));
+  result.set_color(x,y,turn);
   return result;
 }
 
