@@ -21,8 +21,7 @@ board board::do_move(int x, int y) const
   int dx,dy,dist,curx,cury;
   board result(*this);
   unsigned long mask;
-  
-  
+    
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
       if(!on_board(x+2*dx,y+2*dy) || (dx==0 && dy==0)){
@@ -53,8 +52,8 @@ board board::do_move(int x, int y) const
       }
     }
   }
-  result.turn = opponent(turn);
-  result.set_color(x,y,turn);
+  result.turn = opponent(result.turn);
+  result.discs[turn] |= (1ul << (8*y + x));
   return result;
 }
 
@@ -98,16 +97,14 @@ bool board::is_valid_move(int x, int y, color c) const
       }
     }
   }
-  return 0;
+  return false;
 }
 
 void board::show() const
 {
 #ifndef NDEBUG
   int x,y;
-  char mark;
   
-  mark = 'a';
   std::cout << "+-----------------+\n";
   for(y=0;y<8;y++){
     std::cout << "| ";
@@ -142,7 +139,6 @@ std::list<board> board::get_children() const
   int x,y;
   std::list<board> res;
   
-  /* find out all possible moves */
   for(y=0;y<8;y++){
     for(x=0;x<8;x++){
       if(is_valid_move(x,y,turn)){
@@ -155,6 +151,7 @@ std::list<board> board::get_children() const
 
 int board::count_flipped(int x, int y, color c) const
 {
+  
   int dx,dy,dist,curx,cury;
   int res;
   
@@ -169,7 +166,7 @@ int board::count_flipped(int x, int y, color c) const
         continue;
       }
       if(dx!=0 || dy!=0){
-        dist = 0;
+        dist = -1;
         curx = x;
         cury = y;
         while(1){
@@ -183,9 +180,8 @@ int board::count_flipped(int x, int y, color c) const
             continue;
           }
           if(has_color(curx,cury,c)){
-            if(dist>=2){
-              res += (dist-1);
-            }
+            // this is possible because we initialized dist at -1
+            res += dist;
             break;
           }
         }

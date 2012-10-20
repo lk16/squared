@@ -12,6 +12,14 @@ game_control::game_control(main_window* _mw):
 
 game_control::~game_control()
 {
+  while(!redo_stack.empty()){
+    delete redo_stack.top();
+    redo_stack.pop();
+  } 
+  while(!undo_stack.empty()){
+    delete undo_stack.top();
+    undo_stack.pop();
+  } 
   delete current;
 }
 

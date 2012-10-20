@@ -14,6 +14,7 @@
 #define SHOW_VAR4(a,b,c,d) SHOW_VAR3(a,b,c); SHOW_VAR(d)
 #define CONTAINS_BUG std::cout << __FILE__ << ':' << __LINE__ << '\t' << "Do not use this function, it contains bugs!\n"
 #define PING std::cout << __FILE__ << ':' << __LINE__ << "\t PING!\n"
+#define CRASH assert(false)
 
 #else
 
@@ -40,7 +41,7 @@ enum color{
 };
 
 inline color opponent(color c){
-  assert(c!=EMPTY);
+  assert(c==WHITE || c==BLACK);
   return ((c==BLACK) ? WHITE : BLACK);
 }
 

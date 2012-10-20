@@ -10,10 +10,8 @@
 
 struct board{
   std::bitset<64> discs[2];
-  int heuristic;
+  int id;
   color turn;
-
-  static const int DEFAULT_HEURISTIC = 99999;
   
   /// initializes a board to starting position
   board();
@@ -23,7 +21,7 @@ struct board{
   
   /// assigns a board from b
   board& operator=(const board& b);
-    
+  
   /// resets the board to starting position
   void reset();
   
@@ -97,26 +95,25 @@ inline void board::reset(){
   discs[1] = 0ul | (1ul << (4*8+4)) | (1ul << (3*8+3));
   
   turn = BLACK;
-  
-  heuristic = DEFAULT_HEURISTIC;
+  id = -1;
 }
 
 inline board::board(const board& b)
 {
   discs[0] = b.discs[0];
   discs[1] = b.discs[1];
-  heuristic = b.heuristic;
+  id = b.id;
+  turn = b.turn;
 }
 
 inline board& board::operator=(const board& b)
 {
   discs[0] = b.discs[0];
   discs[1] = b.discs[1];
-  heuristic = b.heuristic;
+  id = b.id;
+  turn = b.turn;
   return *this;
 }
-
-
 
 inline void board::set_color(int x,int y,color c)
 {
