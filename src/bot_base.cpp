@@ -10,7 +10,7 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
 
 board* bot_base::do_move(const board* b) 
 {
-  int depth_limit,time_diff,best_heur,tmp_heur;
+  int depth_limit,time_diff,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
   board *res;
   std::list<board> children;
@@ -21,9 +21,10 @@ board* bot_base::do_move(const board* b)
   best_heur = -9999;
   
   
-  depth_limit = (b->max_moves_left() <= max_endgame_depth) ? b->max_moves_left() : max_depth;
+  depth_limit = (b->max_moves_left() <= max_endgame_depth) ? 60 : max_depth;
   children = b->get_children();
-  assert(children.size()>0);
+  move_count = children.size();
+  assert(move_count>0);
   
   best_move_id = -1;
   res = NULL;
@@ -39,8 +40,12 @@ board* bot_base::do_move(const board* b)
     tmp_heur = alpha_beta(&*it,best_heur,6400,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
+      std::cout << "move " << (id+1) << "/" << move_count << ": heuristic = " << best_heur << std::endl;
       best_move_id = id;
       res = new board(*it);
+    }
+    else{
+      std::cout << "move " << (id+1) << "/" << move_count << ": heuristic < " << best_heur << std::endl;
     }
     it++;
     children.pop_front();

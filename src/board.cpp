@@ -211,7 +211,7 @@ int board::get_disc_diff() const
   count[WHITE] = count_discs(WHITE);
   
   if(count[BLACK] > count[WHITE]){ /* black wins */
-    return (64-(2*count[WHITE]));
+    return ((-64)+(2*count[WHITE]));
   }
   else if(count[BLACK] < count[WHITE]){ /* white wins */
     return (64-(2*count[BLACK]));
