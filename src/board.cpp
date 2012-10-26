@@ -220,3 +220,6 @@ int board::get_disc_diff() const
     return 0;
   }
 }
+
+
+

@@ -26,6 +26,9 @@ class bot_base{
   /// internal alpha beta function, returns index of best move
   int alpha_beta(std::list<board>& vec,int moves_remaining);
   
+  void sort_boards(std::list<board>& vec,int depth);
+  
+  
 public:
   color c;
   

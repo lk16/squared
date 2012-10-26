@@ -5,8 +5,8 @@ game_control::game_control(main_window* _mw):
   mw(_mw)
 {
   current = new board();
-  bot[BLACK] = NULL;
-  bot[WHITE] = new bot_ali(WHITE,5,14);
+  bot[BLACK] = NULL; //new bot_ali(BLACK,6,15);
+  bot[WHITE] = new bot_ali(WHITE,6,15); // NULL;
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),100);
 }
 
@@ -21,6 +21,10 @@ game_control::~game_control()
     undo_stack.pop();
   } 
   delete current;
+  
+  if(bot[WHITE]) delete bot[WHITE];
+  if(bot[BLACK]) delete bot[BLACK];
+  
 }
 
 void game_control::on_human_do_move(int x, int y)
