@@ -21,7 +21,7 @@ main_window::main_window():
     }
   }
   
-  start_new_game();
+  control.on_new_game();
   
   vbox.pack_start(aspect_frame,Gtk::PACK_SHRINK);
   aspect_frame.add(table);
@@ -31,30 +31,6 @@ main_window::main_window():
   show_all_children();
 }
 
-
-void main_window::start_new_game()
-{
-  for(int y=0;y<8;y++){
-    for(int x=0;x<8;x++){
-      fields[x][y]->image.set(IMAGE_PATH + "empty.png");
-    }
-  }
-  fields[3][3]->image.set(IMAGE_PATH + "white.png");
-  fields[4][4]->image.set(IMAGE_PATH + "white.png");
-  fields[4][3]->image.set(IMAGE_PATH + "black.png");
-  fields[3][4]->image.set(IMAGE_PATH + "black.png");
-  
-  fields[5][4]->image.set(IMAGE_PATH + "move.png");
-  fields[4][5]->image.set(IMAGE_PATH + "move.png");
-  fields[3][2]->image.set(IMAGE_PATH + "move.png");
-  fields[2][3]->image.set(IMAGE_PATH + "move.png");
-  
-  control.on_new_game();
-  
-  status_bar.pop();
-  status_bar.push("A new game has started.");
-  
-}
 
 void main_window::init_ui(){
   
@@ -77,7 +53,7 @@ void main_window::init_ui(){
   /* Game menu */
   action_group->add(
     Gtk::Action::create("GameNew",Gtk::Stock::NEW,"_New","Start a new game"),
-    sigc::mem_fun(*this,&main_window::on_menu_game_new)
+    sigc::mem_fun(control,&game_control::on_new_game)
   );
   action_group->add(
     Gtk::Action::create("GameUndo",Gtk::Stock::UNDO,"_Undo","Undo move"),
@@ -111,7 +87,7 @@ void main_window::init_ui(){
   
   
   try{
-    ui_manager->add_ui_from_file(UI_PATH + "main_window.xml");
+    ui_manager->add_ui_from_file(UI_PATH + "menus.xml");
   }
   catch(const Glib::Error& ex){
     std::cerr << "Adding ui from 'main_window.xml' failed: " << ex.what();
@@ -123,11 +99,6 @@ void main_window::init_ui(){
   if(menubar){
     vbox.pack_start(*menubar,Gtk::PACK_SHRINK);
   }
-}
-
-void main_window::on_menu_game_new()
-{
-  start_new_game();
 }
 
 void main_window::on_menu_game_quit()
@@ -194,4 +165,10 @@ void main_window::update_fields()
       fields[x][y]->image.set(IMAGE_PATH + imagefile);
     }
   }
+}
+
+void main_window::update_status_bar(const std::string& text)
+{
+  status_bar.pop();
+  status_bar.push(text);
 }

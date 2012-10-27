@@ -2,11 +2,12 @@
 #include "mainwindow.hpp"
 
 game_control::game_control(main_window* _mw):
-  mw(_mw)
+  mw(_mw),
+  last_move(std::time(NULL))
 {
   current = new board();
-  bot[BLACK] = NULL; //new bot_ali(BLACK,6,15);
-  bot[WHITE] = new bot_ali(WHITE,6,15); // NULL;
+  bot[BLACK] = NULL;
+  bot[WHITE] = NULL; 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),100);
 }
 
@@ -46,7 +47,11 @@ void game_control::on_bot_do_move()
   if(!current->has_moves(turn())){
     return;
   }
+  if(last_move == std::time(NULL)){
+    return;
+  }
   move = bot[turn()]->do_move(current);
+  last_move = std::time(NULL);
   on_any_move(move);
 }
 
@@ -120,13 +125,20 @@ void game_control::on_new_game()
   } 
   
   current->reset();
+  mw->update_fields();
+  mw->update_status_bar(std::string("A new game has started."));
 }
 
 void game_control::on_game_ended()
 {
-  std::cout << "Game has ended.\n";
-  std::cout << "White (" << current->count_discs(WHITE) << ") - (";
-  std::cout << current->count_discs(BLACK) << ") Black" << std::endl;
+  std::string text;
+  
+  text += "Game has ended. White (" + tostr<int>(current->count_discs(WHITE)) + ") - Black (";
+  text += tostr<int>(current->count_discs(BLACK)) + ")";
+  
+  
+  std::cout << text << std::endl;
+  mw->update_status_bar(text);
 }
 
 bool game_control::timeout_handler()

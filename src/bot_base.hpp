@@ -13,10 +13,6 @@ class bot_base{
   
   int max_depth,max_endgame_depth,look_ahead;
   
-  /// for timing purposes
-  int nodes,start_time;
-  
-  
   /// overridable function that should return positive heuristic if the move is better for color c
   virtual int heuristic(const board* b);
   
@@ -38,7 +34,8 @@ public:
   /// function called by other classes to calculate and do best move
   board* do_move(const board* b);
   
-  
+  /// for timing purposes
+  int nodes,prev_move_time;  
 };
 
 #endif

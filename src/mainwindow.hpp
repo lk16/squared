@@ -36,17 +36,18 @@ public:
   /* update from control.current */
   void update_fields();
   
+  /* allow easy updating of the statusbar */
+  void update_status_bar(const std::string& text);
+  
+  
   /* public members */
   Gtk::Table table;
   Gtk::Statusbar status_bar;
   game_control control;
   
-protected:
-  void start_new_game();
-  
+protected:  
   
   /* Signal handlers: */
-  void on_menu_game_new();
   void on_menu_game_quit();
   void on_menu_settings_fullscreen();
   void on_menu_settings_settings();

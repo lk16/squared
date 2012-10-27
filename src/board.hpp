@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <list>
+#include <sstream>
 
 #include "shared.hpp"
 

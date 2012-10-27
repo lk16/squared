@@ -4,7 +4,8 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
   look_ahead(2),
-  c(_c)  
+  c(_c),
+  prev_move_time(std::time(NULL))
 {
 }
 
@@ -17,7 +18,7 @@ board* bot_base::do_move(const board* b)
   std::list<board>::iterator it;
   
   nodes = 0;
-  start_time = std::time(NULL);
+  prev_move_time = std::time(NULL);
   best_heur = -6400;
   
   
@@ -57,7 +58,7 @@ board* bot_base::do_move(const board* b)
     id++;
   }
 
-  time_diff = (std::time(NULL)-start_time);
+  time_diff = (std::time(NULL)-prev_move_time);
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
   

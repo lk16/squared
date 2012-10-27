@@ -40,7 +40,8 @@ struct game_control{
   /* used as stack */
   std::stack<board*> undo_stack,redo_stack;
   
-  
+  // to give gui time to update when two bots play vs each other
+  int last_move;
 };
 
 inline color game_control::turn() const

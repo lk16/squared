@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #ifndef NDEBUG
 
@@ -61,6 +62,19 @@ inline T abs(T x){
   return ((x<0) ? x : (-x));
 }
 
+template<class T>
+std::string tostr(T x){
+  std::stringstream buff;
+  buff << x;
+  return buff.str();
+}
 
+template<class T>
+T fromstr(std::string x){
+  std::stringstream buff(x);
+  T temp;
+  buff >> temp;
+  return temp;
+}
 
 #endif
