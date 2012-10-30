@@ -13,9 +13,7 @@ board* bot_base::do_move(const board* b)
 {
   int depth_limit,time_diff,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
-  board *res;
-  std::list<board> children;
-  std::list<board>::iterator it;
+  board *res,children[32];
   std::string text;
   
   nodes = 0;
@@ -24,27 +22,23 @@ board* bot_base::do_move(const board* b)
   
   
   depth_limit = (b->max_moves_left() <= max_endgame_depth) ? 60 : max_depth;
-  children = b->get_children();
-  move_count = children.size();
+  b->get_children(children,&move_count);
   assert(move_count>0);
   
   best_move_id = -1;
   res = NULL;
   
-  if(children.size()==1){
-    return new board(children.front());
+  if(move_count==1){
+    return new board(children[0]);
   } 
   
-  if(depth_limit - look_ahead > 3){
+  /*if(depth_limit - look_ahead > 3){
     sort_boards(children,look_ahead);
-  }
+  }*/
   
   
-  id = 0;
-  it = children.begin();
-  
-  while(it!=children.end()){
-    tmp_heur = alpha_beta(&*it,best_heur,6400,depth_limit);
+  for(id=0;id<move_count;id++){
+    tmp_heur = alpha_beta(children + id,best_heur,6400,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
@@ -53,7 +47,7 @@ board* bot_base::do_move(const board* b)
       /* TODO update statusbar msg */
       
       best_move_id = id;
-      res = new board(*it);
+      res = new board(children[id]);
     }
     else{
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
@@ -61,9 +55,6 @@ board* bot_base::do_move(const board* b)
       std::cout << text;
       /* TODO update statusbar msg */
     }
-    it++;
-    children.pop_front();
-    id++;
   }
 
   time_diff = (std::time(NULL)-prev_move_time);
@@ -79,7 +70,8 @@ board* bot_base::do_move(const board* b)
 
 int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
 {
-  std::list<board> children;
+  board children[32];
+  int move_count,id;
   board tmp;
   
   nodes++;
@@ -91,30 +83,28 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
     return heuristic(b);
   }
   
-  children = b->get_children();
-  if(children.empty()){
+  b->get_children(children,&move_count);
+  if(move_count==0){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
     return alpha_beta(&tmp,alpha,beta,depth_remaining/*-1*/);
   }
   
   if(b->turn == c){
-    while(!children.empty()){
-      alpha = max(alpha,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
+    for(id=0;id<move_count;id++){
+      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
-      children.pop_front();      
     }
     return alpha; 
   }
   else{
-    while(!children.empty()){
-      beta = min(beta,alpha_beta(&children.front(),alpha,beta,depth_remaining-1));
+    for(id=0;id<move_count;id++){
+      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
-      children.pop_front();
     }
     return beta;
   }
