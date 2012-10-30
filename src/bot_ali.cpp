@@ -40,11 +40,14 @@ int bot_ali::heuristic(const board* b)
       res -= location_value[location[i]];
     } 
   }
+  
+  /*
   res += mobility_factor * b->get_mobility(c);
   res -= mobility_factor * b->get_mobility(opponent(c));
-
-  res += disc_count_factor * b->count_discs(c);
-  res -= disc_count_factor * b->count_discs(opponent(c));
+*/
+  
+  res -= disc_count_factor * b->count_discs(c);
+  res += disc_count_factor * b->count_discs(opponent(c));
   
 
 

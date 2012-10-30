@@ -24,7 +24,6 @@ class bot_base{
   
   void sort_boards(std::list<board>& vec,int depth);
   
-  
 public:
   color c;
   

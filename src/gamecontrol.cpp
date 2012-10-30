@@ -8,7 +8,7 @@ game_control::game_control(main_window* _mw):
   current = new board();
   bot[BLACK] = NULL;
   bot[WHITE] = NULL; 
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),100);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
 }
 
 game_control::~game_control()
@@ -27,6 +27,7 @@ game_control::~game_control()
   if(bot[BLACK]) delete bot[BLACK];
   
 }
+
 
 void game_control::on_human_do_move(int x, int y)
 {
@@ -47,7 +48,9 @@ void game_control::on_bot_do_move()
   if(!current->has_moves(turn())){
     return;
   }
-  if(last_move == std::time(NULL)){
+  if(std::time(NULL) < last_move + 1){
+    /* wait before bot can start thinking */
+    mw->update_status_bar("My turn, thinking ...");
     return;
   }
   move = bot[turn()]->do_move(current);
@@ -88,7 +91,6 @@ void game_control::on_undo()
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
-    mw->update_fields();
   }  
   redo_stack.push(current);
   current = undo_stack.top();
@@ -105,7 +107,6 @@ void game_control::on_redo()
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
-    mw->update_fields();
   }
   undo_stack.push(current);
   current = redo_stack.top();
@@ -143,8 +144,14 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
+  if(current->test_game_ended()){
+    return true;
+  }
   if(bot[turn()]){
     on_bot_do_move();  
+  }
+  else{
+    mw->update_status_bar("It is your turn.");
   }
   return true;
 }

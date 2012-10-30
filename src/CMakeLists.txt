@@ -27,7 +27,6 @@ SET(objects
   bot_ali.cpp
   field.cpp
   gamecontrol.cpp
-  main.cpp
   mainwindow.cpp
 )
 
@@ -39,7 +38,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(../squared
   ${objects}
+  main.cpp
 )
+
 target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
 )

@@ -16,6 +16,7 @@ board* bot_base::do_move(const board* b)
   board *res;
   std::list<board> children;
   std::list<board>::iterator it;
+  std::string text;
   
   nodes = 0;
   prev_move_time = std::time(NULL);
@@ -46,12 +47,19 @@ board* bot_base::do_move(const board* b)
     tmp_heur = alpha_beta(&*it,best_heur,6400,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
-      std::cout << "move " << (id+1) << "/" << move_count << ": heuristic == " << best_heur << std::endl;
+      text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
+      text += tostr<int>(best_heur) + "\n";
+      std::cout << text;
+      /* TODO update statusbar msg */
+      
       best_move_id = id;
       res = new board(*it);
     }
     else{
-      std::cout << "move " << (id+1) << "/" << move_count << ": heuristic <= " << best_heur << std::endl;
+      text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
+      text += tostr<int>(best_heur) + "\n";
+      std::cout << text;
+      /* TODO update statusbar msg */
     }
     it++;
     children.pop_front();
