@@ -33,7 +33,7 @@ struct board{
   int count_moves(color c) const;
   
   /// gets all children from this board
-  std::list<board> get_children() const;
+  void get_children(board* array,int* move_count) const;
   
   /// counts number of discs of a given player
   int count_discs(color c) const;

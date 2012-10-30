@@ -134,19 +134,20 @@ void board::show() const
 #endif
 }
 
-std::list<board> board::get_children() const
+void board::get_children(board* array,int* move_count) const
 {
-  int x,y;
-  std::list<board> res;
-  
+  int x,y,i;
+ 
+  i=0;
   for(y=0;y<8;y++){
     for(x=0;x<8;x++){
       if(is_valid_move(x,y,turn)){
-        res.push_back(do_move(x,y));
+        array[i] = do_move(x,y);
+        i++;
       }
     }
   }
-  return res;
+  *move_count = i;
 }
 
 int board::count_flipped(int x, int y, color c) const
