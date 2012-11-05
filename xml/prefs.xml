@@ -34,7 +34,7 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="draw_indicator">True</property>
-                            <property name="group">radiobutton3</property>
+                            <property name="group">radiobutton2</property>
                           </object>
                           <packing>
                             <property name="position">0</property>
@@ -46,9 +46,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="active">True</property>
                             <property name="draw_indicator">True</property>
-                            <property name="group">radiobutton1</property>
                           </object>
                           <packing>
                             <property name="position">1</property>
@@ -95,7 +93,6 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="draw_indicator">True</property>
-                            <property name="group">radiobutton3</property>
                           </object>
                           <packing>
                             <property name="position">0</property>
@@ -107,8 +104,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
-                            <property name="active">True</property>
                             <property name="draw_indicator">True</property>
+                            <property name="group">radiobutton4</property>
                           </object>
                           <packing>
                             <property name="position">1</property>
