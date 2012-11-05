@@ -2,6 +2,7 @@
 #define SQUARED_GAMECONTROLL_HPP
 
 #include <stack>
+
 #include <glibmm/main.h>
 
 #include "bot_base.hpp"

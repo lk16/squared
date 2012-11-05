@@ -7,7 +7,7 @@ game_control::game_control(main_window* _mw):
 {
   current = new board();
   bot[BLACK] = NULL;
-  bot[WHITE] = new bot_ali(WHITE,7,15); 
+  bot[WHITE] = new bot_ali(WHITE,8,15); 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
 }
 
@@ -45,15 +45,19 @@ void game_control::on_human_do_move(int x, int y)
 void game_control::on_bot_do_move()
 {
   board *move;
+  bot_base *bot_to_move;
+  
+    
   if(!current->has_moves(turn())){
     return;
   }
+  mw->update_status_bar("My turn, thinking ...");
   if(std::time(NULL) < last_move + 1){
     /* wait before bot can start thinking */
-    mw->update_status_bar("My turn, thinking ...");
     return;
   }
-  move = bot[turn()]->do_move(current);
+  bot_to_move = bot[turn()];
+  move = bot_to_move->do_move(current);
   last_move = std::time(NULL);
   on_any_move(move);
 }

@@ -5,8 +5,6 @@
 #include <iostream>
 #include <vector>
 
-#include <glibmm/ustring.h>
-
 #include <gtkmm/aspectframe.h>
 #include <gtkmm/box.h>
 #include <gtkmm/dialog.h>
@@ -15,6 +13,7 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/table.h>
 #include <gtkmm/uimanager.h>
+#include <glibmm/ustring.h>
 #include <gtkmm/window.h>
 
 #include "gamecontrol.hpp"

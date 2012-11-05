@@ -2,16 +2,21 @@
 
 #include "mainwindow.hpp"
 
+void run_no_gui(){
+
+}
+
+
+
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   main_window window;
   
-  if(argc!=1){
-    std::cout << "Run without params!\n";
-    return 0;
+  if(argc>=2 && std::string(argv[1])=="no-gui"){
+    run_no_gui();
   }
-  
-  Gtk::Main::run(window);
-  
+  else{
+    Gtk::Main::run(window);
+  }
   return 0;
 }

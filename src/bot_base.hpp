@@ -30,7 +30,7 @@ public:
   /// constructor
   bot_base(color c,int max_depth,int max_endgame_depth);
   
-  /// function called by other classes to calculate and do best move
+  /// calculate and do best move
   board* do_move(const board* b);
   
   /// for timing purposes

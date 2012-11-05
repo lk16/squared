@@ -90,7 +90,7 @@ void main_window::init_ui(){
     ui_manager->add_ui_from_file(UI_PATH + "menus.xml");
   }
   catch(const Glib::Error& ex){
-    std::cerr << "Adding ui from 'main_window.xml' failed: " << ex.what();
+    std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what() << std::endl;
   }
   
   add(vbox);
