@@ -9,7 +9,7 @@ link_directories(
 )
 
   set(DEBUG_FLAGS
-    "-g -O0 -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing "
+    "-g -O2 -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing "
   )
 
   set(OPTIMIZING_FLAGS
@@ -19,7 +19,7 @@ link_directories(
 
 set(CMAKE_CXX_FLAGS 
   ${OPTIMIZING_FLAGS}
-# ${DEBUG_FLAGS}
+# ${DEBUG_FLAGS} 
 ) 
 
 SET(objects

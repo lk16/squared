@@ -40,7 +40,6 @@ const std::string IMAGE_PATH = "./images/";
 const std::string UI_PATH = "./xml/";
 
 
-
 enum color{
   BLACK = 0,
   WHITE = 1,

@@ -3,7 +3,7 @@
 bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
-  look_ahead(2),
+  look_ahead(3),
   c(_c),
   prev_move_time(std::time(NULL))
 {
@@ -32,12 +32,15 @@ board* bot_base::do_move(const board* b)
     return new board(moves[0]);
   } 
   
-  if(depth_limit - look_ahead > 3){
+  if(depth_limit - look_ahead >= 2){
+    std::cout << "Sorting... "; 
+    std::cout.flush();
     sort_boards(moves,move_count,look_ahead);
+    std::cout << "Done\n";
   }
   
   
-  for(id=0;id<move_count;id++){
+  for(id=0;(int)id<move_count;id++){
     tmp_heur = alpha_beta(moves + id,best_heur,6400,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
@@ -120,11 +123,12 @@ int bot_base::heuristic(const board* b)
 
 void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
 {
-  int heur[32],i;
   bool loop;
-  int best_heur = -6400;
+  int i,*heur,best_heur = -6400;
   
-  for(i=0;i<32;i++){
+  heur = new int[move_count];
+  
+  for(i=0;i<move_count;i++){
     heur[i] = alpha_beta(moves + i,best_heur,6400,depth_limit);
     if(heur[i] > best_heur){
       best_heur = heur[i];
@@ -132,16 +136,17 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
   }
   do{
     loop = false;
-    for(i=0;i<31;i++){
+    for(i=0;i<move_count-1;i++){
       if(heur[i] < heur[i+1]){
         std::swap(heur[i],heur[i+1]);
         std::swap(moves[i],moves[i+1]);
         loop = true;
       }
-      assert(heur[i] > heur[i+1]);
+      assert(heur[i] >= heur[i+1]);
     }
   }while(loop);
   
+  delete[] heur;
 }
   
   

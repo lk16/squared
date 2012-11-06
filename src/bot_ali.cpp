@@ -10,7 +10,7 @@ int bot_ali::heuristic(const board* b)
   int res,i;
   
   const static int disc_count_factor = 2;
-  const static int mobility_factor = 3;
+//  const static int mobility_factor = 3;
   const static int location_value[10] = {
     30,-1,-1,-1,-4,0,1,1,1,2
   };
@@ -41,10 +41,8 @@ int bot_ali::heuristic(const board* b)
     } 
   }
   
-  /*
-  res += mobility_factor * b->get_mobility(c);
-  res -= mobility_factor * b->get_mobility(opponent(c));
-*/
+//  res += mobility_factor * b->get_mobility(c);
+//  res -= mobility_factor * b->get_mobility(opponent(c));
   
   res -= disc_count_factor * b->count_discs(c);
   res += disc_count_factor * b->count_discs(opponent(c));
