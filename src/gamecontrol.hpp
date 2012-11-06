@@ -6,7 +6,6 @@
 #include <glibmm/main.h>
 
 #include "bot_base.hpp"
-#include "bot_random.hpp"
 #include "bot_ali.hpp"
 #include "board.hpp"
 
