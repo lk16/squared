@@ -10,7 +10,7 @@
 #include "shared.hpp"
 
 struct board{
-  std::bitset<64> discs[2];
+  std::bitset<TOTAL_FIELDS> discs[2];
   int id;
   color turn;
   
@@ -92,8 +92,16 @@ inline board::board()
 }
 
 inline void board::reset(){
-  discs[0] = 0ul | (1ul << (4*8+3)) | (1ul << (3*8+4));
-  discs[1] = 0ul | (1ul << (4*8+4)) | (1ul << (3*8+3));
+  
+  /* wipe all discs of the board */
+  discs[BLACK].reset();
+  discs[WHITE].reset();
+  
+  /* put starting pieces on board */
+  discs[BLACK].set(FIELD_SIZE*((FIELD_SIZE/2)  ) + (FIELD_SIZE/2)-1);
+  discs[BLACK].set(FIELD_SIZE*((FIELD_SIZE/2)-1) + (FIELD_SIZE/2)  );
+  discs[WHITE].set(FIELD_SIZE*((FIELD_SIZE/2)-1) + (FIELD_SIZE/2)-1);
+  discs[WHITE].set(FIELD_SIZE*((FIELD_SIZE/2)  ) + (FIELD_SIZE/2)  );
   
   turn = BLACK;
   id = -1;
@@ -121,16 +129,16 @@ inline void board::set_color(int x,int y,color c)
   assert(on_board(x,y));
   switch(c){
     case BLACK:
-      discs[WHITE].set(8*y+x,false);
-      discs[BLACK].set(8*y+x,true);
+      discs[WHITE].set(FIELD_SIZE*y+x,false);
+      discs[BLACK].set(FIELD_SIZE*y+x,true);
       break;
     case WHITE:
-      discs[BLACK].set(8*y+x,false);
-      discs[WHITE].set(8*y+x,true);
+      discs[BLACK].set(FIELD_SIZE*y+x,false);
+      discs[WHITE].set(FIELD_SIZE*y+x,true);
       break;
     case EMPTY:
-      discs[BLACK].set(8*y+x,false);
-      discs[WHITE].set(8*y+x,false);
+      discs[BLACK].set(FIELD_SIZE*y+x,false);
+      discs[WHITE].set(FIELD_SIZE*y+x,false);
       break;
     default:
       /* can never happen */
@@ -141,7 +149,7 @@ inline void board::set_color(int x,int y,color c)
 
 inline color board::get_color(int x, int y) const
 {
-  return discs[BLACK].test(8*y+x) ? BLACK : discs[WHITE].test(8*y+x) ? WHITE : EMPTY;
+  return discs[BLACK].test(FIELD_SIZE*y+x) ? BLACK : discs[WHITE].test(FIELD_SIZE*y+x) ? WHITE : EMPTY;
 }
 
 inline bool board::has_color(int x, int y, color c) const
@@ -151,14 +159,14 @@ inline bool board::has_color(int x, int y, color c) const
 
 inline bool board::on_board(int x, int y)
 {
-  return x>=0 && x<=7 && y>=0 && y<=7;
+  return x>=0 && x<FIELD_SIZE && y>=0 && y<FIELD_SIZE;
 }
 
 inline bool board::has_moves(color c) const
 {
   int x,y;
-  for(x=0;x<8;x++){
-    for(y=0;y<8;y++){
+  for(x=0;x<FIELD_SIZE;x++){
+    for(y=0;y<FIELD_SIZE;y++){
       if(is_valid_move(x,y,c)) return true;
     }
   }
@@ -178,7 +186,7 @@ inline int board::count_discs(color c) const
 
 inline int board::max_moves_left() const
 {
-  return 64 - std::bitset<64>(discs[BLACK] | discs[WHITE]).count();
+  return TOTAL_FIELDS - std::bitset<TOTAL_FIELDS>(discs[BLACK] | discs[WHITE]).count();
 }
 
 

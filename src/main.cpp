@@ -3,7 +3,7 @@
 #include "mainwindow.hpp"
 
 void run_no_gui(){
-
+  NOT_IMPLEMENTED;
 }
 
 

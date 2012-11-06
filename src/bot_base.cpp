@@ -13,15 +13,15 @@ board* bot_base::do_move(const board* b)
 {
   int depth_limit,time_diff,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
-  board *res,moves[32];
+  board *res,moves[TOTAL_FIELDS/2];
   std::string text;
   
   nodes = 0;
   prev_move_time = std::time(NULL);
-  best_heur = -6400;
+  best_heur = MIN_HEURISTIC;
   
   
-  depth_limit = (b->max_moves_left() <= max_endgame_depth) ? 60 : max_depth;
+  depth_limit = (b->max_moves_left() <= max_endgame_depth) ? (TOTAL_FIELDS-4) : max_depth;
   b->get_children(moves,&move_count);
   assert(move_count>0);
   
@@ -41,7 +41,7 @@ board* bot_base::do_move(const board* b)
   
   
   for(id=0;(int)id<move_count;id++){
-    tmp_heur = alpha_beta(moves + id,best_heur,6400,depth_limit);
+    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
@@ -60,11 +60,17 @@ board* bot_base::do_move(const board* b)
     }
   }
 
+  /* scenario: bot can not prevent losing all discs */
+  if(!res){ 
+    /* just pick a move */
+    return new board(moves[0]);
+  }
+
+
   time_diff = (std::time(NULL)-prev_move_time);
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
   
-  assert(res);
   return res;
 }
 
@@ -124,12 +130,12 @@ int bot_base::heuristic(const board* b)
 void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
 {
   bool loop;
-  int i,*heur,best_heur = -6400;
+  int i,*heur,best_heur = MIN_HEURISTIC;
   
   heur = new int[move_count];
   
   for(i=0;i<move_count;i++){
-    heur[i] = alpha_beta(moves + i,best_heur,6400,depth_limit);
+    heur[i] = alpha_beta(moves + i,best_heur,MAX_HEURISTIC,depth_limit);
     if(heur[i] > best_heur){
       best_heur = heur[i];
     }

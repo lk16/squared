@@ -5,17 +5,17 @@
 #include "board.hpp"
 
 main_window::main_window():
-  table(8,8),
+  table(FIELD_SIZE,FIELD_SIZE),
   control(this),
   aspect_frame("",0.5,0.5,1),
-  fields(8,std::vector<field*>(8))
+  fields(FIELD_SIZE,std::vector<field*>(FIELD_SIZE))
 {
 
   init_ui();
 
  
-  for(int y=0;y<8;y++){ 
-    for(int x=0;x<8;x++){
+  for(int y=0;y<FIELD_SIZE;y++){ 
+    for(int x=0;x<FIELD_SIZE;x++){
       fields[x][y]=new field(this,x,y,IMAGE_PATH + "empty.png");
       table.attach(*fields[x][y],x,x+1,y,y+1);
     }
@@ -116,8 +116,8 @@ void main_window::on_menu_game_quit()
 
 main_window::~main_window()
 {
-  for(int y=0;y<8;y++){
-    for(int x=0;x<8;x++){
+  for(int y=0;y<FIELD_SIZE;y++){
+    for(int x=0;x<FIELD_SIZE;x++){
       delete fields[x][y];
     }
   }
@@ -141,8 +141,8 @@ void main_window::update_fields()
   
   b = control.current;
   
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
       switch(b->get_color(x,y)){
         case WHITE:
           imagefile = "white.png";
@@ -160,6 +160,7 @@ void main_window::update_fields()
           break;
         default:
           /* does never happen */
+          CRASH;
           break;
       }
       fields[x][y]->image.set(IMAGE_PATH + imagefile);

@@ -6,8 +6,8 @@ int board::count_moves(color c) const
   int x,y;
   
   res=0;
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
       if(is_valid_move(x,y,c)){
         res++;
       }
@@ -20,7 +20,7 @@ board board::do_move(int x, int y) const
 {
   int dx,dy,dist,curx,cury;
   board result(*this);
-  unsigned long mask;
+  std::bitset<TOTAL_FIELDS> mask;
     
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
@@ -39,7 +39,7 @@ board board::do_move(int x, int y) const
           break;
         }
         if(result.has_color(curx,cury,opponent(turn))){
-          mask |= (1ul << (8*cury + curx));
+          mask.set(FIELD_SIZE*cury + curx);
           continue;
         }
         if(result.has_color(curx,cury,turn)){
@@ -53,7 +53,7 @@ board board::do_move(int x, int y) const
     }
   }
   result.turn = opponent(result.turn);
-  result.discs[turn] |= (1ul << (8*y + x));
+  result.discs[turn].set(FIELD_SIZE*y + x);
   return result;
 }
 
@@ -105,10 +105,17 @@ void board::show() const
 #ifndef NDEBUG
   int x,y;
   
-  std::cout << "+-----------------+\n";
-  for(y=0;y<8;y++){
+  /* top line */
+  std::cout << "+-";
+  for(x=0;x<FIELD_SIZE;x++){
+    std::cout << "--";
+  }
+  std::cout << "+\n";
+  
+  /* middle */
+  for(y=0;y<FIELD_SIZE;y++){
     std::cout << "| ";
-    for(x=0;x<8;x++){
+    for(x=0;x<FIELD_SIZE;x++){
       switch(get_color(x,y)){
         case BLACK: 
           std::cout << "\033[31;1m@\033[0m";
@@ -130,7 +137,13 @@ void board::show() const
     }
     std::cout << "|\n";
   }
-  std::cout << "+-----------------+\n";
+  
+  /* bottom line */
+  std::cout << "+-";
+  for(x=0;x<FIELD_SIZE;x++){
+    std::cout << "--";
+  }
+  std::cout << "+\n";
 #endif
 }
 
@@ -139,8 +152,8 @@ void board::get_children(board* array,int* move_count) const
   int x,y,i;
  
   i=0;
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
       if(is_valid_move(x,y,turn)){
         array[i] = do_move(x,y);
         i++;
@@ -196,8 +209,8 @@ int board::get_mobility(color c) const
 {
   int x,y,res;
   res = 0;
-  for(x=0;x<8;x++){
-    for(y=0;y<8;y++){
+  for(x=0;x<FIELD_SIZE;x++){
+    for(y=0;y<FIELD_SIZE;y++){
       res += count_flipped(x,y,c);
     }
   }
@@ -212,10 +225,10 @@ int board::get_disc_diff() const
   count[WHITE] = count_discs(WHITE);
   
   if(count[BLACK] > count[WHITE]){ /* black wins */
-    return ((-64)+(2*count[WHITE]));
+    return ((-TOTAL_FIELDS)+(2*count[WHITE]));
   }
-  else if(count[BLACK] < count[WHITE]){ /* white wins */
-    return (64-(2*count[BLACK]));
+  else if(count[WHITE] > count[BLACK]){ /* white wins */
+    return (TOTAL_FIELDS-(2*count[BLACK]));
   }
   else{ /* draw */
     return 0;
