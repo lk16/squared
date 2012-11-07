@@ -3,12 +3,15 @@
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
-  last_move(std::time(NULL))
+  last_move(std::time(NULL)),
+  current(new board())
 {
-  current = new board();
-  bot[BLACK] = NULL;
-  bot[WHITE] = new bot_ali(WHITE,7,15); 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
+  
+  bot[WHITE] = bot[BLACK] = NULL;
+  
+  
+  set_bot(new bot_ali(BLACK,7,15));
 }
 
 game_control::~game_control()
@@ -160,4 +163,11 @@ bool game_control::timeout_handler()
   return true;
 }
 
+void game_control::set_bot(bot_base* bb)
+{
+  if(bot[bb->c]){
+    delete bot[bb->c];
+  }
+  bot[bb->c] = bb;
+}
 

@@ -17,6 +17,8 @@ struct game_control{
   game_control(main_window* mw);
   ~game_control();
 
+  void set_bot(bot_base* bot);
+  
   void on_new_game();
   void on_game_ended();
   
