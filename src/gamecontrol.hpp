@@ -39,7 +39,6 @@ struct game_control{
   main_window* mw;
   board* current;
   
-  /* used as stack */
   std::stack<board*> undo_stack,redo_stack;
   
   // to give gui time to update when two bots play vs each other

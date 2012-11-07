@@ -142,7 +142,7 @@ inline void board::set_color(int x,int y,color c)
       break;
     default:
       /* can never happen */
-      assert(0);
+      CRASH;
       break;
   }
 }
@@ -175,6 +175,9 @@ inline bool board::has_moves(color c) const
 
 inline bool board::test_game_ended() const
 {
+  if(std::bitset<64>(discs[WHITE].to_ulong() | discs[BLACK].to_ulong()).count() == 64){
+    return true;
+  }
   return (!has_moves(WHITE)) && (!has_moves(BLACK));
 }
 

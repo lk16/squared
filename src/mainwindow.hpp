@@ -1,5 +1,5 @@
-#ifndef GTKMM_EXAMPLE_HELLOWORLD_H
-#define GTKMM_EXAMPLE_HELLOWORLD_H
+#ifndef SQUARED_MAIN_WINDOW_HPP
+#define SQUARED_MAIN_WINDOW_HPP
 
 #include <cassert>
 #include <iostream>

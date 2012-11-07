@@ -18,7 +18,7 @@ link_directories(
 
 
 set(CMAKE_CXX_FLAGS 
- ${OPTIMIZING_FLAGS}
+  ${OPTIMIZING_FLAGS}
 # ${DEBUG_FLAGS} 
 ) 
 
