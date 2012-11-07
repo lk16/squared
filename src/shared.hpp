@@ -33,13 +33,23 @@
   
 #endif
 
-
-
-
+/// subdirectory where images are stored
 const std::string IMAGE_PATH = "./images/";
+
+/// subdirectory where xml files containing ui are stored
 const std::string UI_PATH = "./xml/";
 
+/// size of othello field, assuming width==height
+const int FIELD_SIZE = 8;
 
+/// total number of fields 
+const int TOTAL_FIELDS = FIELD_SIZE*FIELD_SIZE;
+
+/// heighest possible heuristic value
+const int MAX_HEURISTIC =  100 * TOTAL_FIELDS;
+
+/// lowest possible heuristic value
+const int MIN_HEURISTIC = -100 * TOTAL_FIELDS;
 
 enum color{
   BLACK = 0,
