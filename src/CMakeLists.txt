@@ -23,7 +23,6 @@ set(CMAKE_CXX_FLAGS ${OPTIMIZING_FLAGS})
 SET(objects
   board.cpp
   bot_base.cpp
-  bot_random.cpp
   bot_ali.cpp
   field.cpp
   gamecontrol.cpp

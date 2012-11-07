@@ -6,7 +6,6 @@
 #include <glibmm/main.h>
 
 #include "bot_base.hpp"
-#include "bot_random.hpp"
 #include "bot_ali.hpp"
 #include "board.hpp"
 
@@ -38,7 +37,6 @@ struct game_control{
   main_window* mw;
   board* current;
   
-  /* used as stack */
   std::stack<board*> undo_stack,redo_stack;
   
   // to give gui time to update when two bots play vs each other
