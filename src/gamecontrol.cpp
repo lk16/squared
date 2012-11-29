@@ -6,8 +6,8 @@ game_control::game_control(main_window* _mw):
   last_move(std::time(NULL))
 {
   current = new board();
-  bot[BLACK] = NULL;
-  bot[WHITE] = new bot_ali(WHITE,8,15); 
+  bot[BLACK] = new bot_ali(BLACK,8,15);
+  bot[WHITE] = NULL; 
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
 }
 
