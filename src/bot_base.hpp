@@ -30,11 +30,16 @@ public:
   /// constructor
   bot_base(color c,int max_depth,int max_endgame_depth);
   
-  /// calculate and do best move
-  board* do_move(const board* b);
+  /// calculate best move of b and put it in res
+  void do_move(const board* b,board* res);
   
   /// for timing purposes
-  int nodes,prev_move_time;  
+  long long nodes;
+  int prev_move_time;  
+  
+  
+  /// for thread purposes
+  bot_state state;
 };
 
 #endif

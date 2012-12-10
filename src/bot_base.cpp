@@ -5,16 +5,20 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_endgame_depth(_max_endgame_depth),
   look_ahead(3),
   c(_c),
-  prev_move_time(std::time(NULL))
+  prev_move_time(std::time(NULL)),
+  state(BOT_STATE_NOT_STARTED)
 {
 }
 
-board* bot_base::do_move(const board* b) 
+void bot_base::do_move(const board* b,board* res) 
 {
   int depth_limit,time_diff,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
-  board *res,moves[TOTAL_FIELDS/2];
+  board moves[TOTAL_FIELDS/2];
   std::string text;
+  
+  assert(state==BOT_STATE_NOT_STARTED);
+  state = BOT_STATE_CALCULATING;
   
   nodes = 0;
   prev_move_time = std::time(NULL);
@@ -29,7 +33,8 @@ board* bot_base::do_move(const board* b)
   res = NULL;
   
   if(move_count==1){
-    return new board(moves[0]);
+    *res = moves[0];
+    return;
   } 
   
   if(depth_limit - look_ahead >= 2){
@@ -50,7 +55,7 @@ board* bot_base::do_move(const board* b)
       /* TODO update statusbar msg */
       
       best_move_id = id;
-      res = new board(moves[id]);
+      *res = moves[id];
     }
     else{
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
@@ -60,10 +65,9 @@ board* bot_base::do_move(const board* b)
     }
   }
 
-  /* scenario: bot can not prevent losing all discs */
-  if(!res){ 
-    /* just pick a move */
-    return new board(moves[0]);
+  /* bot can not prevent losing all discs -> just pick a move */
+  if(best_heur == MIN_HEURISTIC){ 
+    *res = moves[0];
   }
 
 
@@ -71,7 +75,7 @@ board* bot_base::do_move(const board* b)
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
   
-  return res;
+  state = BOT_STATE_FINISHED;
 }
 
 
@@ -123,7 +127,7 @@ int bot_base::heuristic(const board* b)
 {
   b = NULL; /* prevent compiler complaints */
   std::cout << "This is bot_base::heuristic(). Don't call me! Call my superclass instead! \n";
-  assert(false);
+  CRASH;
   return 0;
 }
 

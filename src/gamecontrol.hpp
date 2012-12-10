@@ -2,6 +2,7 @@
 #define SQUARED_GAMECONTROLL_HPP
 
 #include <stack>
+#include <thread>
 
 #include <glibmm/main.h>
 
@@ -18,6 +19,7 @@ struct game_control{
   ~game_control();
 
   void set_bot(bot_base* bot);
+  void remove_bot(color col);
   
   void on_new_game();
   void on_game_ended();
@@ -33,7 +35,7 @@ struct game_control{
   
   color turn() const;
   
-  /* NULL pointer means human player */
+  /// NULL pointer means human player 
   bot_base* bot[2]; 
   
   main_window* mw;
@@ -41,8 +43,8 @@ struct game_control{
   
   std::stack<board*> undo_stack,redo_stack;
   
-  // to give gui time to update when two bots play vs each other
-  int last_move;
+  /// in this thread bots will calculate the best move
+  std::thread bot_thread;
 };
 
 inline color game_control::turn() const
