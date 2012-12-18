@@ -9,7 +9,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,5,15));
+  set_bot(new bot_ali(BLACK,7,15));
 }
 
 game_control::~game_control()
@@ -49,24 +49,13 @@ void game_control::on_bot_do_move()
   bot_base *bot_to_move;
   
   move = new board;
+  bot_to_move = bot[turn()];
     
   if(!current->has_moves(turn())){
     return;
   }
-  bot_to_move = bot[turn()];
-  switch(bot_to_move->state){
-    case BOT_STATE_NOT_STARTED:
-      bot_thread = std::thread(&bot_base::do_move,bot_to_move,current,move);
-      mw->update_status_bar("My turn, thinking ...");
-      break;
-    case BOT_STATE_CALCULATING:
-      /* bot is not finished yet, wait for next time-out */
-      break;
-    case BOT_STATE_FINISHED:
-      bot_thread.join();
-      on_any_move(move); 
-      bot_to_move->state = BOT_STATE_NOT_STARTED;
-  }
+  bot_to_move->do_move(current,move);
+  on_any_move(move); 
 }
 
 void game_control::on_any_move(board* next)

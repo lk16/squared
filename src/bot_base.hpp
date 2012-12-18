@@ -37,9 +37,6 @@ public:
   long long nodes;
   int prev_move_time;  
   
-  
-  /// for thread purposes
-  bot_state state;
 };
 
 #endif

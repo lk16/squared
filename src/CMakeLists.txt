@@ -9,7 +9,7 @@ link_directories(
 )
 
   set(DEBUG_FLAGS
-    "-std=c++0x -g -O2 -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+    "-std=c++0x -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
   )
 
   set(OPTIMIZING_FLAGS

@@ -41,7 +41,6 @@ int bot_ali::heuristic(const board* b)
     else if(b->discs[opponent(c)].to_ulong() & (1ul << (xsquares[i]))){
       res -= xsquare_factor;
     }
-    
   }
     
   res -= disc_count_factor * b->count_discs(c);

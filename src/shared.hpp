@@ -57,13 +57,6 @@ enum color{
   EMPTY = 2
 };
 
-enum bot_state{
-  BOT_STATE_NOT_STARTED,
-  BOT_STATE_CALCULATING,
-  BOT_STATE_FINISHED  
-};
-
-
 inline color opponent(color c){
   assert(c==WHITE || c==BLACK);
   return ((c==BLACK) ? WHITE : BLACK);

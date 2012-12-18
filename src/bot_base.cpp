@@ -5,8 +5,7 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_endgame_depth(_max_endgame_depth),
   look_ahead(3),
   c(_c),
-  prev_move_time(std::time(NULL)),
-  state(BOT_STATE_NOT_STARTED)
+  prev_move_time(std::time(NULL))
 {
 }
 
@@ -16,9 +15,6 @@ void bot_base::do_move(const board* b,board* res)
   unsigned int id,best_move_id;
   board moves[TOTAL_FIELDS/2];
   std::string text;
-  
-  assert(state==BOT_STATE_NOT_STARTED);
-  state = BOT_STATE_CALCULATING;
   
   nodes = 0;
   prev_move_time = std::time(NULL);
@@ -30,7 +26,6 @@ void bot_base::do_move(const board* b,board* res)
   assert(move_count>0);
   
   best_move_id = -1;
-  res = NULL;
   
   if(move_count==1){
     *res = moves[0];
@@ -74,8 +69,6 @@ void bot_base::do_move(const board* b,board* res)
   time_diff = (std::time(NULL)-prev_move_time);
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
-  
-  state = BOT_STATE_FINISHED;
 }
 
 

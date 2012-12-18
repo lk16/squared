@@ -43,8 +43,6 @@ struct game_control{
   
   std::stack<board*> undo_stack,redo_stack;
   
-  /// in this thread bots will calculate the best move
-  std::thread bot_thread;
 };
 
 inline color game_control::turn() const
