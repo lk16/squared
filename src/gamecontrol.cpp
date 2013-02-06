@@ -3,12 +3,13 @@
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
-  last_move(std::time(NULL))
+  current(new board())
 {
-  current = new board();
-  bot[BLACK] = new bot_ali(BLACK,8,15);
-  bot[WHITE] = NULL; 
+  bot[WHITE] = bot[BLACK] = NULL;
+  
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
+  
+  set_bot(new bot_ali(WHITE,12,17));
 }
 
 game_control::~game_control()
@@ -47,19 +48,14 @@ void game_control::on_bot_do_move()
   board *move;
   bot_base *bot_to_move;
   
+  move = new board;
+  bot_to_move = bot[turn()];
     
   if(!current->has_moves(turn())){
     return;
   }
-  mw->update_status_bar("My turn, thinking ...");
-  if(std::time(NULL) < last_move + 1){
-    /* wait before bot can start thinking */
-    return;
-  }
-  bot_to_move = bot[turn()];
-  move = bot_to_move->do_move(current);
-  last_move = std::time(NULL);
-  on_any_move(move);
+  bot_to_move->do_move(current,move);
+  on_any_move(move); 
 }
 
 void game_control::on_any_move(board* next)
@@ -160,4 +156,18 @@ bool game_control::timeout_handler()
   return true;
 }
 
+void game_control::set_bot(bot_base* bb)
+{
+  if(bot[bb->c]){
+    delete bot[bb->c];
+  }
+  bot[bb->c] = bb;
+}
 
+void game_control::remove_bot(color col)
+{
+  if(bot[col]){
+    delete bot[col];
+    bot[col] = NULL;
+  }
+}

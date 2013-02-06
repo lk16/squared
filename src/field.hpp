@@ -21,8 +21,6 @@ struct field:
 
   field(main_window* par,int x,int y,const std::string& imagefile);
   
-  void update_image(const char* imagefile);
-  
   virtual bool on_button_press_event(GdkEventButton* event);
   
 };

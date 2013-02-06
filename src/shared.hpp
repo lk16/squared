@@ -17,8 +17,8 @@
   #define SHOW_VAR4(a,b,c,d) SHOW_VAR3(a,b,c); SHOW_VAR(d)
   #define PING std::cout << LOCATION << "PING!\n"
   #define CONTAINS_BUG std::cout << LOCATION << "Do not use this function, it contains bugs!\n"
-  #define NOT_IMPLEMENTED std::cout << LOCATION << "This is not implemented yet\n" 
-  #define CRASH std::cout << LOCATION << "I'm crashing!\n"; assert(false)
+  #define NOT_IMPLEMENTED std::cout << LOCATION << "This is not implemented yet!\n" 
+  #define CRASH std::cout << LOCATION << "I'm crashing!\n"; abort()
 
 #else
 
