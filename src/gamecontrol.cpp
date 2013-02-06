@@ -1,6 +1,9 @@
 #include "gamecontrol.hpp"
 #include "mainwindow.hpp"
 
+#include "bot_ali.hpp"
+#include "bot_bea.hpp"
+
 game_control::game_control(main_window* _mw):
   mw(_mw),
   current(new board())
@@ -9,7 +12,8 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,7,15));
+  set_bot(new bot_ali(WHITE,10,18));
+  set_bot(new bot_bea(BLACK,10,18));
 }
 
 game_control::~game_control()
@@ -56,6 +60,10 @@ void game_control::on_bot_do_move()
   }
   bot_to_move->do_move(current,move);
   on_any_move(move); 
+  
+  if(bot[BLACK] && bot[WHITE]){
+    current->show();
+  }
 }
 
 void game_control::on_any_move(board* next)

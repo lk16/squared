@@ -18,14 +18,15 @@ link_directories(
 
 
 set(CMAKE_CXX_FLAGS 
-# ${OPTIMIZING_FLAGS}
-  ${DEBUG_FLAGS} 
+  ${OPTIMIZING_FLAGS}
+ #${DEBUG_FLAGS} 
 ) 
 
 SET(objects
   board.cpp
   bot_base.cpp
   bot_ali.cpp
+  bot_bea.cpp
   field.cpp
   gamecontrol.cpp
   mainwindow.cpp

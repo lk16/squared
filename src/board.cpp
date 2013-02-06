@@ -102,7 +102,6 @@ bool board::is_valid_move(int x, int y, color c) const
 
 void board::show() const
 {
-#ifndef NDEBUG
   int x,y;
   
   /* top line */
@@ -144,7 +143,6 @@ void board::show() const
     std::cout << "--";
   }
   std::cout << "+\n";
-#endif
 }
 
 void board::get_children(board* array,int* move_count) const
