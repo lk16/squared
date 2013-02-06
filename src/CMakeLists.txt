@@ -26,6 +26,7 @@ SET(objects
   board.cpp
   bot_base.cpp
   bot_ali.cpp
+  bot_bea.cpp
   field.cpp
   gamecontrol.cpp
   mainwindow.cpp

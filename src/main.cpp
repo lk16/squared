@@ -3,7 +3,6 @@
 #include "mainwindow.hpp"
 
 void run_no_gui(){
- // I KNOW YOURE READING THIS
   board *b;
   bot_base* bots[2];
   std::string instring;
