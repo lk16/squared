@@ -175,7 +175,7 @@ inline bool board::has_moves(color c) const
 
 inline bool board::test_game_ended() const
 {
-  if(std::bitset<64>(discs[WHITE].to_ulong() | discs[BLACK].to_ulong()).count() == 64){
+  if(std::bitset<TOTAL_FIELDS>(discs[WHITE] | discs[BLACK]).count() == (unsigned int)TOTAL_FIELDS){
     return true;
   }
   return (!has_moves(WHITE)) && (!has_moves(BLACK));

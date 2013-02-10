@@ -1,7 +1,7 @@
 #include "bot_bea.hpp"
 
-bot_bea::bot_bea(color c, int max_depth, int max_endgame_depth):
-  bot_base(c, max_depth, max_endgame_depth)
+bot_bea::bot_bea(color _c, int _max_depth, int _max_endgame_depth):
+  bot_base(_c, _max_depth, _max_endgame_depth)
 {
   corners_mask.set(0 + FIELD_SIZE * 0);
   corners_mask.set(0 + FIELD_SIZE * (FIELD_SIZE-1));

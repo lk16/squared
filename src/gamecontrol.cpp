@@ -12,8 +12,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(WHITE,10,18));
-  set_bot(new bot_bea(BLACK,10,18));
+  set_bot(new bot_ali(WHITE,9,20));
 }
 
 game_control::~game_control()
@@ -44,7 +43,7 @@ void game_control::on_human_do_move(int x, int y)
   if(current->is_valid_move(x,y,turn())){
     move = new board(current->do_move(x,y));
     on_any_move(move);
-   }
+  }
 }
 
 void game_control::on_bot_do_move()

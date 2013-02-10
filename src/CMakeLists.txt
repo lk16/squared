@@ -9,17 +9,17 @@ link_directories(
 )
 
   set(DEBUG_FLAGS
-    "-std=c++0x -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+    "-std=c++0x -mtune=native -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
   )
 
   set(OPTIMIZING_FLAGS
-    "-std=c++0x -O3 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
+    "-std=c++0x -Wall -Wextra -mtune=native -O5 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
   )
 
 
 set(CMAKE_CXX_FLAGS 
   ${OPTIMIZING_FLAGS}
- #${DEBUG_FLAGS} 
+  #${DEBUG_FLAGS} 
 ) 
 
 SET(objects
