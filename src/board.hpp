@@ -11,7 +11,6 @@
 
 struct board{
   std::bitset<TOTAL_FIELDS> discs[2];
-  int id;
   color turn;
   
   /// initializes a board to starting position
@@ -26,8 +25,12 @@ struct board{
   /// resets the board to starting position
   void reset();
   
+  /// sets all bitset values. used for disc stability check
+  void set_all();
+  
   /// does move (x,y) for current turn
-  board do_move(int x,int y) const;
+  /// returns true if valid, false otherwise
+  bool do_move(int x,int y,board* result) const;
   
   /// counts the number of valid moves for color c
   int count_moves(color c) const;
@@ -38,14 +41,8 @@ struct board{
   /// counts number of discs of a given player
   int count_discs(color c) const;
 
-  /// tests whether move (x,y) is valid for the current turn
-  bool is_valid_move(int x,int y) const;
-  
-  /// tests whether move (x,y) is valid for color c
-  bool is_valid_move(int x,int y,color c) const;
-  
-  /// tests wheter color c has valid moves
-  bool has_moves(color c) const;
+  /// tests wheter current turn has valid moves
+  bool has_moves() const;
   
   /// returns maximum number of moves that could be done before the game is finished
   int max_moves_left() const;
@@ -104,14 +101,12 @@ inline void board::reset(){
   discs[WHITE].set(FIELD_SIZE*((FIELD_SIZE/2)  ) + (FIELD_SIZE/2)  );
   
   turn = BLACK;
-  id = -1;
 }
 
 inline board::board(const board& b)
 {
   discs[0] = b.discs[0];
   discs[1] = b.discs[1];
-  id = b.id;
   turn = b.turn;
 }
 
@@ -119,10 +114,16 @@ inline board& board::operator=(const board& b)
 {
   discs[0] = b.discs[0];
   discs[1] = b.discs[1];
-  id = b.id;
   turn = b.turn;
   return *this;
 }
+
+inline void board::set_all()
+{
+  discs[0].set();
+  discs[1].set();
+}
+
 
 inline void board::set_color(int x,int y,color c)
 {
@@ -162,23 +163,20 @@ inline bool board::on_board(int x, int y)
   return x>=0 && x<FIELD_SIZE && y>=0 && y<FIELD_SIZE;
 }
 
-inline bool board::has_moves(color c) const
-{
-  int x,y;
-  for(x=0;x<FIELD_SIZE;x++){
-    for(y=0;y<FIELD_SIZE;y++){
-      if(is_valid_move(x,y,c)) return true;
-    }
-  }
-  return false;
-}
-
 inline bool board::test_game_ended() const
 {
+  board copy;
+  
   if(std::bitset<TOTAL_FIELDS>(discs[WHITE] | discs[BLACK]).count() == (unsigned int)TOTAL_FIELDS){
     return true;
   }
-  return (!has_moves(WHITE)) && (!has_moves(BLACK));
+  if(has_moves()){
+    return false;
+  }
+  
+  copy = board(*this);
+  copy.turn = opponent(copy.turn);
+  return !has_moves();
 }
 
 inline int board::count_discs(color c) const

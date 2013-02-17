@@ -138,6 +138,7 @@ void main_window::update_fields()
   const board *b;
   int x,y;
   std::string imagefile;
+  board dummy;
   
   b = control.current;
   
@@ -151,7 +152,7 @@ void main_window::update_fields()
           imagefile = "black.png";
           break;
         case EMPTY:
-          if(b->is_valid_move(x,y,b->turn)){
+          if(b->do_move(x,y,&dummy)){
             imagefile = "move.png";
           }
           else{

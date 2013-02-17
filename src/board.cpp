@@ -1,33 +1,21 @@
 #include "board.hpp"
 
-int board::count_moves(color c) const
-{
-  int res;
-  int x,y;
-  
-  res=0;
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(is_valid_move(x,y,c)){
-        res++;
-      }
-    }
-  }
-  return res;
-}
-
-board board::do_move(int x, int y) const
+bool board::do_move(int x, int y,board* result) const
 {
   int dx,dy,dist,curx,cury;
-  board result(*this);
-  std::bitset<TOTAL_FIELDS> mask;
-    
+  *result = *this;
+  std::bitset<TOTAL_FIELDS> mask,tmp_mask;
+  
+  mask.reset();
+  tmp_mask.reset();
+  
+  
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
       if(!on_board(x+2*dx,y+2*dy) || (dx==0 && dy==0)){
         continue;
       }
-      mask = 0ul;
+      tmp_mask.reset();
       dist = 0;
       curx = x;
       cury = y;
@@ -35,74 +23,84 @@ board board::do_move(int x, int y) const
         dist++;
         curx += dx;
         cury += dy;
-        if(!on_board(curx,cury) || result.has_color(curx,cury,EMPTY)){
+        if(!on_board(curx,cury) || result->has_color(curx,cury,EMPTY)){
           break;
         }
-        if(result.has_color(curx,cury,opponent(turn))){
-          mask.set(FIELD_SIZE*cury + curx);
+        if(result->has_color(curx,cury,opponent(turn))){
+          tmp_mask.set(FIELD_SIZE*cury + curx);
           continue;
         }
-        if(result.has_color(curx,cury,turn)){
+        if(result->has_color(curx,cury,turn)){
           if(dist>=2){
-            result.discs[turn] |= mask;
-            result.discs[opponent(turn)] &= (~mask);
+            mask |= tmp_mask;
           }
           break;
         }
       }
     }
   }
-  result.turn = opponent(result.turn);
-  result.discs[turn].set(FIELD_SIZE*y + x);
-  return result;
-}
-
-bool board::is_valid_move(int x, int y) const
-{
-  return is_valid_move(x,y,turn);
-}
-
-
-bool board::is_valid_move(int x, int y, color c) const
-{
-  int dx,dy,dist,curx,cury;
   
-  if(!has_color(x,y,EMPTY)){
-    return false;
+  if(mask.any()){
+    mask.set(FIELD_SIZE*y + x);
+    result->discs[turn] |= mask;
+    result->discs[opponent(turn)] &= (~mask);
+    
+    result->turn = opponent(result->turn);
+    return true;
   }
-  for(dx=-1;dx<=1;dx++){
-    for(dy=-1;dy<=1;dy++){
-      if(!on_board(x+2*dx,y+2*dy)){
-        continue;
+  return false;
+}
+
+void board::get_children(board* array,int* move_count) const
+{
+  int x,y,i;
+  
+  i=0;
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
+      if(do_move(x,y,array+i)){
+        i++;
       }
-      if(dx!=0 || dy!=0){
-        dist = 0;
-        while(1){
-          dist++;
-          curx = x+dx*dist;
-          cury = y+dy*dist;
-          if(!on_board(curx,cury) || has_color(curx,cury,EMPTY)){
-            break;
-          }
-          if(has_color(curx,cury,opponent(c))){
-            continue;
-          }
-          if(has_color(curx,cury,c)){
-            if(dist>=2){
-              return true;
-            }
-            break;
-          }
-        }
+    }
+  }
+  *move_count = i;
+}
+
+int board::count_moves(color c) const
+{
+  int res,x,y;
+  board dummy;
+  res=0;
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
+      if(do_move(x,y,&dummy)){
+        res++;
+      }
+    }
+  }
+  return res;
+}
+
+
+bool board::has_moves() const
+{
+  int x,y;
+  board dummy;
+  for(y=0;y<FIELD_SIZE;y++){
+    for(x=0;x<FIELD_SIZE;x++){
+      if(do_move(x,y,&dummy)){
+        return true;
       }
     }
   }
   return false;
 }
 
+
 void board::show() const
 {
   int x,y;
+  board dummy;
   
   /* top line */
   std::cout << "+-";
@@ -123,7 +121,7 @@ void board::show() const
           std::cout << "\033[34;1m@\033[0m";
           break;
         case EMPTY: 
-          if(is_valid_move(x,y,turn)){
+          if(do_move(x,y,&dummy)){
             std::cout << '.';
             break;
           }  
@@ -143,22 +141,6 @@ void board::show() const
     std::cout << "--";
   }
   std::cout << "+\n";
-}
-
-void board::get_children(board* array,int* move_count) const
-{
-  int x,y,i;
- 
-  i=0;
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(is_valid_move(x,y,turn)){
-        array[i] = do_move(x,y);
-        i++;
-      }
-    }
-  }
-  *move_count = i;
 }
 
 int board::count_flipped(int x, int y, color c) const

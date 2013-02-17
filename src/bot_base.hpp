@@ -5,6 +5,7 @@
 #include <ctime>
 #include <list>
 #include <vector>
+#include <sys/time.h>
 
 #include "shared.hpp"
 #include "board.hpp"
@@ -17,10 +18,8 @@ class bot_base{
   virtual int heuristic(const board* b);
   
   /// calculates the heuristic for b using alpha beta pruning
-  int alpha_beta(const board* b,int alpha, int beta,int depth_remaining);
+  int alpha_beta(const board* b,int alpha, int beta,int depth_remaining,board* stability);
   
-  /// internal alpha beta function, returns index of best move
-  int alpha_beta(std::list<board>& vec,int moves_remaining);
   
   void sort_boards(board* moves,int move_count,int depth);
   

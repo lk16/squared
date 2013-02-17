@@ -40,4 +40,3 @@ int bot_ali::heuristic(const board* b)
   return res;
 }
 
-

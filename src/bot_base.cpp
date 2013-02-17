@@ -11,13 +11,17 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
 
 void bot_base::do_move(const board* b,board* res) 
 {
-  int depth_limit,time_diff,best_heur,tmp_heur,move_count;
+  int depth_limit,best_heur,tmp_heur,move_count,stable_diff;
   unsigned int id,best_move_id;
-  board moves[TOTAL_FIELDS/2];
+  board moves[TOTAL_FIELDS/2],stability;
   std::string text;
+  double time_diff;
+  struct timeval start,end;
+  
   
   nodes = 0;
   prev_move_time = std::time(NULL);
+  gettimeofday(&start,NULL);
   best_heur = MIN_HEURISTIC;
   
   
@@ -41,11 +45,15 @@ void bot_base::do_move(const board* b,board* res)
   
   
   for(id=0;(int)id<move_count;id++){
-    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
+    stability.set_all();
+    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit,&stability);
+    stable_diff = stability.discs[b->turn].count();
+    stable_diff -= stability.discs[opponent(b->turn)].count();
+    tmp_heur += (0 * stable_diff);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
-      text += tostr<int>(best_heur) + "\n";
+      text += tostr<int>(best_heur) + " [stable: " + tostr<int>(stable_diff) + "]\n";
       std::cout << text;
       /* TODO update statusbar msg */
       
@@ -54,7 +62,7 @@ void bot_base::do_move(const board* b,board* res)
     }
     else{
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
-      text += tostr<int>(best_heur) + "\n";
+      text += tostr<int>(best_heur) + " [stable: " + tostr<int>(stable_diff) + "]\n";
       std::cout << text;
       /* TODO update statusbar msg */
     }
@@ -65,16 +73,17 @@ void bot_base::do_move(const board* b,board* res)
     *res = moves[0];
   }
 
-
-  time_diff = (std::time(NULL)-prev_move_time);
+  gettimeofday(&end,NULL);  
+  time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
+  (start.tv_sec + (start.tv_usec / 1000000.0));
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
-  std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
+  std::cout << (int)(nodes/(time_diff==0.0 ? 1 : time_diff)) << " nodes / sec\n";
 }
 
 
 
 
-int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
+int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining,board* stability)
 {
   board children[32];
   int move_count,id;
@@ -82,9 +91,14 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   
   nodes++;
   
+  stability->discs[BLACK] &= b->discs[BLACK];
+  stability->discs[WHITE] &= b->discs[WHITE];
+   
+  
   if(b->test_game_ended()){
     return (c==WHITE ? 1 : -1) * 100 * b->get_disc_diff();
   }
+  
   if(depth_remaining==0){
     return heuristic(b);
   }
@@ -93,12 +107,12 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   if(move_count==0){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return alpha_beta(&tmp,alpha,beta,depth_remaining/*-1*/);
+    return alpha_beta(&tmp,alpha,beta,depth_remaining,stability);
   }
   
   if(b->turn == c){
     for(id=0;id<move_count;id++){
-      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1));
+      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1,stability));
       if(alpha>=beta){
         break;
       }
@@ -107,7 +121,7 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   }
   else{
     for(id=0;id<move_count;id++){
-      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1));
+      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1,stability));
       if(alpha>=beta){
         break;
       }
@@ -128,11 +142,12 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
 {
   bool loop;
   int i,*heur,best_heur = MIN_HEURISTIC;
+  board dummy;
   
   heur = new int[move_count];
   
   for(i=0;i<move_count;i++){
-    heur[i] = alpha_beta(moves + i,best_heur,MAX_HEURISTIC,depth_limit);
+    heur[i] = alpha_beta(moves + i,best_heur,MAX_HEURISTIC,depth_limit,&dummy);
     if(heur[i] > best_heur){
       best_heur = heur[i];
     }
