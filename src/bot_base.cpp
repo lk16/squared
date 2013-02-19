@@ -11,9 +11,9 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
 
 void bot_base::do_move(const board* b,board* res) 
 {
-  int depth_limit,best_heur,tmp_heur,move_count,stable_diff;
+  int depth_limit,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
-  board moves[TOTAL_FIELDS/2],stability;
+  board moves[TOTAL_FIELDS/2];
   std::string text;
   double time_diff;
   struct timeval start,end;
@@ -45,15 +45,11 @@ void bot_base::do_move(const board* b,board* res)
   
   
   for(id=0;(int)id<move_count;id++){
-    stability.set_all();
-    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit,&stability);
-    stable_diff = stability.discs[b->turn].count();
-    stable_diff -= stability.discs[opponent(b->turn)].count();
-    tmp_heur += (0 * stable_diff);
+    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
-      text += tostr<int>(best_heur) + " [stable: " + tostr<int>(stable_diff) + "]\n";
+      text += tostr<int>(best_heur) + "\n";
       std::cout << text;
       /* TODO update statusbar msg */
       
@@ -62,7 +58,7 @@ void bot_base::do_move(const board* b,board* res)
     }
     else{
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
-      text += tostr<int>(best_heur) + " [stable: " + tostr<int>(stable_diff) + "]\n";
+      text += tostr<int>(best_heur) + "\n";
       std::cout << text;
       /* TODO update statusbar msg */
     }
@@ -77,23 +73,19 @@ void bot_base::do_move(const board* b,board* res)
   time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
   (start.tv_sec + (start.tv_usec / 1000000.0));
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
-  std::cout << (int)(nodes/(time_diff==0.0 ? 1 : time_diff)) << " nodes / sec\n";
+  std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
 }
 
 
 
 
-int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining,board* stability)
+int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
 {
   board children[32];
   int move_count,id;
   board tmp;
   
-  nodes++;
-  
-  stability->discs[BLACK] &= b->discs[BLACK];
-  stability->discs[WHITE] &= b->discs[WHITE];
-   
+  nodes++;   
   
   if(b->test_game_ended()){
     return (c==WHITE ? 1 : -1) * 100 * b->get_disc_diff();
@@ -107,12 +99,12 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining,
   if(move_count==0){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return alpha_beta(&tmp,alpha,beta,depth_remaining,stability);
+    return alpha_beta(&tmp,alpha,beta,depth_remaining);
   }
   
   if(b->turn == c){
     for(id=0;id<move_count;id++){
-      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1,stability));
+      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
@@ -121,7 +113,7 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining,
   }
   else{
     for(id=0;id<move_count;id++){
-      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1,stability));
+      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1));
       if(alpha>=beta){
         break;
       }
@@ -142,12 +134,11 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
 {
   bool loop;
   int i,*heur,best_heur = MIN_HEURISTIC;
-  board dummy;
   
   heur = new int[move_count];
   
   for(i=0;i<move_count;i++){
-    heur[i] = alpha_beta(moves + i,best_heur,MAX_HEURISTIC,depth_limit,&dummy);
+    heur[i] = alpha_beta(moves + i,best_heur,MAX_HEURISTIC,depth_limit);
     if(heur[i] > best_heur){
       best_heur = heur[i];
     }
@@ -166,5 +157,6 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
   
   delete[] heur;
 }
-  
+
+
   

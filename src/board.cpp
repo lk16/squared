@@ -2,13 +2,16 @@
 
 bool board::do_move(int x, int y,board* result) const
 {
-  int dx,dy,dist,curx,cury;
+  int dx,dy,curx,cury;
   *result = *this;
   std::bitset<TOTAL_FIELDS> mask,tmp_mask;
   
   mask.reset();
   tmp_mask.reset();
   
+  if(discs[BLACK].test(y*FIELD_SIZE+x) || discs[WHITE].test(y*FIELD_SIZE+x)){
+    return false;
+  }
   
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
@@ -16,11 +19,9 @@ bool board::do_move(int x, int y,board* result) const
         continue;
       }
       tmp_mask.reset();
-      dist = 0;
       curx = x;
       cury = y;
       while(1){
-        dist++;
         curx += dx;
         cury += dy;
         if(!on_board(curx,cury) || result->has_color(curx,cury,EMPTY)){
@@ -31,7 +32,7 @@ bool board::do_move(int x, int y,board* result) const
           continue;
         }
         if(result->has_color(curx,cury,turn)){
-          if(dist>=2){
+          if(tmp_mask.any()){
             mask |= tmp_mask;
           }
           break;
@@ -66,7 +67,7 @@ void board::get_children(board* array,int* move_count) const
   *move_count = i;
 }
 
-int board::count_moves(color c) const
+int board::count_moves() const
 {
   int res,x,y;
   board dummy;
@@ -215,5 +216,43 @@ int board::get_disc_diff() const
   }
 }
 
+void board::oneliner(char* out) const
+{  
+  char* cur = out;
+  int i;
+  for(i=0;i<TOTAL_FIELDS;i++){
+    switch(get_color(i/FIELD_SIZE,i%FIELD_SIZE)){
+      case WHITE:
+        *cur = 'o';
+        break;
+      case BLACK:
+        *cur = 'x';
+        break;
+      case EMPTY:
+        *cur = '.';
+        break;
+    }
+    cur++;
+  }
+  *cur = '\0';
+}
 
+board::board(const char* in)
+{
+  const char* cur = in;
+  int i;
+  for(i=0;i<TOTAL_FIELDS;i++){
+    switch(*cur){
+      case WHITE:
+        discs[WHITE].set(i);
+        break;
+      case BLACK:
+        discs[BLACK].set(i);
+        break;
+      case EMPTY:
+        break;
+    }
+    cur++;
+  }
+}
 

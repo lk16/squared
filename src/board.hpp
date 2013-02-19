@@ -19,6 +19,9 @@ struct board{
   /// copies a board
   board(const board& b);
   
+  /// create board based on oneliner output
+  board(const char* in);
+  
   /// assigns a board from b
   board& operator=(const board& b);
   
@@ -33,7 +36,7 @@ struct board{
   bool do_move(int x,int y,board* result) const;
   
   /// counts the number of valid moves for color c
-  int count_moves(color c) const;
+  int count_moves() const;
   
   /// gets all children from this board
   void get_children(board* array,int* move_count) const;
@@ -74,6 +77,10 @@ struct board{
   /// returns disc count difference, positive means white has more
   int get_disc_diff() const;
   
+  /// convert to one line for readable 
+  void oneliner(char* out) const;
+  
+
 };
 
 

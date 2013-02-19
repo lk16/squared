@@ -2,7 +2,6 @@
 #include "mainwindow.hpp"
 
 #include "bot_ali.hpp"
-#include "bot_bea.hpp"
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
@@ -12,7 +11,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,6,16));
+  set_bot(new bot_ali(BLACK,8,16));
 }
 
 game_control::~game_control()
@@ -54,21 +53,23 @@ void game_control::on_bot_do_move()
   
   move = new board;
   bot_to_move = bot[turn()];
-    
+  
+  if(bot[BLACK] && bot[WHITE]){
+    current->show();
+  }
+
   if(!current->has_moves()){
     return;
   }
   bot_to_move->do_move(current,move);
   on_any_move(move); 
   
-  if(bot[BLACK] && bot[WHITE]){
-    current->show();
-  }
 }
 
 void game_control::on_any_move(board* next)
 {
   board copy;
+  char oneliner[TOTAL_FIELDS+1];
   
   while(!redo_stack.empty()){
     delete redo_stack.top();
@@ -78,6 +79,9 @@ void game_control::on_any_move(board* next)
   
   current = next;
   mw->update_fields();
+  
+  next->oneliner(oneliner);  
+  std::cout << "Oneliner: " << oneliner << std::endl;
   
   if(!current->has_moves()){
     copy = *next;
