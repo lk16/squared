@@ -16,8 +16,11 @@
 #include <glibmm/ustring.h>
 #include <gtkmm/window.h>
 
-#include "gamecontrol.hpp"
-#include "shared.hpp"
+#include "bots/bot_ali.hpp"
+#include "game/gamecontrol.hpp"
+#include "game/util.hpp"
+#include "game/board.hpp"
+#include "gui/field.hpp"
 
 struct field;
 class board;

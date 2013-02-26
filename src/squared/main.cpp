@@ -1,6 +1,6 @@
 #include <gtkmm.h>
 
-#include "mainwindow.hpp"
+#include "gui/mainwindow.hpp"
 
 void run_no_gui(){
   board *b;

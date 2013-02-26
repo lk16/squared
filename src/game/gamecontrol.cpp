@@ -1,7 +1,5 @@
 #include "gamecontrol.hpp"
-#include "mainwindow.hpp"
-
-#include "bot_ali.hpp"
+#include "gui/mainwindow.hpp"
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
@@ -11,7 +9,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,8,16));
+  set_bot(new bot_ali(BLACK,1,14));
 }
 
 game_control::~game_control()
@@ -32,7 +30,7 @@ game_control::~game_control()
 }
 
 
-void game_control::on_human_do_move(int x, int y)
+void game_control::on_human_do_move(int field_id)
 {
   board *move;
   
@@ -41,7 +39,7 @@ void game_control::on_human_do_move(int x, int y)
   if(bot[turn()]){
     return;
   }  
-  if(current->do_move(x,y,move)){
+  if(current->do_move(field_id,move)){
     on_any_move(move);
   }
 }

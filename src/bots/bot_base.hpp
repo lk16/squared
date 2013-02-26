@@ -7,8 +7,8 @@
 #include <vector>
 #include <sys/time.h>
 
-#include "shared.hpp"
-#include "board.hpp"
+#include "game/util.hpp"
+#include "game/board.hpp"
 
 class bot_base{
   

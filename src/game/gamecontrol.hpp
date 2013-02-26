@@ -1,13 +1,14 @@
-#ifndef SQUARED_GAMECONTROLL_HPP
-#define SQUARED_GAMECONTROLL_HPP
+#ifndef SQUARED_GAMECONTROL_HPP
+#define SQUARED_GAMECONTROL_HPP
 
 #include <stack>
 #include <thread>
 
 #include <glibmm/main.h>
 
-#include "bot_base.hpp"
-#include "board.hpp"
+#include "bots/bot_base.hpp"
+#include "bots/bot_ali.hpp"
+#include "game/board.hpp"
 
 
 class main_window;
@@ -26,7 +27,7 @@ struct game_control{
   void on_undo();
   void on_redo();
   
-  void on_human_do_move(int x,int y);
+  void on_human_do_move(int field_id);
   void on_bot_do_move();
   void on_any_move(board* next);
   

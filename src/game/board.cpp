@@ -1,21 +1,26 @@
 #include "board.hpp"
 
-bool board::do_move(int x, int y,board* result) const
+bool board::do_move(int field_id,board* result) const
 {
-  int dx,dy,curx,cury;
+  
+  int x,y,dx,dy,curx,cury;
   *result = *this;
   std::bitset<TOTAL_FIELDS> mask,tmp_mask;
   
   mask.reset();
   tmp_mask.reset();
   
-  if(discs[BLACK].test(y*FIELD_SIZE+x) || discs[WHITE].test(y*FIELD_SIZE+x)){
+  if(discs[BLACK].test(field_id) || discs[WHITE].test(field_id)){
     return false;
   }
   
+  x = field_id%FIELD_SIZE;
+  y = field_id/FIELD_SIZE;
+  
+  
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
-      if(!on_board(x+2*dx,y+2*dy) || (dx==0 && dy==0)){
+      if(!valid_coord(x+2*dx) || !valid_coord(y+2*dy) || (dx==0 && dy==0)){
         continue;
       }
       tmp_mask.reset();
@@ -24,14 +29,14 @@ bool board::do_move(int x, int y,board* result) const
       while(1){
         curx += dx;
         cury += dy;
-        if(!on_board(curx,cury) || result->has_color(curx,cury,EMPTY)){
+        if(!valid_coord(curx) || !valid_coord(cury) || result->has_color(cury*FIELD_SIZE+curx,EMPTY)){
           break;
         }
-        if(result->has_color(curx,cury,opponent(turn))){
+        if(result->has_color(cury*FIELD_SIZE+curx,opponent(turn))){
           tmp_mask.set(FIELD_SIZE*cury + curx);
           continue;
         }
-        if(result->has_color(curx,cury,turn)){
+        if(result->has_color(cury*FIELD_SIZE+curx,turn)){
           if(tmp_mask.any()){
             mask |= tmp_mask;
           }
@@ -42,7 +47,7 @@ bool board::do_move(int x, int y,board* result) const
   }
   
   if(mask.any()){
-    mask.set(FIELD_SIZE*y + x);
+    mask.set(field_id);
     result->discs[turn] |= mask;
     result->discs[opponent(turn)] &= (~mask);
     
@@ -54,14 +59,12 @@ bool board::do_move(int x, int y,board* result) const
 
 void board::get_children(board* array,int* move_count) const
 {
-  int x,y,i;
+  int field_id,i;
   
   i=0;
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(do_move(x,y,array+i)){
-        i++;
-      }
+  for(field_id=0;field_id<TOTAL_FIELDS;field_id++){
+    if(do_move(field_id,array+i)){
+      i++;
     }
   }
   *move_count = i;
@@ -69,14 +72,12 @@ void board::get_children(board* array,int* move_count) const
 
 int board::count_moves() const
 {
-  int res,x,y;
+  int res,field_id;
   board dummy;
   res=0;
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(do_move(x,y,&dummy)){
+  for(field_id=0;field_id<TOTAL_FIELDS;field_id++){
+    if(do_move(field_id,&dummy)){
         res++;
-      }
     }
   }
   return res;
@@ -85,13 +86,11 @@ int board::count_moves() const
 
 bool board::has_moves() const
 {
-  int x,y;
+  int field_id;
   board dummy;
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(do_move(x,y,&dummy)){
-        return true;
-      }
+  for(field_id=0;field_id<TOTAL_FIELDS;field_id++){
+    if(do_move(field_id,&dummy)){
+      return true;
     }
   }
   return false;
@@ -114,7 +113,7 @@ void board::show() const
   for(y=0;y<FIELD_SIZE;y++){
     std::cout << "| ";
     for(x=0;x<FIELD_SIZE;x++){
-      switch(get_color(x,y)){
+      switch(get_color(y*FIELD_SIZE+x)){
         case BLACK: 
           std::cout << "\033[31;1m@\033[0m";
           break;
@@ -122,7 +121,7 @@ void board::show() const
           std::cout << "\033[34;1m@\033[0m";
           break;
         case EMPTY: 
-          if(do_move(x,y,&dummy)){
+          if(do_move(y*FIELD_SIZE+x,&dummy)){
             std::cout << '.';
             break;
           }  
@@ -144,20 +143,25 @@ void board::show() const
   std::cout << "+\n";
 }
 
-int board::count_flipped(int x, int y, color c) const
+int board::count_flipped(int field_id, color c) const
 {
   
-  int dx,dy,dist,curx,cury;
+  int x,y,dx,dy,dist,curx,cury;
   int res;
   
   res = 0;
   
-  if(!has_color(x,y,EMPTY)){
+  if(!has_color(field_id,EMPTY)){
     return 0;
   }
+  
+  x = field_id%FIELD_SIZE;
+  y = field_id/FIELD_SIZE;
+  
+  
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
-      if(!on_board(x+2*dx,y+2*dy)){
+      if(!valid_coord(x+2*dx) || !valid_coord(y+2*dy)){
         continue;
       }
       if(dx!=0 || dy!=0){
@@ -168,13 +172,13 @@ int board::count_flipped(int x, int y, color c) const
           dist++;
           curx += dx;
           cury += dy;
-          if(!on_board(curx,cury) || has_color(curx,cury,EMPTY)){
+          if(!valid_coord(curx) || !valid_coord(cury) || has_color(cury*FIELD_SIZE+curx,EMPTY)){
             break;
           }
-          if(has_color(curx,cury,opponent(c))){
+          if(has_color(valid_coord(cury*FIELD_SIZE+curx),opponent(c))){
             continue;
           }
-          if(has_color(curx,cury,c)){
+          if(has_color(valid_coord(cury*FIELD_SIZE+curx),c)){
             // this is possible because we initialized dist at -1
             res += dist;
             break;
@@ -188,12 +192,10 @@ int board::count_flipped(int x, int y, color c) const
 
 int board::get_mobility(color c) const
 {
-  int x,y,res;
+  int field_id,res;
   res = 0;
-  for(x=0;x<FIELD_SIZE;x++){
-    for(y=0;y<FIELD_SIZE;y++){
-      res += count_flipped(x,y,c);
-    }
+  for(field_id=0;field_id<TOTAL_FIELDS;field_id++){
+    res += count_flipped(field_id,c);
   }
   return res;
 }
@@ -221,7 +223,7 @@ void board::oneliner(char* out) const
   char* cur = out;
   int i;
   for(i=0;i<TOTAL_FIELDS;i++){
-    switch(get_color(i/FIELD_SIZE,i%FIELD_SIZE)){
+    switch(get_color(i)){
       case WHITE:
         *cur = 'o';
         break;

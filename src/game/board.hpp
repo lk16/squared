@@ -7,7 +7,7 @@
 #include <list>
 #include <sstream>
 
-#include "shared.hpp"
+#include "game/util.hpp"
 
 struct board{
   std::bitset<TOTAL_FIELDS> discs[2];
@@ -31,9 +31,9 @@ struct board{
   /// sets all bitset values. used for disc stability check
   void set_all();
   
-  /// does move (x,y) for current turn
+  /// does move (field_id) for current turn
   /// returns true if valid, false otherwise
-  bool do_move(int x,int y,board* result) const;
+  bool do_move(int field_id,board* result) const;
   
   /// counts the number of valid moves for color c
   int count_moves() const;
@@ -56,20 +56,20 @@ struct board{
   /// returns the sum of flippable discs for each valid move of player c
   int get_mobility(color c) const;
   
-  /// returns number of flipped discs for move (x,y) and player c, if (x,y) is not valid, 0 is returned
-  int count_flipped(int x,int y,color c) const;
+  /// returns number of flipped discs for move (field_id) and player c, if (field_id) is not valid, 0 is returned
+  int count_flipped(int field_id,color c) const;
 
-  /// returns the color if disc (x,y)
-  color get_color(int x,int y) const;
+  /// returns the color if disc (field_id)
+  color get_color(int field_id) const;
   
-  /// tests whether disc (x,y) has color c
-  bool has_color(int x,int y,color c) const;
+  /// tests whether disc (field_id) has color c
+  bool has_color(int field_id,color c) const;
   
-  /// sets disc (x,y) to color c
-  void set_color(int x,int y,color c);
+  /// sets disc (field_id) to color c
+  void set_color(int field_id,color c);
 
-  /// tests whether (x,y) is on the board
-  static bool on_board(int x,int y);
+  /// tests whether  0 <= coord < FIELD_SIZE
+  static bool valid_coord(int coord);
     
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
@@ -132,21 +132,21 @@ inline void board::set_all()
 }
 
 
-inline void board::set_color(int x,int y,color c)
+inline void board::set_color(int field_id,color c)
 {
-  assert(on_board(x,y));
+  assert(on_board(field_id));
   switch(c){
     case BLACK:
-      discs[WHITE].set(FIELD_SIZE*y+x,false);
-      discs[BLACK].set(FIELD_SIZE*y+x,true);
+      discs[WHITE].set(field_id,false);
+      discs[BLACK].set(field_id,true);
       break;
     case WHITE:
-      discs[BLACK].set(FIELD_SIZE*y+x,false);
-      discs[WHITE].set(FIELD_SIZE*y+x,true);
+      discs[BLACK].set(field_id,false);
+      discs[WHITE].set(field_id,true);
       break;
     case EMPTY:
-      discs[BLACK].set(FIELD_SIZE*y+x,false);
-      discs[WHITE].set(FIELD_SIZE*y+x,false);
+      discs[BLACK].set(field_id,false);
+      discs[WHITE].set(field_id,false);
       break;
     default:
       /* can never happen */
@@ -155,19 +155,19 @@ inline void board::set_color(int x,int y,color c)
   }
 }
 
-inline color board::get_color(int x, int y) const
+inline color board::get_color(int field_id) const
 {
-  return discs[BLACK].test(FIELD_SIZE*y+x) ? BLACK : discs[WHITE].test(FIELD_SIZE*y+x) ? WHITE : EMPTY;
+  return discs[BLACK].test(field_id) ? BLACK : discs[WHITE].test(field_id) ? WHITE : EMPTY;
 }
 
-inline bool board::has_color(int x, int y, color c) const
+inline bool board::has_color(int field_id, color c) const
 {
-  return get_color(x,y)==c;
+  return get_color(field_id)==c;
 }
 
-inline bool board::on_board(int x, int y)
+inline bool board::valid_coord(int coord)
 {
-  return x>=0 && x<FIELD_SIZE && y>=0 && y<FIELD_SIZE;
+  return coord>=0 && coord<FIELD_SIZE;
 }
 
 inline bool board::test_game_ended() const

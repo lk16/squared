@@ -9,11 +9,11 @@ link_directories(
 )
 
   set(DEBUG_FLAGS
-    "-std=c++0x -mtune=native -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+    "-I .. -std=c++0x -mtune=native -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
   )
 
   set(OPTIMIZING_FLAGS
-    "-std=c++0x -Wall -Wextra -mtune=native -O5 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
+    "-I .. -std=c++0x -Wall -Wextra -mtune=native -O5 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
   )
 
 
@@ -23,12 +23,13 @@ set(CMAKE_CXX_FLAGS
 ) 
 
 SET(objects
-  board.cpp
-  bot_base.cpp
-  bot_ali.cpp
-  field.cpp
-  gamecontrol.cpp
-  mainwindow.cpp
+  bots/bot_ali.cpp
+  bots/bot_base.cpp
+  game/board.cpp
+  game/gamecontrol.cpp
+  gui/field.cpp
+  gui/mainwindow.cpp
+  squared/main.cpp
 )
 
 
@@ -39,10 +40,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(../squared
   ${objects}
-  main.cpp
 )
 
 target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
-  pthread
 )
