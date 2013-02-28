@@ -134,7 +134,7 @@ inline void board::set_all()
 
 inline void board::set_color(int field_id,color c)
 {
-  assert(on_board(field_id));
+  assert(valid_coord(field_id));
   switch(c){
     case BLACK:
       discs[WHITE].set(field_id,false);
