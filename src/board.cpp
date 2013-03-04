@@ -203,7 +203,7 @@ int board::count_flipped(int x, int y, color c) const
   return res;
 }
 
-int board::get_mobility(color c) const
+int board::mobility(color c) const
 {
   int x,y,res;
   res = 0;

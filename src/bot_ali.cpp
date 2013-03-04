@@ -17,26 +17,18 @@ bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
 
 int bot_ali::heuristic(const board* b)
 {
-  int res,i;
+  int res;
   const static int disc_count_factor = -1;
   const static int corner_factor = 15;
   const static int xsquare_factor = -2;
-  const static int move_count_factor = 3;
-  
-
   
   res = 0;
-  
   
   res += corner_factor * std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[c] & corners_mask).count();
   res -= corner_factor * std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[opponent(c)] & corners_mask).count();
   res += xsquare_factor* std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[c] & xsquares_mask).count();
   res -= xsquare_factor* std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[opponent(c)] & xsquares_mask).count();
-
-
-  //res += move_count_factor * b->count_moves(c);
-  //res -= move_count_factor * b->count_moves(opponent(c));
-    
+  
   res += disc_count_factor * b->count_discs(c);
   res -= disc_count_factor * b->count_discs(opponent(c));
   

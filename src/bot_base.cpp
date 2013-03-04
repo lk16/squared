@@ -83,7 +83,7 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   nodes++;
   
   if(b->test_game_ended()){
-    return (c==WHITE ? 1 : -1) * 100 * b->get_disc_diff();
+    return 100 * b->get_disc_diff();
   }
   if(depth_remaining==0){
     return heuristic(b);

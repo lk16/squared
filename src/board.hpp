@@ -54,7 +54,7 @@ struct board{
   bool test_game_ended() const;
   
   /// returns the sum of flippable discs for each valid move of player c
-  int get_mobility(color c) const;
+  int mobility(color c) const;
   
   /// returns number of flipped discs for move (x,y) and player c, if (x,y) is not valid, 0 is returned
   int count_flipped(int x,int y,color c) const;
@@ -78,12 +78,6 @@ struct board{
   int get_disc_diff() const;
   
 };
-
-
-
-
-
-
 
 
 inline board::board()
