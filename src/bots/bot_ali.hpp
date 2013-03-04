@@ -3,8 +3,8 @@
 
 #include <bitset>
 
-#include "shared.hpp"
-#include "bot_base.hpp"
+#include "game/util.hpp"
+#include "bots/bot_base.hpp"
 
 struct bot_ali:
   public bot_base

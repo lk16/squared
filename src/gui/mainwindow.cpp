@@ -1,8 +1,4 @@
 #include "mainwindow.hpp"
-#include "shared.hpp"
-#include "field.hpp"
-#include "gamecontrol.hpp"
-#include "board.hpp"
 
 main_window::main_window():
   table(FIELD_SIZE,FIELD_SIZE),
@@ -16,7 +12,7 @@ main_window::main_window():
  
   for(int y=0;y<FIELD_SIZE;y++){ 
     for(int x=0;x<FIELD_SIZE;x++){
-      fields[x][y]=new field(this,x,y,IMAGE_PATH + "empty.png");
+      fields[x][y]=new field(this,y*FIELD_SIZE+x,IMAGE_PATH + "empty.png");
       table.attach(*fields[x][y],x,x+1,y,y+1);
     }
   }
@@ -138,12 +134,13 @@ void main_window::update_fields()
   const board *b;
   int x,y;
   std::string imagefile;
+  board dummy;
   
   b = control.current;
   
   for(y=0;y<FIELD_SIZE;y++){
     for(x=0;x<FIELD_SIZE;x++){
-      switch(b->get_color(x,y)){
+      switch(b->get_color(y*FIELD_SIZE+x)){
         case WHITE:
           imagefile = "white.png";
           break;
@@ -151,7 +148,7 @@ void main_window::update_fields()
           imagefile = "black.png";
           break;
         case EMPTY:
-          if(b->is_valid_move(x,y,b->turn)){
+          if(b->do_move(y*FIELD_SIZE+x,&dummy)){
             imagefile = "move.png";
           }
           else{

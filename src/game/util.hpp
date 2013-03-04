@@ -1,5 +1,5 @@
-#ifndef SQUARED_SHARED_HPP
-#define SQUARED_SHARED_HPP
+#ifndef SQUARED_UTIL_HPP
+#define SQUARED_UTIL_HPP
 
 #include <cassert>
 #include <cstdlib>

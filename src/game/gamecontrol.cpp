@@ -1,9 +1,5 @@
 #include "gamecontrol.hpp"
-#include "mainwindow.hpp"
-
-#include "bot_ali.hpp"
-#include "bot_bea.hpp"
-#include "bot_cloe.hpp"
+#include "gui/mainwindow.hpp"
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
@@ -34,17 +30,18 @@ game_control::~game_control()
 }
 
 
-void game_control::on_human_do_move(int x, int y)
+void game_control::on_human_do_move(int field_id)
 {
   board *move;
+  
+  move = new board;
   
   if(bot[turn()]){
     return;
   }  
-  if(current->is_valid_move(x,y,turn())){
-    move = new board(current->do_move(x,y));
+  if(current->do_move(field_id,move)){
     on_any_move(move);
-   }
+  }
 }
 
 void game_control::on_bot_do_move()
@@ -54,20 +51,24 @@ void game_control::on_bot_do_move()
   
   move = new board;
   bot_to_move = bot[turn()];
-    
-  if(!current->has_moves(turn())){
+  
+  if(bot[BLACK] && bot[WHITE]){
+    current->show();
+  }
+
+  if(!current->has_moves()){
     return;
   }
   bot_to_move->do_move(current,move);
   on_any_move(move); 
   
-  if(bot[BLACK] && bot[WHITE]){
-    current->show();
-  }
 }
 
 void game_control::on_any_move(board* next)
 {
+  board copy;
+  char oneliner[TOTAL_FIELDS+1];
+  
   while(!redo_stack.empty()){
     delete redo_stack.top();
     redo_stack.pop();
@@ -77,8 +78,13 @@ void game_control::on_any_move(board* next)
   current = next;
   mw->update_fields();
   
-  if(!current->has_moves(turn())){
-    if(current->has_moves(opponent(turn()))){
+  next->oneliner(oneliner);  
+  std::cout << "Oneliner: " << oneliner << std::endl;
+  
+  if(!current->has_moves()){
+    copy = *next;
+    copy.turn = opponent(copy.turn);
+    if(copy.has_moves()){
       current->turn = opponent(turn());
       mw->update_fields();
     }

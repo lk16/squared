@@ -7,7 +7,8 @@
 #include <gtkmm/image.h>
 
 #include "mainwindow.hpp"
-#include "shared.hpp"
+#include "mainwindow.hpp"
+#include "game/util.hpp"
 
 class main_window;
 
@@ -15,11 +16,11 @@ struct field:
   public Gtk::EventBox
 {
   Gtk::Image image;
-  int x,y;
+  int field_id;
   main_window* parent;
   
 
-  field(main_window* par,int x,int y,const std::string& imagefile);
+  field(main_window* par,int field_id,const std::string& imagefile);
   
   virtual bool on_button_press_event(GdkEventButton* event);
   

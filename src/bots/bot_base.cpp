@@ -3,7 +3,7 @@
 bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
-  look_ahead(6),
+  look_ahead(5),
   c(_c),
   prev_move_time(std::time(NULL))
 {
@@ -11,13 +11,17 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
 
 void bot_base::do_move(const board* b,board* res) 
 {
-  int depth_limit,time_diff,best_heur,tmp_heur,move_count;
+  int depth_limit,best_heur,tmp_heur,move_count;
   unsigned int id,best_move_id;
   board moves[TOTAL_FIELDS/2];
   std::string text;
+  double time_diff;
+  struct timeval start,end;
+  
   
   nodes = 0;
   prev_move_time = std::time(NULL);
+  gettimeofday(&start,NULL);
   best_heur = MIN_HEURISTIC;
   
   
@@ -65,10 +69,11 @@ void bot_base::do_move(const board* b,board* res)
     *res = moves[0];
   }
 
-
-  time_diff = (std::time(NULL)-prev_move_time);
+  gettimeofday(&end,NULL);  
+  time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
+  (start.tv_sec + (start.tv_usec / 1000000.0));
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
-  std::cout << nodes/(time_diff==0 ? 1 : time_diff) << " nodes / sec\n";
+  std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
 }
 
 
@@ -80,11 +85,12 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   int move_count,id;
   board tmp;
   
-  nodes++;
+  nodes++;   
   
   if(b->test_game_ended()){
     return 100 * b->get_disc_diff();
   }
+  
   if(depth_remaining==0){
     return heuristic(b);
   }
@@ -93,7 +99,7 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   if(move_count==0){
     tmp = board(*b);
     tmp.turn = opponent(b->turn);
-    return alpha_beta(&tmp,alpha,beta,depth_remaining/*-1*/);
+    return alpha_beta(&tmp,alpha,beta,depth_remaining);
   }
   
   if(b->turn == c){
@@ -151,5 +157,6 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
   
   delete[] heur;
 }
-  
+
+
   
