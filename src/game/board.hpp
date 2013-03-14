@@ -262,12 +262,15 @@ inline unsigned long long board::hash() const{
     return 0ull;  
   }
   
+  
+  black = white = res = 0ull;
+    
   for(i=0;i<8;i++){
     tmp = rotate((board_rotation)i);
     black ^= tmp.discs[BLACK].to_ulong();
     white ^= tmp.discs[WHITE].to_ulong();
   }
-  res = (black & (mask << 27)) | (black & (~mask >> 27));
+  res = ((black & mask) << 27) | ((black & (~mask)) >> 27);
   res ^= white;
   
   return res;

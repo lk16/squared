@@ -9,7 +9,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,6,12));
+  set_bot(new bot_ali(WHITE,8,16));
 }
 
 game_control::~game_control()
@@ -33,12 +33,20 @@ game_control::~game_control()
 void game_control::on_human_do_move(int field_id)
 {
   board *move;
+  //char oneliner[TOTAL_FIELDS+1];
   
   move = new board;
   
   if(bot[turn()]){
     return;
-  }  
+  }
+
+  //current->oneliner(oneliner);  
+  //std::cout << "Oneliner: " << oneliner << std::endl;
+  //std::cout << "Hash: " << current->hash() << std::endl;
+
+  
+  
   if(current->do_move(field_id,move)){
     on_any_move(move);
   }
@@ -67,7 +75,6 @@ void game_control::on_bot_do_move()
 void game_control::on_any_move(board* next)
 {
   board copy;
-  char oneliner[TOTAL_FIELDS+1];
   
   while(!redo_stack.empty()){
     delete redo_stack.top();
@@ -77,10 +84,7 @@ void game_control::on_any_move(board* next)
   
   current = next;
   mw->update_fields();
-  
-  next->oneliner(oneliner);  
-  std::cout << "Oneliner: " << oneliner << std::endl;
-  
+   
   if(!current->has_moves()){
     copy = *next;
     copy.turn = opponent(copy.turn);
