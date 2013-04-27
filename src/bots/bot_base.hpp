@@ -23,8 +23,11 @@ class bot_base{
   
   void sort_boards(board* moves,int move_count,int depth);
   
+  
 public:
   color c;
+  
+  int get_max_depth() const;
   
   /// constructor
   bot_base(color c,int max_depth,int max_endgame_depth);

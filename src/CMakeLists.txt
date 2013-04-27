@@ -9,7 +9,7 @@ link_directories(
 )
 
   set(DEBUG_FLAGS
-    "-I .. -std=c++0x -mtune=native -g -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+    "-I .. -std=c++0x -Wall -Wextra -g  -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
   )
 
   set(OPTIMIZING_FLAGS
@@ -29,6 +29,7 @@ SET(objects
   game/gamecontrol.cpp
   gui/field.cpp
   gui/mainwindow.cpp
+  gui/settingsdialog.cpp
   squared/main.cpp
 )
 

@@ -127,18 +127,34 @@ void main_window::on_menu_settings_fullscreen()
 
 void main_window::on_menu_settings_settings()
 {
-  /*
-  Glib::RefPtr<Gtk::Builder> builder;
-  settings_dialog *dialog = NULL;
-  Gtk::RadioButton *radio[4];
-  Gtk::HScale *scale[2];
+  int input_level[2],output_level[2];
+  bot_base* bot;
   
-  builder = Gtk::Builder::create();
-  builder->add_from_file(UI_PATH + "prefs.xml");
-  builder->get_widget<Gtk::Dialog>("dialog1",dialog);
-  dialog->run();
-  std::cout << "Show settings menu\n";
-  */
+  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_max_depth() : -1;
+  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_max_depth() : -1;
+  
+  
+  settings_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
+  
+  std::cout << "Show settings\n";
+  if(sd.run() == Gtk::RESPONSE_OK){
+    
+    sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
+    
+    if(output_level[BLACK]==-1){
+      control.remove_bot(BLACK);
+    }
+    else{
+      control.add_bot(BLACK,output_level[BLACK],2*output_level[BLACK]);
+    }
+    if(output_level[WHITE]==-1){
+      control.remove_bot(WHITE);
+    }
+    else{
+      control.add_bot(WHITE,output_level[WHITE],2*output_level[WHITE]);
+    }
+  
+  }
 }
 
 void main_window::update_fields()

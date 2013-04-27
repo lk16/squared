@@ -18,9 +18,15 @@ bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
 int bot_ali::heuristic(const board* b)
 {
   int res;
+  
+  /*
+  disc  corner  xsquare
+  -1    20      -4       << working
+  */
+  
   const static int disc_count_factor = -1;
-  const static int corner_factor = 20;
-  const static int xsquare_factor = -4;
+  const static int corner_factor = 100;
+  const static int xsquare_factor = -10;
   
 
   

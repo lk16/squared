@@ -12,6 +12,7 @@
 #include "game/util.hpp"
 #include "game/board.hpp"
 #include "gui/field.hpp"
+#include "gui/settingsdialog.hpp"
 
 struct field;
 class board;

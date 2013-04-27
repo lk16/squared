@@ -18,7 +18,7 @@ struct game_control{
   game_control(main_window* mw);
   ~game_control();
 
-  void set_bot(bot_base* bot);
+  void add_bot(color _c, int _max_depth, int _max_endgame_depth);
   void remove_bot(color col);
   
   void on_new_game();

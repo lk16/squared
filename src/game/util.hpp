@@ -45,11 +45,14 @@ const int FIELD_SIZE = 8;
 /// total number of fields 
 const int TOTAL_FIELDS = FIELD_SIZE*FIELD_SIZE;
 
+/// perfect score factor
+const int PERFECT_SCORE_FACTOR = 100;
+
 /// heighest possible heuristic value
-const int MAX_HEURISTIC =  100 * TOTAL_FIELDS;
+const int MAX_HEURISTIC = PERFECT_SCORE_FACTOR * TOTAL_FIELDS;
 
 /// lowest possible heuristic value
-const int MIN_HEURISTIC = -100 * TOTAL_FIELDS;
+const int MIN_HEURISTIC = -1 * PERFECT_SCORE_FACTOR * TOTAL_FIELDS;
 
 enum color{
   BLACK = 0,

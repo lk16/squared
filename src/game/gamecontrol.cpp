@@ -9,7 +9,6 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,3,10));
 }
 
 game_control::~game_control()
@@ -67,7 +66,6 @@ void game_control::on_bot_do_move()
 void game_control::on_any_move(board* next)
 {
   board copy;
-  char oneliner[TOTAL_FIELDS+1];
   
   while(!redo_stack.empty()){
     delete redo_stack.top();
@@ -77,9 +75,6 @@ void game_control::on_any_move(board* next)
   
   current = next;
   mw->update_fields();
-  
-  next->oneliner(oneliner);  
-  std::cout << "Oneliner: " << oneliner << std::endl;
   
   if(!current->has_moves()){
     copy = *next;
@@ -170,12 +165,12 @@ bool game_control::timeout_handler()
   return true;
 }
 
-void game_control::set_bot(bot_base* bb)
+void game_control::add_bot(color _c, int _max_depth, int _max_endgame_depth)
 {
-  if(bot[bb->c]){
-    delete bot[bb->c];
+  if(bot[_c]){
+    delete bot[_c];
   }
-  bot[bb->c] = bb;
+  bot[_c] = new bot_ali(_c,_max_depth,_max_endgame_depth);
 }
 
 void game_control::remove_bot(color col)

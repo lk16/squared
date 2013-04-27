@@ -88,7 +88,7 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   nodes++;   
   
   if(b->test_game_ended()){
-    return (c==WHITE ? 1 : -1) * 100 * b->get_disc_diff();
+    return (c==WHITE ? 1 : -1) * PERFECT_SCORE_FACTOR * b->get_disc_diff();
   }
   
   if(depth_remaining==0){
@@ -158,5 +158,9 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
   delete[] heur;
 }
 
+int bot_base::get_max_depth() const
+{
+  return max_depth;
+}
 
   
