@@ -19,7 +19,7 @@ int bot_ali::heuristic(const board* b)
 {
   int res;
   const static int disc_count_factor = -1;
-  const static int corner_factor = 30;
+  const static int corner_factor = 20;
   const static int xsquare_factor = -4;
   
 

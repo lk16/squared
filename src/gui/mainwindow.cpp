@@ -1,5 +1,6 @@
 #include "mainwindow.hpp"
 
+
 main_window::main_window():
   table(FIELD_SIZE,FIELD_SIZE),
   control(this),
@@ -126,7 +127,18 @@ void main_window::on_menu_settings_fullscreen()
 
 void main_window::on_menu_settings_settings()
 {
+  /*
+  Glib::RefPtr<Gtk::Builder> builder;
+  settings_dialog *dialog = NULL;
+  Gtk::RadioButton *radio[4];
+  Gtk::HScale *scale[2];
+  
+  builder = Gtk::Builder::create();
+  builder->add_from_file(UI_PATH + "prefs.xml");
+  builder->get_widget<Gtk::Dialog>("dialog1",dialog);
+  dialog->run();
   std::cout << "Show settings menu\n";
+  */
 }
 
 void main_window::update_fields()

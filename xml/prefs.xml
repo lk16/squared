@@ -87,7 +87,7 @@
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton4">
+                          <object class="GtkRadioButton" id="radiobutton3">
                             <property name="label" translatable="yes">Human</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -99,13 +99,13 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkRadioButton" id="radiobutton3">
+                          <object class="GtkRadioButton" id="radiobutton4">
                             <property name="label" translatable="yes">Robot</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="draw_indicator">True</property>
-                            <property name="group">radiobutton4</property>
+                            <property name="group">radiobutton3</property>
                           </object>
                           <packing>
                             <property name="position">1</property>

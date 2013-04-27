@@ -5,16 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include <gtkmm/aspectframe.h>
-#include <gtkmm/box.h>
-#include <gtkmm/dialog.h>
-#include <gtkmm/label.h>
-#include <gtkmm/statusbar.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/table.h>
-#include <gtkmm/uimanager.h>
-#include <glibmm/ustring.h>
-#include <gtkmm/window.h>
+#include <gtkmm.h>
 
 #include "bots/bot_ali.hpp"
 #include "game/gamecontrol.hpp"
@@ -66,4 +57,4 @@ protected:
 
 };
 
-#endif // GTKMM_EXAMPLE_HELLOWORLD_H
+#endif

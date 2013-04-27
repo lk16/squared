@@ -9,7 +9,7 @@ game_control::game_control(main_window* _mw):
   
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
   
-  set_bot(new bot_ali(BLACK,6,16));
+  set_bot(new bot_ali(BLACK,3,10));
 }
 
 game_control::~game_control()
