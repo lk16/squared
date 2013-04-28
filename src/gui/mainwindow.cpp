@@ -128,7 +128,6 @@ void main_window::on_menu_settings_fullscreen()
 void main_window::on_menu_settings_settings()
 {
   int input_level[2],output_level[2];
-  bot_base* bot;
   
   input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_max_depth() : -1;
   input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_max_depth() : -1;
@@ -145,13 +144,13 @@ void main_window::on_menu_settings_settings()
       control.remove_bot(BLACK);
     }
     else{
-      control.add_bot(BLACK,output_level[BLACK],2*output_level[BLACK]);
+      control.add_bot(BLACK,output_level[BLACK],min(16,2*output_level[BLACK]));
     }
     if(output_level[WHITE]==-1){
       control.remove_bot(WHITE);
     }
     else{
-      control.add_bot(WHITE,output_level[WHITE],2*output_level[WHITE]);
+      control.add_bot(WHITE,output_level[WHITE],min(16,2*output_level[WHITE]));
     }
   
   }

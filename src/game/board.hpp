@@ -9,6 +9,19 @@
 
 #include "game/util.hpp"
 
+enum board_rotation{
+  ROTATE_NONE=0,
+  ROTATE_90=1,
+  ROTATE_180=2,
+  ROTATE_270=3,
+  ROTATE_FLIP=4,
+  ROTATE_FLIP_90=5,
+  ROTATE_FLIP_180=6,
+  ROTATE_FLIP_270=7
+};
+
+
+
 struct board{
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
@@ -80,7 +93,10 @@ struct board{
   /// convert to one line for readable 
   void oneliner(char* out) const;
   
-
+  /// rotate the board
+  board rotate(board_rotation) const;
+  
+  unsigned long long hash() const;
 };
 
 
@@ -196,6 +212,82 @@ inline int board::max_moves_left() const
 {
   return TOTAL_FIELDS - std::bitset<TOTAL_FIELDS>(discs[BLACK] | discs[WHITE]).count();
 }
+
+inline board board::rotate(board_rotation rot) const
+{
+  int x,y;
+  board res(*this);
+
+  switch(rot){
+    case ROTATE_NONE:
+      return res;
+    case ROTATE_90:
+      for(y=0;y<FIELD_SIZE;y++){
+        for(x=0;x<FIELD_SIZE;x++){
+          res.discs[BLACK].set(y*FIELD_SIZE+x,discs[BLACK].test((y)+(FIELD_SIZE*(FIELD_SIZE-1-x))));
+          res.discs[WHITE].set(y*FIELD_SIZE+x,discs[WHITE].test((y)+(FIELD_SIZE*(FIELD_SIZE-1-x))));
+        }
+      }
+      return res;
+    case ROTATE_180:
+      return res.rotate(ROTATE_90).rotate(ROTATE_90);
+    case ROTATE_270:
+      return res.rotate(ROTATE_90).rotate(ROTATE_90).rotate(ROTATE_90);
+    case ROTATE_FLIP:
+      for(y=0;y<FIELD_SIZE;y++){
+        for(x=0;x<FIELD_SIZE;x++){
+          res.discs[BLACK].set(y*FIELD_SIZE+x,discs[BLACK].test((FIELD_SIZE*y)+(FIELD_SIZE-1-x)));
+          res.discs[WHITE].set(y*FIELD_SIZE+x,discs[WHITE].test((FIELD_SIZE*y)+(FIELD_SIZE-1-x)));
+        }
+      }
+      return res;
+    case ROTATE_FLIP_90:
+      return res.rotate(ROTATE_FLIP).rotate(ROTATE_90);
+    case ROTATE_FLIP_180:
+      return res.rotate(ROTATE_FLIP).rotate(ROTATE_90).rotate(ROTATE_90);
+    case ROTATE_FLIP_270:
+      return res.rotate(ROTATE_FLIP).rotate(ROTATE_90).rotate(ROTATE_90).rotate(ROTATE_90);
+  }
+}
+
+inline unsigned long long board::hash() const{
+  typedef unsigned long long ull;
+  ull black,white,res;
+  const static ull mask = ((~0ull) >> 27);
+    
+  int i;
+  board tmp;
+  
+  if(FIELD_SIZE != 8){
+    return 0ull;  
+  }
+  
+  
+  black = white = res = 0ull;
+    
+  for(i=0;i<8;i++){
+    tmp = rotate((board_rotation)i);
+    black ^= tmp.discs[BLACK].to_ulong();
+    white ^= tmp.discs[WHITE].to_ulong();
+  }
+  res = ((black & mask) << 27) | ((black & (~mask)) >> 27);
+  res ^= white;
+  
+  return res;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif

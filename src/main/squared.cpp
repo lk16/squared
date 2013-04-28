@@ -3,12 +3,13 @@
 #include "gui/mainwindow.hpp"
 
 void run_no_gui(){
+#if 0 
   board *b;
   bot_base* bots[2];
   std::string instring;
   int inint;
 
-#if 0  
+ 
   instring = "";
   inint = -1;
   bots[0] = bots[1] = NULL;

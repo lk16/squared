@@ -18,8 +18,8 @@ link_directories(
 
 
 set(CMAKE_CXX_FLAGS 
-  #${OPTIMIZING_FLAGS}
-  ${DEBUG_FLAGS} 
+  ${OPTIMIZING_FLAGS}
+  #${DEBUG_FLAGS} 
 ) 
 
 SET(objects
@@ -30,7 +30,7 @@ SET(objects
   gui/field.cpp
   gui/mainwindow.cpp
   gui/settingsdialog.cpp
-  squared/main.cpp
+  main/squared.cpp
 )
 
 
@@ -45,4 +45,11 @@ ADD_EXECUTABLE(../squared
 
 target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
+)
+
+ADD_EXECUTABLE(../timer
+  main/timer.cpp
+  game/board.cpp
+  bots/bot_ali.cpp
+  bots/bot_base.cpp
 )

@@ -28,18 +28,13 @@ int bot_ali::heuristic(const board* b)
   const static int corner_factor = 100;
   const static int xsquare_factor = -10;
   
-
-  
   res = 0;
-  
   
   res += corner_factor * std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[c] & corners_mask).count();
   res -= corner_factor * std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[opponent(c)] & corners_mask).count();
-  
   res += xsquare_factor* std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[c] & xsquares_mask).count();
   res -= xsquare_factor* std::bitset<FIELD_SIZE*FIELD_SIZE>(b->discs[opponent(c)] & xsquares_mask).count();
   
-    
   res += disc_count_factor * b->count_discs(c);
   res -= disc_count_factor * b->count_discs(opponent(c));
   
