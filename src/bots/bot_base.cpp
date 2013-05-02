@@ -7,6 +7,7 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   c(_c),
   prev_move_time(std::time(NULL))
 {
+  init_hash_table();
 }
 
 void bot_base::do_move(const board* b,board* res) 
@@ -36,6 +37,8 @@ void bot_base::do_move(const board* b,board* res)
     return;
   } 
   
+  clear_hash_table();
+  
   if(depth_limit - look_ahead >= 2){
     std::cout << "Sorting... "; 
     std::cout.flush();
@@ -43,6 +46,7 @@ void bot_base::do_move(const board* b,board* res)
     std::cout << "Done\n";
   }
   
+  clear_hash_table();
   
   for(id=0;(int)id<move_count;id++){
     tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
@@ -84,6 +88,12 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   board children[32];
   int move_count,id;
   board tmp;
+
+#if SQUARED_BOT_USE_HASHTABLE  
+  hash_table_entry *hash_entry;
+  int hash;
+#endif
+  
   
   nodes++;   
   
@@ -94,6 +104,24 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   if(depth_remaining==0){
     return heuristic(b);
   }
+
+#if SQUARED_BOT_USE_HASHTABLE
+  if(max_depth - depth_remaining < 4){
+    hash = b->hash() % HASH_TABLE_SIZE;
+    hash_entry = hash_table[hash];
+    while(hash_entry){
+      if(*hash_entry->b == *b){
+        return hash_entry->heur;
+      }
+      else{
+        hash_entry = hash_entry->next;
+      }
+    }
+  }
+#endif
+  
+  
+  
   
   b->get_children(children,&move_count);
   if(move_count==0){
@@ -109,6 +137,11 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
         break;
       }
     }
+#if SQUARED_BOT_USE_HASHTABLE
+    if(max_depth - depth_remaining < 4){
+      add_hash_table_entry(b,alpha);
+    }
+#endif
     return alpha; 
   }
   else{
@@ -118,6 +151,11 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
         break;
       }
     }
+#if SQUARED_BOT_USE_HASHTABLE
+    if(max_depth - depth_remaining < 4){
+      add_hash_table_entry(b,beta);
+    }
+#endif
     return beta;
   }
 }
@@ -163,4 +201,52 @@ int bot_base::get_max_depth() const
   return max_depth;
 }
 
+void bot_base::clear_hash_table()
+{
+  int i;
+  hash_table_entry *hte,*tmp;
   
+  for(i=0;i<HASH_TABLE_SIZE;i++){
+    hte = hash_table[i];
+    while(hte != NULL){
+      tmp = hte->next;
+      delete hte->b;
+      delete hte;
+      hte = tmp;
+    }
+    hash_table[i] = NULL;
+  }
+  
+}
+  
+void bot_base::init_hash_table()
+{
+  int i;
+  
+  for(i=0;i<HASH_TABLE_SIZE;i++){
+    hash_table[i] = NULL;
+  }
+}
+
+void bot_base::add_hash_table_entry(const board* b, int heur)
+{
+  int bucket;
+  hash_table_entry* hte;
+  
+  bucket = b->hash() % HASH_TABLE_SIZE;
+  if(hash_table[bucket] == NULL){
+    hash_table[bucket] = new hash_table_entry(NULL,new board(*b),heur);
+  }
+  else{
+    hte = hash_table[bucket];
+    while(hte->next != NULL){
+      hte = hte->next;
+    }
+    hte->next = new hash_table_entry(NULL,new board(*b),heur);
+  }
+}
+
+bot_base::~bot_base()
+{
+  clear_hash_table();
+}

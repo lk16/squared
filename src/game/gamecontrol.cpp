@@ -92,6 +92,9 @@ void game_control::on_any_move(board* next)
       on_game_ended();
     }
   }
+#ifndef NDEBUG
+  std::cout << (next->hash() % bot_base::HASH_TABLE_SIZE) << std::endl;
+#endif
 }
 
 

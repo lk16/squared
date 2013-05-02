@@ -33,6 +33,8 @@
   
 #endif
 
+#define SQUARED_BOT_USE_HASHTABLE 0
+
 /// subdirectory where images are stored
 const std::string IMAGE_PATH = "./images/";
 

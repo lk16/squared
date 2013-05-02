@@ -38,6 +38,9 @@ struct board{
   /// assigns a board from b
   board& operator=(const board& b);
   
+  /// checks for board equality
+  bool operator==(const board& b);
+  
   /// resets the board to starting position
   void reset();
   
@@ -251,43 +254,38 @@ inline board board::rotate(board_rotation rot) const
 }
 
 inline unsigned long long board::hash() const{
-  typedef unsigned long long ull;
-  ull black,white,res;
-  const static ull mask = ((~0ull) >> 27);
-    
-  int i;
-  board tmp;
+
+  
+  unsigned long long black,white;
   
   if(FIELD_SIZE != 8){
     return 0ull;  
   }
+ 
+  black = discs[BLACK].to_ulong();
+  white = discs[WHITE].to_ulong();
+
+#define hash_64bit(a) \
+  a = (a+0x479ab41d) + (a<<8);  \
+  a = (a^0xe4aa10ce) ^ (a>>5);  \
+  a = (a+0x9942f0a6) - (a<<14); \
+  a = (a^0x5aedd67d) ^ (a>>3);  \
+  a = (a+0x17bea992) + (a<<7);  \
   
+  hash_64bit(black);
+  hash_64bit(white);
+
+#undef hash_64bit
   
-  black = white = res = 0ull;
-    
-  for(i=0;i<8;i++){
-    tmp = rotate((board_rotation)i);
-    black ^= tmp.discs[BLACK].to_ulong();
-    white ^= tmp.discs[WHITE].to_ulong();
-  }
-  res = ((black & mask) << 27) | ((black & (~mask)) >> 27);
-  res ^= white;
-  
-  return res;
+  return black ^ white;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+inline bool board::operator==(const board& b)
+{
+  return discs[0] == b.discs[0] 
+  && discs[1] == b.discs[1]
+  && turn == b.turn;
+}
 
 
 #endif
