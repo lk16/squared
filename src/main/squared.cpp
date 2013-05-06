@@ -1,6 +1,6 @@
 #include <gtkmm.h>
 
-#include "gui/mainwindow.hpp"
+#include "gui/main_window.hpp"
 
 void run_no_gui(){
 #if 0 

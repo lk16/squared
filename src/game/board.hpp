@@ -270,7 +270,7 @@ inline unsigned long long board::hash() const{
   a = (a^0xe4aa10ce) ^ (a>>5);  \
   a = (a+0x9942f0a6) - (a<<14); \
   a = (a^0x5aedd67d) ^ (a>>3);  \
-  a = (a+0x17bea992) + (a<<7);  \
+  a = (a+0x17bea992) + (a<<7);  
   
   hash_64bit(black);
   hash_64bit(white);

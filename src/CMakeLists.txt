@@ -26,10 +26,10 @@ SET(objects
   bots/bot_ali.cpp
   bots/bot_base.cpp
   game/board.cpp
-  game/gamecontrol.cpp
-  gui/field.cpp
-  gui/mainwindow.cpp
-  gui/settingsdialog.cpp
+  game/game_control.cpp
+  gui_base/clickable_image.cpp
+  gui/main_window.cpp
+  gui/settings_dialog.cpp
   main/squared.cpp
 )
 
@@ -47,9 +47,3 @@ target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
 )
 
-ADD_EXECUTABLE(../timer
-  main/timer.cpp
-  game/board.cpp
-  bots/bot_ali.cpp
-  bots/bot_base.cpp
-)
