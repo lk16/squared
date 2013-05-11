@@ -37,7 +37,9 @@ void bot_base::do_move(const board* b,board* res)
     return;
   } 
   
+#if SQUARED_BOT_USE_HASHTABLE    
   clear_hash_table();
+#endif
   
   if(depth_limit - look_ahead >= 2){
     std::cout << "Sorting... "; 
@@ -46,10 +48,20 @@ void bot_base::do_move(const board* b,board* res)
     std::cout << "Done\n";
   }
   
+#if SQUARED_BOT_USE_HASHTABLE    
   clear_hash_table();
-  
+#endif
   for(id=0;(int)id<move_count;id++){
+    
+    stable.discs[BLACK] = stable.discs[WHITE] = (~0);
     tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
+    /*
+    std::cout << stable.discs[c].count() << std::endl;
+    std::cout << stable.discs[opponent(c)].count() << std::endl;
+    
+    tmp_heur += 3*stable.discs[c].count();
+    tmp_heur -= 3*stable.discs[opponent(c)].count();
+  */
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
@@ -98,7 +110,9 @@ int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   nodes++;   
   
   if(b->test_game_ended()){
-    return (c==WHITE ? 1 : -1) * PERFECT_SCORE_FACTOR * b->get_disc_diff();
+    //stable.discs[WHITE] = b->discs[WHITE] & stable.discs[WHITE];
+    //stable.discs[BLACK] = b->discs[BLACK] & stable.discs[BLACK];
+    return PERFECT_SCORE_FACTOR * b->get_disc_diff(c);
   }
   
   if(depth_remaining==0){

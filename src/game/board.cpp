@@ -200,18 +200,18 @@ int board::get_mobility(color c) const
   return res;
 }
 
-int board::get_disc_diff() const
+int board::get_disc_diff(color c) const
 {
   int count[2];
   
-  count[BLACK] = count_discs(BLACK);
-  count[WHITE] = count_discs(WHITE);
+  count[0] = count_discs(c);
+  count[1] = count_discs(opponent(c));
   
-  if(count[BLACK] > count[WHITE]){ /* black wins */
-    return ((-TOTAL_FIELDS)+(2*count[WHITE]));
+  if(count[0] > count[1]){ /* c wins */
+    return (TOTAL_FIELDS)-(2*count[1]);
   }
-  else if(count[WHITE] > count[BLACK]){ /* white wins */
-    return (TOTAL_FIELDS-(2*count[BLACK]));
+  else if(count[0] < count[1]){ /* c loses */
+    return ((-TOTAL_FIELDS)+(2*count[0]));
   }
   else{ /* draw */
     return 0;

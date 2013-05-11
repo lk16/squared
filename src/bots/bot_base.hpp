@@ -46,6 +46,8 @@ private:
   
   void sort_boards(board* moves,int move_count,int depth);  
   
+  board stable;
+  
 public:
   color c;
   

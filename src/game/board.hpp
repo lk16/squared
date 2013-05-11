@@ -90,8 +90,8 @@ struct board{
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
   
-  /// returns disc count difference, positive means white has more
-  int get_disc_diff() const;
+  /// returns disc count difference positive means c has more
+  int get_disc_diff(color c) const;
   
   /// convert to one line for readable 
   void oneliner(char* out) const;
