@@ -33,28 +33,29 @@
   
 #endif
 
-#define SQUARED_BOT_USE_HASHTABLE 0
+#define SQUARED_BOT_USE_HASHTABLE   0
+#define SQUARED_BOT_ENABLE_OUTPUT   0
 
 /// subdirectory where images are stored
-const std::string IMAGE_PATH = "./images/";
+#define IMAGE_PATH std::string("./images/")
 
 /// subdirectory where xml files containing ui are stored
-const std::string UI_PATH = "./xml/";
+#define UI_PATH std::string("./xml/")
 
 /// size of othello field, assuming width==height
-const int FIELD_SIZE = 8;
+#define FIELD_SIZE (8)
 
 /// total number of fields 
-const int TOTAL_FIELDS = FIELD_SIZE*FIELD_SIZE;
+#define TOTAL_FIELDS (FIELD_SIZE*FIELD_SIZE)
 
 /// perfect score factor
-const int PERFECT_SCORE_FACTOR = 100;
+#define PERFECT_SCORE_FACTOR (100)
 
 /// heighest possible heuristic value
-const int MAX_HEURISTIC = PERFECT_SCORE_FACTOR * TOTAL_FIELDS;
+#define MAX_HEURISTIC (PERFECT_SCORE_FACTOR * TOTAL_FIELDS)
 
 /// lowest possible heuristic value
-const int MIN_HEURISTIC = -1 * PERFECT_SCORE_FACTOR * TOTAL_FIELDS;
+#define MIN_HEURISTIC (-1 * MAX_HEURISTIC)
 
 enum color{
   BLACK = 0,

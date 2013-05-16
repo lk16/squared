@@ -4,23 +4,21 @@ bool board::do_move(int field_id,board* result) const
 {
   
   int x,y,dx,dy,curx,cury;
-  *result = *this;
   std::bitset<TOTAL_FIELDS> mask,tmp_mask;
-  
-  mask.reset();
-  tmp_mask.reset();
-  
-  if(discs[BLACK].test(field_id) || discs[WHITE].test(field_id)){
+    
+  if(!has_color(field_id,EMPTY)){
     return false;
   }
   
   x = field_id%FIELD_SIZE;
   y = field_id/FIELD_SIZE;
   
+  //TODO make sure result doesnt get assigned anything before we are sure it is a valid move
+  *result = *this;
   
   for(dx=-1;dx<=1;dx++){
     for(dy=-1;dy<=1;dy++){
-      if(!valid_coord(x+2*dx) || !valid_coord(y+2*dy) || (dx==0 && dy==0)){
+      if((dx==0 && dy==0)){
         continue;
       }
       tmp_mask.reset();
@@ -29,14 +27,14 @@ bool board::do_move(int field_id,board* result) const
       while(1){
         curx += dx;
         cury += dy;
-        if(!valid_coord(curx) || !valid_coord(cury) || result->has_color(cury*FIELD_SIZE+curx,EMPTY)){
+        if(!valid_coord(curx) || !valid_coord(cury) || has_color(cury*FIELD_SIZE+curx,EMPTY)){
           break;
         }
-        if(result->has_color(cury*FIELD_SIZE+curx,opponent(turn))){
+        if(has_color(cury*FIELD_SIZE+curx,opponent(turn))){
           tmp_mask.set(FIELD_SIZE*cury + curx);
           continue;
         }
-        if(result->has_color(cury*FIELD_SIZE+curx,turn)){
+        if(has_color(cury*FIELD_SIZE+curx,turn)){
           if(tmp_mask.any()){
             mask |= tmp_mask;
           }
@@ -59,15 +57,12 @@ bool board::do_move(int field_id,board* result) const
 
 void board::get_children(board* array,int* move_count) const
 {
-  int field_id,i;
-  
-  i=0;
-  for(field_id=0;field_id<TOTAL_FIELDS;field_id++){
-    if(do_move(field_id,array+i)){
-      i++;
+  *move_count=0;
+  for(int field_id=TOTAL_FIELDS-1;field_id--;){
+    if(do_move(field_id,array+(*move_count))){
+      (*move_count)++;
     }
   }
-  *move_count = i;
 }
 
 int board::count_moves() const

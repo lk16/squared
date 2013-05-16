@@ -42,11 +42,17 @@ void bot_base::do_move(const board* b,board* res)
 #endif
   
   if(depth_limit - look_ahead >= 2){
+#if SQUARED_BOT_ENABLE_OUTPUT
     std::cout << "Sorting... "; 
     std::cout.flush();
+#endif
+    
     sort_boards(moves,move_count,look_ahead);
-    std::cout << "Done\n";
-  }
+
+#if SQUARED_BOT_ENABLE_OUTPUT
+  std::cout << "Done\n";
+#endif  
+}
   
 #if SQUARED_BOT_USE_HASHTABLE    
   clear_hash_table();
@@ -64,20 +70,24 @@ void bot_base::do_move(const board* b,board* res)
   */
     if(tmp_heur > best_heur){
       best_heur = tmp_heur;
+      best_move_id = id;
+      *res = moves[id];
+
+#if SQUARED_BOT_ENABLE_OUTPUT
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
       text += tostr<int>(best_heur) + "\n";
       std::cout << text;
       /* TODO update statusbar msg */
-      
-      best_move_id = id;
-      *res = moves[id];
+#endif      
     }
+#if SQUARED_BOT_ENABLE_OUTPUT
     else{
       text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
       text += tostr<int>(best_heur) + "\n";
       std::cout << text;
       /* TODO update statusbar msg */
     }
+#endif
   }
 
   /* bot can not prevent losing all discs -> just pick a move */
@@ -88,8 +98,10 @@ void bot_base::do_move(const board* b,board* res)
   gettimeofday(&end,NULL);  
   time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
   (start.tv_sec + (start.tv_usec / 1000000.0));
+#if SQUARED_BOT_ENABLE_OUTPUT
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
+#endif
 }
 
 

@@ -16,17 +16,10 @@ int bot_ali::heuristic(const board* b)
   
   
   int disc_count_factor,corner_factor,xsquare_factor;
-  
-  if(std::bitset<TOTAL_FIELDS>(b->discs[WHITE] | b->discs[BLACK]).count() <= 48){
-    disc_count_factor = -1;
-    corner_factor = 20;
-    xsquare_factor = -4;
-  }
-  else{
-    disc_count_factor = 1;
-    corner_factor = 20;
-    xsquare_factor = 0;
-  }
+
+  disc_count_factor = -1;
+  corner_factor = 20;
+  xsquare_factor = -4;
   
   
   
