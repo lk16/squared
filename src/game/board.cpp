@@ -22,7 +22,7 @@ board* board::do_move(int field_id,board* result) const
   }
   
   
-  for(int i=0;i<8;i++){ 
+  for(int i=0;i<8;++i){ 
     tmp_mask.reset();
     int cur_field_id = field_id;
     while(true){

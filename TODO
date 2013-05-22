@@ -4,11 +4,8 @@ ui related:
 * remove gaps between fields
 
 bot related:
-* move evertything from bot_base to subclasses except the do_move function
 * implement negascout
-* fix bots doing worst moves sometimes
 * re implement hashtables
 
 general:
-* optimize board::do_move method
-* check for memory leaks
+<nothing>

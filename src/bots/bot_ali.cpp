@@ -1,6 +1,7 @@
 #include "bot_ali.hpp"
 
 #define SQUARED_BOT_ENABLE_OUTPUT 1
+#include <string.h>
 
 bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
   bot_base(_c, _max_depth, _max_endgame_depth)
@@ -26,7 +27,7 @@ void bot_ali::evaluate_depth_level(const board* boards, int* heurs, int count, i
 {
   int alpha = MIN_HEURISTIC;
   
-  for(int id=0;id<count;id++){
+  for(int id=count-1;id>=0;--id){
     heurs[id] = -alpha_beta(boards + id,alpha,MAX_HEURISTIC,depth);
     alpha = max(alpha,heurs[id]);
   }
@@ -61,17 +62,24 @@ void bot_ali::do_move(const board* b,board* res)
     // return something;
   }
   
+  
+  /*  Idea: big_child_stack will be broken down each run, 
+      so we keep a copy (children) at all times to rebuild big_child_stack
+      also it is used for the return value
+  */
+  board big_child_stack[(TOTAL_FIELDS/2)*15];
   int *heurs = new int[child_count];
   
   for(int d=1;d<=max_depth;d++){
-    evaluate_depth_level(children,heurs,child_count,d);
+    memcpy(&big_child_stack,children,child_count*sizeof(board));
+    evaluate_depth_level(big_child_stack,heurs,child_count,d);
     sort_boards(children,heurs,child_count);
 #if SQUARED_BOT_ENABLE_OUTPUT
-  std::cout << "Depth " << d << ": best heur = " << heurs[0] << std::endl;
+    std::cout << "Depth " << d << ": best heur = " << heurs[child_count-1] << std::endl;
 #endif  
   }
 
-  *res = children[0];
+  *res = children[child_count-1];
   
   
 #if SQUARED_BOT_ENABLE_OUTPUT
@@ -127,12 +135,12 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
   do{
     loop = false;
     for(int i=0;i<count-1;i++){
-      if(heurs[i] < heurs[i+1]){
+      if(heurs[i] > heurs[i+1]){
         std::swap(heurs[i],heurs[i+1]);
         std::swap(boards[i],boards[i+1]);
         loop = true;
       }
-      assert(heurs[i] >= heurs[i+1]);
+      assert(heurs[i] <= heurs[i+1]);
     }
   }while(loop);
 }
