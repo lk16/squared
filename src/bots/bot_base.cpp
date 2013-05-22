@@ -1,9 +1,5 @@
 #include "bot_base.hpp"
 
-#ifndef SQUARED_BOT_ENABLE_OUTPUT
-#define SQUARED_BOT_ENABLE_OUTPUT 1
-#endif
-
 bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
@@ -32,4 +28,5 @@ void bot_base::do_move(const board* b, board* res)
   // prevent compiler complaints
   b->show();
   res = 0;
+  CRASH;
 }

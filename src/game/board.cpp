@@ -130,25 +130,6 @@ void board::show() const
   std::cout << "+\n";
 }
 
-int board::count_flipped(int field_id, color c) const
-{
-  // prevent compiler complains
-  field_id = 0; 
-  c=BLACK;
-  
-  NOT_IMPLEMENTED;
-  return 0;
-}
-
-int board::get_mobility(color c) const
-{
-  int res = 0;
-  for(int field_id=0;field_id<TOTAL_FIELDS;field_id++){
-    res += count_flipped(field_id,c);
-  }
-  return res;
-}
-
 int board::get_disc_diff() const
 {
   int count[2];

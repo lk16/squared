@@ -43,18 +43,9 @@ struct board{
   /// tests wheter current turn has valid moves
   bool has_moves() const;
   
-  /// returns maximum number of moves that could be done before the game is finished
-  int max_moves_left() const;
-  
   /// tests whether both players dont have any moves left
   bool test_game_ended() const;
   
-  /// returns the sum of flippable discs for each valid move of player c
-  int get_mobility(color c) const;
-  
-  /// returns number of flipped discs for move (field_id) and player c, if (field_id) is not valid, 0 is returned
-  int count_flipped(int field_id,color c) const;
-
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
   
@@ -121,12 +112,6 @@ inline bool board::test_game_ended() const
   copy.turn = opponent(copy.turn);
   return !copy.has_moves();
 }
-
-inline int board::max_moves_left() const
-{
-  return TOTAL_FIELDS - (discs[BLACK] | discs[WHITE]).count();
-}
-
 
 inline unsigned long long board::hash() const{
 

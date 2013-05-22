@@ -57,8 +57,8 @@ void bot_ali::do_move(const board* b,board* res)
     return;
   } 
  
-  if(b->max_moves_left() <= max_endgame_depth){
-    //TODO endgame method
+  if(TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count() <= (unsigned)max_endgame_depth){
+    //TODO separate endgame method
     // return something;
   }
   
