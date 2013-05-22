@@ -29,22 +29,14 @@ game_control::~game_control()
 
 void game_control::on_human_do_move(int field_id)
 {
-  board *move;
-  //char oneliner[TOTAL_FIELDS+1];
-  
-  move = new board;
   
   if(bot[turn()]){
     return;
   }
-
-  //current->oneliner(oneliner);  
-  //std::cout << "Oneliner: " << oneliner << std::endl;
-  //std::cout << "Hash: " << current->hash() << std::endl;
-
-  
-  
-  if(current->do_move(field_id,move)){
+ 
+  board *move = new board;
+ 
+  if(move != current->do_move(field_id,move)){
     on_any_move(move);
   }
 }
@@ -148,8 +140,8 @@ void game_control::on_game_ended()
 {
   std::string text;
   
-  text += "Game has ended. White (" + tostr<int>(current->count_discs(WHITE)) + ") - Black (";
-  text += tostr<int>(current->count_discs(BLACK)) + ")";
+  text += "Game has ended. White (" + tostr<int>(current->discs[WHITE].count()) + ") - Black (";
+  text += tostr<int>(current->discs[BLACK].count())+ ")";
   
   
   std::cout << text << std::endl;

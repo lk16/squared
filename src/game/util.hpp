@@ -33,9 +33,6 @@
   
 #endif
 
-#define SQUARED_BOT_USE_HASHTABLE   0
-#define SQUARED_BOT_ENABLE_OUTPUT   0
-
 /// subdirectory where images are stored
 #define IMAGE_PATH std::string("./images/")
 

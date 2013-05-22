@@ -175,25 +175,17 @@ void main_window::update_fields()
    
   for(y=0;y<FIELD_SIZE;y++){
     for(x=0;x<FIELD_SIZE;x++){
-      switch(b->get_color(y*FIELD_SIZE+x)){
-        case WHITE:
-          imagefile = "white.png";
-          break;
-        case BLACK:
-          imagefile = "black.png";
-          break;
-        case EMPTY:
-          if(b->do_move(y*FIELD_SIZE+x,&dummy)){
-            imagefile = "move.png";
-          }
-          else{
-            imagefile = "empty.png";
-          }
-          break;
-        default:
-          /* does never happen */
-          CRASH;
-          break;
+      if(b->discs[WHITE].test(y*FIELD_SIZE+x)){
+        imagefile = "white.png";
+      }
+      else if(b->discs[BLACK].test(y*FIELD_SIZE+x)){
+        imagefile = "black.png";
+      }
+      else if(&dummy != b->do_move(y*FIELD_SIZE+x,&dummy)){
+        imagefile = "move.png";
+      }
+      else{
+        imagefile = "empty.png";
       }
       table.remove(*fields[x][y]);
       delete fields[x][y];

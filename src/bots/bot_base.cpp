@@ -1,5 +1,9 @@
 #include "bot_base.hpp"
 
+#ifndef SQUARED_BOT_ENABLE_OUTPUT
+#define SQUARED_BOT_ENABLE_OUTPUT 1
+#endif
+
 bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
@@ -7,98 +11,68 @@ bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   c(_c),
   prev_move_time(std::time(NULL))
 {
-  init_hash_table();
 }
 
 void bot_base::do_move(const board* b,board* res) 
 {
-  int depth_limit,best_heur,tmp_heur,move_count;
-  unsigned int id,best_move_id;
-  board moves[TOTAL_FIELDS/2];
-  std::string text;
-  double time_diff;
-  struct timeval start,end;
-  
+  int depth_limit,alpha,move_count,best_move_id;
+  board moves[TOTAL_FIELDS/2];  
   
   nodes = 0;
-  prev_move_time = std::time(NULL);
-  gettimeofday(&start,NULL);
-  best_heur = MIN_HEURISTIC;
+  alpha = MIN_HEURISTIC;
+  best_move_id = -1;
   
+#if SQUARED_BOT_ENABLE_OUTPUT
+  struct timeval start;
+  gettimeofday(&start,NULL);
+#endif  
   
   depth_limit = (b->max_moves_left() <= max_endgame_depth) ? (TOTAL_FIELDS-4) : max_depth;
+  
   b->get_children(moves,&move_count);
   assert(move_count>0);
-  
-  best_move_id = -1;
   
   if(move_count==1){
     *res = moves[0];
     return;
   } 
   
-#if SQUARED_BOT_USE_HASHTABLE    
-  clear_hash_table();
-#endif
-  
+  // TODO put look_ahead code in different method
   if(depth_limit - look_ahead >= 2){
 #if SQUARED_BOT_ENABLE_OUTPUT
     std::cout << "Sorting... "; 
     std::cout.flush();
 #endif
-    
-    sort_boards(moves,move_count,look_ahead);
-
+//    sort_boards(moves,move_count,look_ahead);
 #if SQUARED_BOT_ENABLE_OUTPUT
-  std::cout << "Done\n";
-#endif  
-}
-  
-#if SQUARED_BOT_USE_HASHTABLE    
-  clear_hash_table();
-#endif
-  for(id=0;(int)id<move_count;id++){
-    
-    stable.discs[BLACK] = stable.discs[WHITE] = (~0);
-    tmp_heur = alpha_beta(moves + id,best_heur,MAX_HEURISTIC,depth_limit);
-    /*
-    std::cout << stable.discs[c].count() << std::endl;
-    std::cout << stable.discs[opponent(c)].count() << std::endl;
-    
-    tmp_heur += 3*stable.discs[c].count();
-    tmp_heur -= 3*stable.discs[opponent(c)].count();
-  */
-    if(tmp_heur > best_heur){
-      best_heur = tmp_heur;
+    std::cout << "Done\n";
+#endif    
+  }
+
+  for(int id=0;id<move_count;id++){
+    int heur = -alpha_beta(moves + id,alpha,MAX_HEURISTIC,depth_limit);
+    if(heur > alpha){
+      alpha = heur;
       best_move_id = id;
-      *res = moves[id];
-
-#if SQUARED_BOT_ENABLE_OUTPUT
-      text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic == ";
-      text += tostr<int>(best_heur) + "\n";
-      std::cout << text;
-      /* TODO update statusbar msg */
-#endif      
     }
 #if SQUARED_BOT_ENABLE_OUTPUT
-    else{
-      text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic <= ";
-      text += tostr<int>(best_heur) + "\n";
-      std::cout << text;
-      /* TODO update statusbar msg */
-    }
+    std::string text = "move " + tostr<int>(id+1) + "/" + tostr<int>(move_count) +": heuristic ";
+    text += ((best_move_id==id) ? "== " : "<= ") + tostr<int>(alpha) + "\n";
+    std::cout << text;
+    /* TODO update statusbar msg */
 #endif
   }
 
-  /* bot can not prevent losing all discs -> just pick a move */
-  if(best_heur == MIN_HEURISTIC){ 
-    *res = moves[0];
-  }
-
-  gettimeofday(&end,NULL);  
-  time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
-  (start.tv_sec + (start.tv_usec / 1000000.0));
+  /* if the bot cannot prevent losing all discs, just pick a move */
+  *res = moves[(best_move_id == -1) ? 0 : best_move_id];
+  
+  
 #if SQUARED_BOT_ENABLE_OUTPUT
+  struct timeval end;
+  gettimeofday(&end,NULL);  
+  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
+  (start.tv_sec + (start.tv_usec / 1000000.0));
+
   std::cout << nodes << " nodes in " << time_diff << " seconds: ";
   std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
 #endif
@@ -108,82 +82,36 @@ void bot_base::do_move(const board* b,board* res)
 
 
 int bot_base::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
-{
-  board children[32];
-  int move_count,id;
-  board tmp;
-
-#if SQUARED_BOT_USE_HASHTABLE  
-  hash_table_entry *hash_entry;
-  int hash;
-#endif
-  
-  
-  nodes++;   
-  
+{           
+  nodes++; 
+   
   if(b->test_game_ended()){
-    //stable.discs[WHITE] = b->discs[WHITE] & stable.discs[WHITE];
-    //stable.discs[BLACK] = b->discs[BLACK] & stable.discs[BLACK];
-    return PERFECT_SCORE_FACTOR * b->get_disc_diff(c);
+    return PERFECT_SCORE_FACTOR * (b->turn==WHITE ? 1 : -1) * b->get_disc_diff();    
   }
-  
   if(depth_remaining==0){
-    return heuristic(b);
-  }
-
-#if SQUARED_BOT_USE_HASHTABLE
-  if(max_depth - depth_remaining < 4){
-    hash = b->hash() % HASH_TABLE_SIZE;
-    hash_entry = hash_table[hash];
-    while(hash_entry){
-      if(*hash_entry->b == *b){
-        return hash_entry->heur;
-      }
-      else{
-        hash_entry = hash_entry->next;
-      }
-    }
-  }
-#endif
+    return (b->turn==WHITE ? 1 : -1) * heuristic(b);
+  }  
   
-  
-  
+  board children[32];
+  int move_count;
   
   b->get_children(children,&move_count);
   if(move_count==0){
-    tmp = board(*b);
+    board tmp(*b);
     tmp.turn = opponent(b->turn);
-    return alpha_beta(&tmp,alpha,beta,depth_remaining);
+    return -alpha_beta(&tmp,-beta,-alpha,depth_remaining-1);
   }
   
-  if(b->turn == c){
-    for(id=0;id<move_count;id++){
-      alpha = max(alpha,alpha_beta(children + id,alpha,beta,depth_remaining-1));
-      if(alpha>=beta){
-        break;
-      }
+  for(int id=0;id<move_count;id++){
+    int value = -alpha_beta(children + id,-beta,-alpha,depth_remaining-1);
+    if(value>=beta){
+      return value;
     }
-#if SQUARED_BOT_USE_HASHTABLE
-    if(max_depth - depth_remaining < 4){
-      add_hash_table_entry(b,alpha);
+    if(value>=alpha){
+      alpha = value;
     }
-#endif
-    return alpha; 
   }
-  else{
-    for(id=0;id<move_count;id++){
-      beta = min(beta,alpha_beta(children + id,alpha,beta,depth_remaining-1));
-      if(alpha>=beta){
-        break;
-      }
-    }
-#if SQUARED_BOT_USE_HASHTABLE
-    if(max_depth - depth_remaining < 4){
-      add_hash_table_entry(b,beta);
-    }
-#endif
-    return beta;
-  }
+  return alpha;
 }
 
 int bot_base::heuristic(const board* b)
@@ -225,54 +153,4 @@ void bot_base::sort_boards(board *moves,int move_count, int depth_limit)
 int bot_base::get_max_depth() const
 {
   return max_depth;
-}
-
-void bot_base::clear_hash_table()
-{
-  int i;
-  hash_table_entry *hte,*tmp;
-  
-  for(i=0;i<HASH_TABLE_SIZE;i++){
-    hte = hash_table[i];
-    while(hte != NULL){
-      tmp = hte->next;
-      delete hte->b;
-      delete hte;
-      hte = tmp;
-    }
-    hash_table[i] = NULL;
-  }
-  
-}
-  
-void bot_base::init_hash_table()
-{
-  int i;
-  
-  for(i=0;i<HASH_TABLE_SIZE;i++){
-    hash_table[i] = NULL;
-  }
-}
-
-void bot_base::add_hash_table_entry(const board* b, int heur)
-{
-  int bucket;
-  hash_table_entry* hte;
-  
-  bucket = b->hash() % HASH_TABLE_SIZE;
-  if(hash_table[bucket] == NULL){
-    hash_table[bucket] = new hash_table_entry(NULL,new board(*b),heur);
-  }
-  else{
-    hte = hash_table[bucket];
-    while(hte->next != NULL){
-      hte = hte->next;
-    }
-    hte->next = new hash_table_entry(NULL,new board(*b),heur);
-  }
-}
-
-bot_base::~bot_base()
-{
-  clear_hash_table();
 }

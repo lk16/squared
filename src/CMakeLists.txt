@@ -47,8 +47,10 @@ target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
 )
 
-ADD_EXECUTABLE(../timer
-  main/timer.cpp
+
+
+ADD_EXECUTABLE(../debug
+  main/debug.cpp
   game/board.cpp
   bots/bot_ali.cpp
   bots/bot_base.cpp
