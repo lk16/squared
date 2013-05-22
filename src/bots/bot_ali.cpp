@@ -1,5 +1,7 @@
 #include "bot_ali.hpp"
 
+#define SQUARED_BOT_ENABLE_OUTPUT 1
+
 bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
   bot_base(_c, _max_depth, _max_endgame_depth)
 {  
@@ -15,13 +17,126 @@ bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
     0,1,2,3,3,2,1,0
   };
   
-  
   for(int i=0;i<TOTAL_FIELDS;i++){
     location_bitsets[loc[i]].set(i);
   }
-  
-    
 }
+
+void bot_ali::evaluate_depth_level(const board* boards, int* heurs, int count, int depth)
+{
+  int alpha = MIN_HEURISTIC;
+  
+  for(int id=0;id<count;id++){
+    heurs[id] = -alpha_beta(boards + id,alpha,MAX_HEURISTIC,depth);
+    alpha = max(alpha,heurs[id]);
+  }
+}
+
+
+void bot_ali::do_move(const board* b,board* res) 
+{
+  int alpha,child_count,best_move_id;
+  board children[TOTAL_FIELDS/2];  
+  
+  nodes = 0;
+  alpha = MIN_HEURISTIC;
+  best_move_id = -1;
+  res->reset();
+  
+#if SQUARED_BOT_ENABLE_OUTPUT
+  struct timeval start;
+  gettimeofday(&start,NULL);
+#endif  
+  
+  b->get_children(children,&child_count);
+  assert(child_count>0);
+  
+  if(child_count==1){
+    *res = children[0];
+    return;
+  } 
+ 
+  if(b->max_moves_left() <= max_endgame_depth){
+    //TODO endgame method
+    // return something;
+  }
+  
+  int *heurs = new int[child_count];
+  
+  for(int d=1;d<=max_depth;d++){
+    evaluate_depth_level(children,heurs,child_count,d);
+    sort_boards(children,heurs,child_count);
+#if SQUARED_BOT_ENABLE_OUTPUT
+  std::cout << "Depth " << d << ": best heur = " << heurs[0] << std::endl;
+#endif  
+  }
+
+  *res = children[0];
+  
+  
+#if SQUARED_BOT_ENABLE_OUTPUT
+  struct timeval end;
+  gettimeofday(&end,NULL);  
+  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
+  (start.tv_sec + (start.tv_usec / 1000000.0));
+
+  std::cout << nodes << " nodes in " << time_diff << " seconds: ";
+  std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
+#endif
+}
+
+
+
+
+int bot_ali::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
+{           
+  nodes++; 
+   
+  if(b->test_game_ended()){
+    return PERFECT_SCORE_FACTOR * (b->turn==WHITE ? 1 : -1) * b->get_disc_diff();    
+  }
+  if(depth_remaining==0){
+    return (b->turn==WHITE ? 1 : -1) * heuristic(b);
+  }  
+  
+  board children[32];
+  int move_count;
+  
+  b->get_children(children,&move_count);
+  if(move_count==0){
+    board tmp(*b);
+    tmp.turn = opponent(b->turn);
+    return -alpha_beta(&tmp,-beta,-alpha,depth_remaining-1);
+  }
+  
+  for(int id=0;id<move_count;id++){
+    int value = -alpha_beta(children + id,-beta,-alpha,depth_remaining-1);
+    if(value>=beta){
+      return value;
+    }
+    if(value>=alpha){
+      alpha = value;
+    }
+  }
+  return alpha;
+}
+
+void bot_ali::sort_boards(board *boards,int* heurs, int count)
+{
+  bool loop;
+  do{
+    loop = false;
+    for(int i=0;i<count-1;i++){
+      if(heurs[i] < heurs[i+1]){
+        std::swap(heurs[i],heurs[i+1]);
+        std::swap(boards[i],boards[i+1]);
+        loop = true;
+      }
+      assert(heurs[i] >= heurs[i+1]);
+    }
+  }while(loop);
+}
+
 
 int bot_ali::heuristic(const board* b)
 {
