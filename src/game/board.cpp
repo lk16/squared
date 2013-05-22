@@ -69,13 +69,78 @@ board* board::do_move(int field_id,board* result) const
   return result;
 }
 
-void board::get_children(board* array,int* move_count) const
+void board::get_children(board* out,int* move_count) const
 {
-  board* cur = array;
+    static const int diff[8] = {
+      -9,-8,-7,
+      -1   , 1,
+       7, 8, 9
+    };
+    
+    static const int border_flag[8] = {
+      0x1|0x4,0x1,0x1|0x8,
+          0x4,        0x8,
+      0x2|0x4,0x2,0x2|0x8
+    };
+    
+  std::bitset<TOTAL_FIELDS> used = (discs[WHITE] | discs[BLACK]);
+  *move_count = 0;
+  
   for(int field_id=0;field_id<TOTAL_FIELDS;field_id++){
-    cur = do_move(field_id,cur);
+    
+    if(used.test(field_id)){
+      continue;
+    }
+  
+    std::bitset<TOTAL_FIELDS> mask;
+  
+    for(int i=0;i<8;++i){ 
+      std::bitset<TOTAL_FIELDS> tmp_mask;
+      tmp_mask.reset();
+      int cur_field_id = field_id;
+      while(true){
+        
+        //test walking off the board
+        if( 
+          ((cur_field_id & 070)==000 && (border_flag[i] & 0x1)) ||
+          ((cur_field_id & 070)==070 && (border_flag[i] & 0x2)) ||
+          ((cur_field_id & 007)==000 && (border_flag[i] & 0x4)) ||
+          ((cur_field_id & 007)==007 && (border_flag[i] & 0x8)) ||
+          false
+        ){
+          break;
+        }
+        cur_field_id += diff[i]; 
+              
+        
+        if(discs[opponent(turn)].test(cur_field_id)){
+          tmp_mask.set(cur_field_id);
+          continue;
+        }
+        
+        if(discs[turn].test(cur_field_id)){
+          if(tmp_mask.any()){
+            mask |= tmp_mask;
+          }
+          break;
+        }
+        
+        // cur_field_id == EMPTY
+        break;
+        
+      }
+    }
+    
+    if(mask.any()){
+      *out = *this;
+      out->discs[turn] |= mask;
+      out->discs[turn].set(field_id);
+      out->discs[opponent(turn)] &= (~mask);
+      out->turn = opponent(out->turn);
+      ++out;
+      ++(*move_count);
+    }  
   }
-  *move_count = (cur-array);
 }
 
 bool board::has_moves() const
