@@ -1,5 +1,5 @@
-#include "game_control.hpp"
-#include "gui/main_window.hpp"
+#include "gamecontrol.hpp"
+#include "gui/mainwindow.hpp"
 
 game_control::game_control(main_window* _mw):
   mw(_mw),
@@ -29,13 +29,17 @@ game_control::~game_control()
 
 void game_control::on_human_do_move(int field_id)
 {
+  board *move;
+  
+  move = new board;
+  
   if(bot[turn()]){
     return;
   }
 
-  board *move = new board;
- 
-  if(move != current->do_move(field_id,move)){
+  
+  
+  if(current->do_move(field_id,move)){
     on_any_move(move);
   }
 }
@@ -83,6 +87,9 @@ void game_control::on_any_move(board* next)
       on_game_ended();
     }
   }
+#ifndef SQUARED_BOT_USE_HASHTABLE
+  std::cout << (next->hash() % bot_base::HASH_TABLE_SIZE) << std::endl;
+#endif
 }
 
 
@@ -139,8 +146,9 @@ void game_control::on_game_ended()
 {
   std::string text;
   
-  text += "Game has ended. White (" + tostr<int>(current->discs[WHITE].count()) + ") - Black (";
-  text += tostr<int>(current->discs[BLACK].count())+ ")";
+  text += "Game has ended. White (" + tostr<int>(current->count_discs(WHITE)) + ") - Black (";
+  text += tostr<int>(current->count_discs(BLACK)) + ")";
+  
   
   std::cout << text << std::endl;
   mw->update_status_bar(text);

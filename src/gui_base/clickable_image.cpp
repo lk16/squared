@@ -6,6 +6,7 @@ clickable_image::clickable_image(main_window* par, int _field_id, const std::str
   field_id(_field_id),
   parent(par)
 {
+  image.set_allocation(Gtk::EventBox::get_allocation());
   add(image);
   show_all_children();
 }
