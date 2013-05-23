@@ -29,16 +29,16 @@ void bot_ali::evaluate_depth_level(const board* boards, int* heurs, int count, i
   
   for(int id=count-1;id>=0;--id){
     heurs[id] = -alpha_beta(boards + id,alpha,MAX_HEURISTIC,depth);
-    alpha = max(alpha,heurs[id]);
+    if(heurs[id] > alpha){
+      alpha = heurs[id];
+    }
+    //std::cout << '.' << std::flush;
   }
 }
 
 
 void bot_ali::do_move(const board* b,board* res) 
-{
-<<<<<<< HEAD
-=======
-  int alpha,child_count,best_move_id;
+{  int alpha,child_count,best_move_id,depth;
   board children[TOTAL_FIELDS/2];  
   
   nodes = 0;
@@ -59,26 +59,45 @@ void bot_ali::do_move(const board* b,board* res)
     return;
   } 
  
-  if(TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count() <= (unsigned)max_endgame_depth){
-    //TODO separate endgame method
-    // return something;
-  }
-  
-  
-  /*  Idea: big_child_stack will be broken down each run, 
-      so we keep a copy (children) at all times to rebuild big_child_stack
-      also it is used for the return value
-  */
-  board big_child_stack[(TOTAL_FIELDS/2)*15];
+  depth = max_depth;
   int *heurs = new int[child_count];
   
-  for(int d=1;d<=max_depth;d++){
-    memcpy(&big_child_stack,children,child_count*sizeof(board));
-    evaluate_depth_level(big_child_stack,heurs,child_count,d);
-    sort_boards(children,heurs,child_count);
+  if(TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count() <= (unsigned)max_endgame_depth){
 #if SQUARED_BOT_ENABLE_OUTPUT
-    std::cout << "Depth " << d << ": best heur = " << heurs[child_count-1] << std::endl;
+    std::cout.flush();
+#endif 
+    for(int id=child_count-1;id>=0;--id){
+      heurs[id] = -do_move_perfect(children+id,alpha,MAX_HEURISTIC);
+      if(heurs[id] > alpha){
+        alpha = heurs[id];
+      }
+#if SQUARED_BOT_ENABLE_OUTPUT
+      std::cout << "Depth infinite, move " << (child_count-id) << "/" << (child_count);
+      std::cout << ": " << heurs[id] << std::endl;
+#endif     
+    }
+    sort_boards(children,heurs,child_count); 
+  }
+  else{
+  
+    /*  Idea: big_child_stack will be broken down each run, 
+        so we keep a copy (children) at all times to rebuild big_child_stack
+        also it is used for the return value
+    */
+    board big_child_stack[(TOTAL_FIELDS/2)*15];
+    
+    for(int d=(depth%2 ? 1 : 2);d<=depth;d+=2){
+      memcpy(&big_child_stack,children,child_count*sizeof(board));
+#if SQUARED_BOT_ENABLE_OUTPUT
+      std::cout << "Depth " << d << ": ";
+      std::cout.flush();
+#endif 
+      evaluate_depth_level(big_child_stack,heurs,child_count,d);
+      sort_boards(children,heurs,child_count);
+#if SQUARED_BOT_ENABLE_OUTPUT
+      std::cout << " " << heurs[child_count-1] << std::endl;
 #endif  
+    }
   }
 
   *res = children[child_count-1];
@@ -131,12 +150,42 @@ int bot_ali::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   return alpha;
 }
 
+int bot_ali::do_move_perfect(const board* b,int alpha, int beta)
+{           
+  nodes++; 
+  
+  if(b->test_game_ended()){
+    return (b->turn==WHITE ? 1 : -1) * b->get_disc_diff();    
+  }
+  
+  board children[32];
+  int move_count;
+  
+  b->get_children(children,&move_count);
+  if(move_count==0){
+    board tmp(*b);
+    tmp.turn = opponent(b->turn);
+    return -do_move_perfect(&tmp,-beta,-alpha);
+  }
+  
+  for(int id=0;id<move_count;id++){
+    int value = -do_move_perfect(children + id,-beta,-alpha);
+    if(value>=beta){
+      return value;
+    }
+    if(value>=alpha){
+      alpha = value;
+    }
+  }
+  return alpha;
+}
+
 void bot_ali::sort_boards(board *boards,int* heurs, int count)
 {
   bool loop;
   do{
     loop = false;
-    for(int i=0;i<count-1;i++){
+    for(int i=count-1;i--;){
       if(heurs[i] > heurs[i+1]){
         std::swap(heurs[i],heurs[i+1]);
         std::swap(boards[i],boards[i+1]);
@@ -145,7 +194,6 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
       assert(heurs[i] <= heurs[i+1]);
     }
   }while(loop);
->>>>>>> 94708505d9ed614668d96537a62bf2e0589dcab4
 }
 
 
@@ -163,7 +211,7 @@ int bot_ali::heuristic(const board* b)
   
   static int open_loc_val[10] = { 50, -8, -7, -6,-10, -3, -3, -4, -3, -2 };
   static int  mid_loc_val[10] = { 40, -4, -3, -2, -6, -4, -2, -2, -2,  0 };
-  static int  end_loc_val[10] = { 30,  5,  7,  9, -2,  1,  0,  3,  1,  5 };
+  static int  end_loc_val[10] = { 20,  5,  7,  9, -2,  1,  0,  7,  1,  5 };
   
   int disc_count = (b->discs[WHITE] | b->discs[BLACK]).count();
   
@@ -175,7 +223,7 @@ int bot_ali::heuristic(const board* b)
       res -= open_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
     }
   }
-  if(disc_count>=15 && disc_count<45){
+  if(disc_count>20 && disc_count<40){
     for(int i=0;i<10;i++){
       res += mid_loc_val[i] * (b->discs[WHITE] & location_bitsets[i]).count();
       res -= mid_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();

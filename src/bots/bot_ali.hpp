@@ -30,9 +30,13 @@ struct bot_ali:
   /// positive is good for WHITE 
   int heuristic(const board* b);
   
-  /// calculates the heuristic for b using alpha beta pruning
+  /// calculates the heuristic for b using alpha beta pruning, positive better for white
   int alpha_beta(const board* b,int alpha, int beta,int depth_remaining);
 
+  /// calculates the result for perfect play of board b, possitive better for white
+  /// this is NOT multiplied with PERFECT_SCORE_FACTOR
+  int do_move_perfect(const board* b,int alpha, int beta);
+  
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
   
