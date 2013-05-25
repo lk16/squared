@@ -33,7 +33,7 @@ main_window::main_window():
 
 void main_window::init_ui(){
     
-  this->set_default_size(400,400);
+  this->set_default_size(800,800);
   this->set_title(Glib::ustring("Squared"));
   
   action_group = Gtk::ActionGroup::create();

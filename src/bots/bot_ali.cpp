@@ -6,6 +6,10 @@
 bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
   bot_base(_c, _max_depth, _max_endgame_depth)
 {  
+  
+
+  
+  
   int loc[TOTAL_FIELDS] = 
   {
     0,1,2,3,3,2,1,0,
@@ -19,7 +23,28 @@ bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
   };
   
   for(int i=0;i<TOTAL_FIELDS;i++){
-    location_bitsets[loc[i]].set(i);
+    switch(loc[i]){
+      case 0:
+        location_bitsets[CORNER].set(i);
+        break;
+      case 1:
+        location_bitsets[NEXT_TO_CORNER].set(i);
+        break;
+      case 2:
+      case 3:
+        location_bitsets[SIDE].set(i);
+        break;
+      case 4:
+        location_bitsets[X_SQUARE].set(i);
+        break;
+      case 7:
+      case 8:
+      case 9:
+        location_bitsets[CENTER].set(i);
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -67,9 +92,13 @@ void bot_ali::do_move(const board* b,board* res)
     std::cout.flush();
 #endif 
     for(int id=child_count-1;id>=0;--id){
-      heurs[id] = -do_move_perfect(children+id,alpha,MAX_HEURISTIC);
+      heurs[id] = -do_move_perfect(children+id,alpha,TOTAL_FIELDS);
       if(heurs[id] > alpha){
         alpha = heurs[id];
+      }
+      else{
+        // this is done so that no extreme values will be shown on cout
+        heurs[id] = alpha;
       }
 #if SQUARED_BOT_ENABLE_OUTPUT
       std::cout << "Depth infinite, move " << (child_count-id) << "/" << (child_count);
@@ -141,7 +170,7 @@ int bot_ali::alpha_beta(const board* b,int alpha, int beta,int depth_remaining)
   for(int id=0;id<move_count;id++){
     int value = -alpha_beta(children + id,-beta,-alpha,depth_remaining-1);
     if(value>=beta){
-      return value;
+      return beta;
     }
     if(value>=alpha){
       alpha = value;
@@ -171,7 +200,7 @@ int bot_ali::do_move_perfect(const board* b,int alpha, int beta)
   for(int id=0;id<move_count;id++){
     int value = -do_move_perfect(children + id,-beta,-alpha);
     if(value>=beta){
-      return value;
+      return beta;
     }
     if(value>=alpha){
       alpha = value;
@@ -199,42 +228,45 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
 
 int bot_ali::heuristic(const board* b)
 {
-  /*  0,1,2,3,3,2,1,0,
-      1,4,5,6,6,5,4,1,
-      2,5,7,8,8,7,5,2
-      3,6,8,9,9,8,6,3,
-      3,6,8,9,9,8,6,3,
-      2,5,7,8,8,7,5,2
-      1,4,5,6,6,5,4,1,
-      0,1,2,3,3,2,1,0  */
-  
-  
-  static int open_loc_val[10] = { 50, -8, -7, -6,-10, -3, -3, -4, -3, -2 };
-  static int  mid_loc_val[10] = { 40, -4, -3, -2, -6, -4, -2, -2, -2,  0 };
-  static int  end_loc_val[10] = { 20,  5,  7,  9, -2,  1,  0,  7,  1,  5 };
-  
-  int disc_count = (b->discs[WHITE] | b->discs[BLACK]).count();
+  /*
+    CORNER=0,
+    NEXT_TO_CORNER=1,
+    SIDE=2,
+    X_SQUARE=3,
+    CENTER=4  
+  */
+
+ 
   
   int res = 0;
   
+  static int open_loc_val[5] = { 51,-10, -7,-20, -3};
+  static int  mid_loc_val[5] = { 41,-10, -5,-20, -1};
+  static int  end_loc_val[5] = { 31, -5,  4, -7,  4};
+  
+  int disc_count = (b->discs[WHITE] | b->discs[BLACK]).count();
+  
+ 
+  
   if(disc_count<=20){
-    for(int i=0;i<10;i++){
+    for(int i=0;i<5;i++){
       res += open_loc_val[i] * (b->discs[WHITE] & location_bitsets[i]).count();
       res -= open_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
     }
   }
-  if(disc_count>20 && disc_count<40){
-    for(int i=0;i<10;i++){
+  else if(disc_count>20 && disc_count<40){
+    for(int i=0;i<5;i++){
       res += mid_loc_val[i] * (b->discs[WHITE] & location_bitsets[i]).count();
       res -= mid_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
     }  
   }  
-  if(disc_count>=40){
-    for(int i=0;i<10;i++){
+  else if(disc_count>=40){
+    for(int i=0;i<5;i++){
       res += end_loc_val[i] * (b->discs[WHITE] & location_bitsets[i]).count();
       res -= end_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
     }  
-  } 
+  }
+
   
   return res;
 }

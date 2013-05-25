@@ -13,7 +13,7 @@ link_directories(
   )
 
   set(OPTIMIZING_FLAGS
-    "-I .. -std=c++0x -Wall -Wextra -O3 -DNDEBUG -pipe -msse2 -fforce-addr -fprefetch-loop-arrays -funroll-loops" 
+    "-I .. -std=c++0x -Wall -Wextra -O3 -DNDEBUG -pipe -msse2 -fforce-addr -ftree-vectorize -fprefetch-loop-arrays -funroll-loops" 
   )
 
 

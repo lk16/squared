@@ -14,7 +14,11 @@ struct board{
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
   
-  /// initializes a board to starting position
+  
+  
+  static const int border_flag[64];
+  
+  /// does NOTHING; call reset() to initialize
   board();
   
   /// copies a board
@@ -57,9 +61,10 @@ struct board{
   
 };
 
+
+
 inline board::board()
 {
-  reset();
 }
 
 inline void board::reset(){

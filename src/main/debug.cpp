@@ -46,6 +46,7 @@ void do_random_moves(board* b,int n){
 
 
 int main(int argc,char **argv){
+  
   int counter=0;
   timeval start,end;
   board in[40],out;

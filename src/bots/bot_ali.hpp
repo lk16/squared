@@ -20,7 +20,16 @@
 struct bot_ali:
   public bot_base
 {
-  std::bitset<TOTAL_FIELDS> location_bitsets[10];  
+  
+  enum{
+    CORNER=0,
+    NEXT_TO_CORNER=1,
+    SIDE=2,
+    X_SQUARE=3,
+    CENTER=4  
+  };
+  
+  std::bitset<TOTAL_FIELDS> location_bitsets[5];  
   
   bot_ali(color c, int max_depth, int max_endgame_depth);
 
