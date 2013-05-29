@@ -15,7 +15,8 @@ class main_window;
 struct clickable_image:
   public Gtk::EventBox
 {
-  aspect_scaling_image image;
+  //aspect_scaling_image image; // << did not work properly
+  Gtk::Image image;
   int field_id;
   main_window* parent;
   

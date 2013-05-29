@@ -9,20 +9,8 @@ main_window::main_window():
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
-
- 
-  table.set_border_width(0);
-  table.set_col_spacings(0);
-  table.set_row_spacings(0);
-  table.set_spacings(0);
   
-  for(int y=0;y<FIELD_SIZE;y++){ 
-    for(int x=0;x<FIELD_SIZE;x++){
-      fields[x][y] = new clickable_image(this,y*FIELD_SIZE+x,IMAGE_PATH + "empty.png");
-      
-      table.attach(*fields[x][y],x,x+1,y,y+1);
-    }
-  }
+
   
   control.on_new_game();
   show_all_children();
@@ -33,12 +21,10 @@ main_window::main_window():
 
 void main_window::init_ui(){
     
-  this->set_default_size(800,800);
+  this->set_default_size(600,600);
   this->set_title(Glib::ustring("Squared"));
   
   action_group = Gtk::ActionGroup::create();
-  ui_manager = Gtk::UIManager::create();
-  
   
   /* menus themselves */
   action_group->add(Gtk::Action::create("GameMenu","_Game"));
@@ -73,36 +59,38 @@ void main_window::init_ui(){
   );
   
   
+  ui_manager = Gtk::UIManager::create();
   ui_manager->insert_action_group(action_group);
   
-    
+  
   try{
-    ui_manager->add_ui_from_file(ui_file);
+    ui_manager->add_ui_from_file(UI_PATH + "menus.xml");
   }
   catch(const Glib::Error& ex){
-    std::cerr << "Adding ui from " << ui_file << " failed: " << ex.what() << std::endl;
+    std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what();
   }
   
-  this->add(vbox);
+  add(vbox);
   
-  Gtk::Widget* menu_bar = ui_manager->get_widget("/MenuBar");
-  if(menu_bar){
-    vbox.pack_start(*menu_bar,Gtk::PACK_SHRINK);
+  Gtk::Widget* menubar = ui_manager->get_widget("/MenuBar");
+  if(menubar){
+    vbox.pack_start(*menubar,Gtk::PACK_SHRINK);
+  }
+  
+  for(int y=0;y<8;y++){ 
+    for(int x=0;x<8;x++){
+      fields[x][y]=new clickable_image(this,y*FIELD_SIZE+x,IMAGE_PATH + "empty.png");
+      table.attach(*fields[x][y],x,x+1,y,y+1);
+    }
   }
   
   vbox.pack_start(aspect_frame,Gtk::PACK_EXPAND_WIDGET);
-  
   aspect_frame.set_shadow_type(Gtk::SHADOW_NONE);
   aspect_frame.add(table);
-  
-  
   
   vbox.pack_start(status_bar,Gtk::PACK_SHRINK);
   
   show_all_children();
-
-
-
 }
 
 void main_window::on_menu_game_quit()

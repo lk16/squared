@@ -13,11 +13,7 @@
 struct board{
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
-  
-  
-  
-  static const int border_flag[64];
-  
+    
   /// does NOTHING; call reset() to initialize
   board();
   

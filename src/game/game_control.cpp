@@ -42,12 +42,6 @@ void game_control::on_human_do_move(int field_id)
 
 void game_control::on_bot_do_move()
 {
-  board *move;
-  bot_base *bot_to_move;
-  
-  move = new board;
-  bot_to_move = bot[turn()];
-  
   if(bot[BLACK] && bot[WHITE]){
     current->show();
   }
@@ -55,15 +49,14 @@ void game_control::on_bot_do_move()
   if(!current->has_moves()){
     return;
   }
-  bot_to_move->do_move(current,move);
-  on_any_move(move); 
   
+  board* move = new board;
+  bot[turn()]->do_move(current,move);
+  on_any_move(move); 
 }
 
 void game_control::on_any_move(board* next)
 {
-  board copy;
-  
   while(!redo_stack.empty()){
     delete redo_stack.top();
     redo_stack.pop();
@@ -73,7 +66,7 @@ void game_control::on_any_move(board* next)
   current = next;
   mw->update_fields();
   if(!current->has_moves()){
-    copy = *next;
+    board copy = *current;
     copy.turn = opponent(copy.turn);
     if(copy.has_moves()){
       current->turn = opponent(turn());

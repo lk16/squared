@@ -69,6 +69,15 @@ public:
     m_sized(false)
   {}
 
+public:
+  scaling_image(const std::string& file,Gdk::InterpType interp):
+    Gtk::Image(file),
+    m_original(get_pixbuf()),
+    m_interp(interp),
+    m_sized(false)
+  {
+  }
+
 };
 
 /// This widget automatically scales the image but preserves the
@@ -85,18 +94,20 @@ public:
   
   explicit aspect_scaling_image(const std::string& filename,
                        Gdk::InterpType interp = Gdk::INTERP_BILINEAR):
-    m_img(Gdk::Pixbuf::create_from_file(filename),interp)
+                       m_img(filename,interp)
   {
     
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = m_img.get_pixbuf();
     
-    Gtk::AspectFrame::set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER,
-        // Aspect ratio of frame
-        pixbuf->get_width()/float(pixbuf->get_height()));
+    Gtk::AspectFrame::set(0.5,0.5,
+    // Aspect ratio of frame
+    pixbuf->get_width()/float(pixbuf->get_height()));
     // This makes it appear as if there is no frame
     set_shadow_type(Gtk::SHADOW_NONE);
     // This allows a minimum size
-    set_size_request(pixbuf->get_width()/2,pixbuf->get_height()/2);
+    set_size_request(pixbuf->get_width()/4,pixbuf->get_height()/4);
+    
+    
     // Finally, add the image to be managed
     add(m_img);
   }

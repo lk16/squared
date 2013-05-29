@@ -21,18 +21,13 @@ struct bot_ali:
   public bot_base
 {
   
-  enum{
-    CORNER=0,
-    NEXT_TO_CORNER=1,
-    SIDE=2,
-    X_SQUARE=3,
-    CENTER=4  
-  };
+  std::bitset<TOTAL_FIELDS> location_bitsets[10];  
+  board* board_stack;
   
-  std::bitset<TOTAL_FIELDS> location_bitsets[5];  
   
   bot_ali(color c, int max_depth, int max_endgame_depth);
-
+  ~bot_ali();
+  
   /// picks a move!
   virtual void do_move(const board* b,board* res);
   
@@ -40,17 +35,17 @@ struct bot_ali:
   int heuristic(const board* b);
   
   /// calculates the heuristic for b using alpha beta pruning, positive better for white
-  int alpha_beta(const board* b,int alpha, int beta,int depth_remaining);
+  int alpha_beta(board* b,int alpha, int beta,int depth_remaining);
 
   /// calculates the result for perfect play of board b, possitive better for white
   /// this is NOT multiplied with PERFECT_SCORE_FACTOR
-  int do_move_perfect(const board* b,int alpha, int beta);
+  int alpha_beta_perfect(board* b,int alpha, int beta);
   
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
   
   /// evaluate all (count) boards at depth depth, and put the heuristics in heurs
-  void evaluate_depth_level(const board* boards, int* heurs,int count,int depth);
+  void evaluate_depth_level(board* boards, int* heurs,int count,int depth);
   
 };
 
