@@ -9,10 +9,15 @@ board* board::do_move(int field_id,board* result) const
      7, 8, 9
   };
   
-  static const int border_flag[8] = {
-    0x1|0x4,0x1,0x1|0x8,
-        0x4,        0x8,
-    0x2|0x4,0x2,0x2|0x8
+  static const unsigned int border_flag[64] = {
+    0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
   };
   
   std::bitset<TOTAL_FIELDS> mask,tmp_mask;
@@ -28,22 +33,12 @@ board* board::do_move(int field_id,board* result) const
     int cur_field_id = field_id;
     while(true){
       
-      // test walking off the board
-      if( 
-        //  ((cur_field_id & 070)==000 && (border_flag[i] & 0x1)) ||
-        //  ((cur_field_id & 070)==070 && (border_flag[i] & 0x2)) ||
-        ((cur_field_id & 007)==000 && (border_flag[i] & 0x4)) ||
-        ((cur_field_id & 007)==007 && (border_flag[i] & 0x8)) ||
-        false
-      ){
+      //test walking off the board
+      if(border_flag[cur_field_id] & (1ul << i)){
         break;
       }
       
       cur_field_id += diff[i]; 
-      
-      if(cur_field_id>=TOTAL_FIELDS || cur_field_id<0){
-        break;
-      }
       
       if(discs[opponent(turn)].test(cur_field_id)){
         tmp_mask.set(cur_field_id);
@@ -51,15 +46,12 @@ board* board::do_move(int field_id,board* result) const
       }
       
       if(discs[turn].test(cur_field_id)){
-        if(tmp_mask.any()){
-          mask |= tmp_mask;
-        }
+        mask |= tmp_mask;
         break;
       }
       
       // cur_field_id == EMPTY
       break;
-      
     }
   }
   
@@ -123,9 +115,7 @@ void board::get_children(board* out,int* move_count) const
         }
         
         if(discs[turn].test(cur_field_id)){
-          if(tmp_mask.any()){
-            mask |= tmp_mask;
-          }
+          mask |= tmp_mask;
           break;
         }
         
@@ -253,10 +243,10 @@ int board::get_disc_diff() const
   count[BLACK] = discs[BLACK].count();
   count[WHITE] = discs[WHITE].count();
   
-  if(count[WHITE] > count[BLACK]){ /* c wins */
+  if(count[WHITE] > count[BLACK]){ /* WHITE wins */
     return (TOTAL_FIELDS)-(2*count[BLACK]);
   }
-  else if(count[WHITE] < count[BLACK]){ /* c loses */
+  else if(count[WHITE] < count[BLACK]){ /* BLACK wins */
     return ((-TOTAL_FIELDS)+(2*count[WHITE]));
   }
   else{ /* draw */

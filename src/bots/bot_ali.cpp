@@ -35,7 +35,9 @@ void bot_ali::evaluate_depth_level(board* boards, int* heurs, int count, int dep
     if(heurs[id] > alpha){
       alpha = heurs[id];
     }
+    std::cout << '.' << std::flush;
   }
+  std::cout << ' ' << std::flush;
 }
 
 
@@ -107,13 +109,8 @@ void bot_ali::do_move(const board* b,board* res)
 int bot_ali::alpha_beta(board* b,int alpha, int beta,int depth_remaining)
 {           
   nodes++; 
-   
-  if(b->test_game_ended()){
-    return PERFECT_SCORE_FACTOR * 
-      (b->turn==WHITE ?  b->get_disc_diff() : - b->get_disc_diff());    
-  }
   if(depth_remaining==0){
-    return (b->turn==WHITE ? 1 : -1) * heuristic(b);
+    return b->turn==WHITE ? heuristic(b) : -heuristic(b);
   }  
   
   int move_count;
@@ -121,6 +118,10 @@ int bot_ali::alpha_beta(board* b,int alpha, int beta,int depth_remaining)
   b->get_children(b+1,&move_count);
   if(move_count==0){
     b->turn = opponent(b->turn);
+    if(!b->has_moves()){
+      return PERFECT_SCORE_FACTOR * 
+      (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+    }
     return -alpha_beta(b,-beta,-alpha,depth_remaining-1);
   }
   
@@ -140,15 +141,14 @@ int bot_ali::alpha_beta_perfect(board* b,int alpha, int beta)
 {           
   nodes++; 
   
-  if(b->test_game_ended()){
-    return b->turn==WHITE ? b->get_disc_diff() : -b->get_disc_diff();    
-  }
-  
   int move_count;
   
   b->get_children(b+1,&move_count);
   if(move_count==0){
     b->turn = opponent(b->turn);
+    if(!b->has_moves()){
+      return b->turn==WHITE ? b->get_disc_diff() : -b->get_disc_diff();    
+    }
     return -alpha_beta_perfect(b,-beta,-alpha);
   }
   
