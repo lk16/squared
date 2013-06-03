@@ -139,13 +139,13 @@ void main_window::on_menu_settings_settings()
       control.remove_bot(BLACK);
     }
     else{
-      control.add_bot(BLACK,output_level[BLACK],min(16,2*output_level[BLACK]));
+      control.add_bot(BLACK,output_level[BLACK],2*output_level[BLACK]);
     }
     if(output_level[WHITE]==-1){
       control.remove_bot(WHITE);
     }
     else{
-      control.add_bot(WHITE,output_level[WHITE],min(16,2*output_level[WHITE]));
+      control.add_bot(WHITE,output_level[WHITE],2*output_level[WHITE]);
     }
   
   }

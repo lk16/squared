@@ -119,7 +119,7 @@ int bot_ali::alpha_beta(board* b,int alpha, int beta,int depth_remaining)
   if(move_count==0){
     b->turn = opponent(b->turn);
     if(!b->has_moves()){
-      return PERFECT_SCORE_FACTOR * 
+       return PERFECT_SCORE_FACTOR * 
       (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
     }
     return -alpha_beta(b,-beta,-alpha,depth_remaining-1);
@@ -147,7 +147,7 @@ int bot_ali::alpha_beta_perfect(board* b,int alpha, int beta)
   if(move_count==0){
     b->turn = opponent(b->turn);
     if(!b->has_moves()){
-      return b->turn==WHITE ? b->get_disc_diff() : -b->get_disc_diff();    
+      return b->turn==WHITE ? -b->get_disc_diff() : b->get_disc_diff();    
     }
     return -alpha_beta_perfect(b,-beta,-alpha);
   }
@@ -194,15 +194,15 @@ int bot_ali::heuristic(const board* b)
         0,1,2,3,3,2,1,0 
     */
     
+    int res = 0;
     
-                      //            0   1   2   3   4   5   6   7   8   9
-    static int open_loc_val[10] = { 50, -8, -7, -6,-10, -3, -3, -4, -3, -2 };
-    static int mid_loc_val[10] =  { 40, -4, -3, -2,-10, -4, -2, -2, -2,  0 };
-    static int end_loc_val[10] =  { 20,  5,  7,  9, -5,  1,  0,  7,  1,  5 };
+                      //            0   1   2   3    4   5   6   7   8   9
+    static int open_loc_val[10] = {500,-71,-43,-33,-203,-23,-19, -9, -7,  3 };
+    static int mid_loc_val[10] =  {500,-41,-37,-27,-203,-17,-11, -9, -7,  9 };
+    static int end_loc_val[10] =  {400, 50, 70, 90, -50, 10,  0, 70, 10, 50 };
     
     int disc_count = (b->discs[WHITE] | b->discs[BLACK]).count();
     
-    int res = 0;
     
     if(disc_count<=20){
       for(int i=0;i<10;i++){
@@ -210,7 +210,7 @@ int bot_ali::heuristic(const board* b)
         res -= open_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
       }
     }
-    if(disc_count>=20 && disc_count<40){
+    if(disc_count>20 && disc_count<40){
       for(int i=0;i<10;i++){
         res += mid_loc_val[i] * (b->discs[WHITE] & location_bitsets[i]).count();
         res -= mid_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
@@ -222,7 +222,6 @@ int bot_ali::heuristic(const board* b)
         res -= end_loc_val[i] * (b->discs[BLACK] & location_bitsets[i]).count();
       }
     }
-    
     
     return res;
   
