@@ -46,7 +46,6 @@ struct bot_ali:
   
   /// evaluate all (count) boards at depth depth, and put the heuristics in heurs
   void evaluate_depth_level(board* boards, int* heurs,int count,int depth);
-  
 };
 
 #endif

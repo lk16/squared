@@ -114,15 +114,15 @@ int bot_ali::alpha_beta(board* b,int alpha, int beta,int depth_remaining)
   }  
   
   int move_count;
-  
   b->get_children(b+1,&move_count);
   if(move_count==0){
-    b->turn = opponent(b->turn);
-    if(!b->has_moves()){
+    *(b+1) = *b;
+    (b+1)->turn = opponent((b+1)->turn);
+    if(!(b+1)->has_moves()){
        return PERFECT_SCORE_FACTOR * 
       (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
     }
-    return -alpha_beta(b,-beta,-alpha,depth_remaining-1);
+    return -alpha_beta(b+1,-beta,-alpha,depth_remaining-1);
   }
   
   for(int id=move_count-1;id>=0;id--){
@@ -142,14 +142,14 @@ int bot_ali::alpha_beta_perfect(board* b,int alpha, int beta)
   nodes++; 
   
   int move_count;
-  
   b->get_children(b+1,&move_count);
   if(move_count==0){
-    b->turn = opponent(b->turn);
-    if(!b->has_moves()){
-      return b->turn==WHITE ? -b->get_disc_diff() : b->get_disc_diff();    
+    *(b+1) = *b;
+    (b+1)->turn = opponent((b+1)->turn);
+    if(!(b+1)->has_moves()){
+      return (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
     }
-    return -alpha_beta_perfect(b,-beta,-alpha);
+    return -alpha_beta_perfect(b+1,-beta,-alpha);
   }
   
   for(int id=move_count-1;id>=0;id--){
@@ -195,10 +195,9 @@ int bot_ali::heuristic(const board* b)
     */
     
     int res = 0;
-    
                       //            0   1   2   3    4   5   6   7   8   9
-    static int open_loc_val[10] = {500,-71,-43,-33,-203,-23,-19, -9, -7,  3 };
-    static int mid_loc_val[10] =  {500,-41,-37,-27,-203,-17,-11, -9, -7,  9 };
+    static int open_loc_val[10] = {500,-71,-43,-33,-203,-23,-23, -9, -7,  3 };
+    static int mid_loc_val[10] =  {500,-61,-37,-27,-203,-17,-17, -9, -7,  9 };
     static int end_loc_val[10] =  {400, 50, 70, 90, -50, 10,  0, 70, 10, 50 };
     
     int disc_count = (b->discs[WHITE] | b->discs[BLACK]).count();

@@ -3,9 +3,11 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <sstream>
+
 
 #define LOCATION __FILE__ << ':' << __LINE__ << '\t'
 
@@ -82,18 +84,23 @@ inline T abs(T x){
 }
 
 template<class T>
-std::string tostr(T x){
+inline std::string tostr(T x){
   std::stringstream buff;
   buff << x;
   return buff.str();
 }
 
 template<class T>
-T fromstr(std::string x){
+inline T fromstr(std::string x){
   std::stringstream buff(x);
   T temp;
   buff >> temp;
   return temp;
+}
+
+/* returns with high probablility values close to min */
+inline int rand_exp(int min,int max,double rate){
+  return min + (max-min)*(std::log(1.0-(rand()/(double)RAND_MAX))/(-rate));
 }
 
 #endif
