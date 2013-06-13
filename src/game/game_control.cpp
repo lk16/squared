@@ -6,7 +6,7 @@ game_control::game_control(main_window* _mw):
   current(new board())
 {
   bot[WHITE] = bot[BLACK] = NULL;
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),250);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),20);
 }
 
 game_control::~game_control()

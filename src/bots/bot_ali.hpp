@@ -34,18 +34,19 @@ struct bot_ali:
   /// positive is good for WHITE 
   int heuristic(const board* b);
   
-  /// calculates the heuristic for b using alpha beta pruning, positive better for white
-  int alpha_beta(board* b,int alpha, int beta,int depth_remaining);
+  /// calculates the heuristic for b->turn using negamax, positive better for white
+  int negamax(board* b,int alpha, int beta,int depth_remaining);
 
-  /// calculates the result for perfect play of board b, possitive better for white
-  /// this is NOT multiplied with PERFECT_SCORE_FACTOR
-  int alpha_beta_perfect(board* b,int alpha, int beta);
+  /// calculates the result for perfect play of b, possitive better for white
+  /// this is NOT multiplied with EXACT_SCORE_FACTOR
+  int negamax_exact(board* b,int alpha, int beta);
   
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
   
-  /// evaluate all (count) boards at depth depth, and put the heuristics in heurs
-  void evaluate_depth_level(board* boards, int* heurs,int count,int depth);
+  /// calculates the heuristic for WHITE
+  int minimax(board *b,int depth_remaining);
+  
 };
 
 #endif

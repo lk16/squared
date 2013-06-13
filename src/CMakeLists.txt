@@ -51,6 +51,7 @@ target_link_libraries(../squared
 
 ADD_EXECUTABLE(../debug
   main/debug.cpp
-  debug/dbg_heur_algo.cpp
+  bots/bot_ali.cpp
+  bots/bot_base.cpp
   game/board.cpp
 )

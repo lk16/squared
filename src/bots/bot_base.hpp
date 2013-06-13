@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <ctime>
 #include <list>
-#include <vector>
+#include <string>
 #include <sys/time.h>
 
 #include "game/util.hpp"
@@ -14,6 +14,7 @@ class bot_base{
 
 protected:
   int max_depth,max_endgame_depth;
+  std::string name;
  
   /// higher return value indicates a game state is better for WHITE
   virtual int heuristic(const board* b);

@@ -3,6 +3,7 @@
 bot_base::bot_base(color _c, int _max_depth, int _max_endgame_depth):
   max_depth(_max_depth),
   max_endgame_depth(_max_endgame_depth),
+  name("bot_base"),
   c(_c),
   prev_move_time(std::time(NULL))
 {

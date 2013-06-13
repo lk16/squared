@@ -48,10 +48,10 @@
 #define TOTAL_FIELDS (FIELD_SIZE*FIELD_SIZE)
 
 /// perfect score factor
-#define PERFECT_SCORE_FACTOR (1000)
+#define EXACT_SCORE_FACTOR (1000)
 
 /// heighest possible heuristic value
-#define MAX_HEURISTIC (PERFECT_SCORE_FACTOR * TOTAL_FIELDS)
+#define MAX_HEURISTIC (EXACT_SCORE_FACTOR * TOTAL_FIELDS)
 
 /// lowest possible heuristic value
 #define MIN_HEURISTIC (-1 * MAX_HEURISTIC)

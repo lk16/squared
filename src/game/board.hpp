@@ -55,6 +55,12 @@ struct board{
   /// calculate hash
   unsigned long long hash() const;
   
+  /// count discs flipped by doing move field_id
+  int count_flipped(int field_id) const;
+  
+  /// calulate total flippable discs
+  int get_mobility() const;  
+  
 };
 
 

@@ -253,3 +253,70 @@ int board::get_disc_diff() const
     return 0;
   }
 }
+
+int board::get_mobility() const
+{
+  int i,res;
+  res = 0;
+  for(i=0;i<TOTAL_FIELDS;++i){
+      res += count_flipped(i);
+  }
+  return res;
+}
+
+int board::count_flipped(int field_id) const
+{
+  static const int diff[8] = {
+    -9,-8,-7,
+    -1   , 1,
+    7, 8, 9
+  };
+  
+  static const unsigned int border_flag[64] = {
+    0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+    0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
+  };
+  
+  std::bitset<TOTAL_FIELDS> mask,tmp_mask;
+  
+  
+  if(discs[WHITE].test(field_id) || discs[BLACK].test(field_id)){
+    return 0;
+  }
+  
+  
+  for(int i=0;i<8;++i){ 
+    tmp_mask.reset();
+    int cur_field_id = field_id;
+    while(true){
+      
+      //test walking off the board
+      if(border_flag[cur_field_id] & (1ul << i)){
+        break;
+      }
+      
+      cur_field_id += diff[i]; 
+      
+      if(discs[opponent(turn)].test(cur_field_id)){
+        tmp_mask.set(cur_field_id);
+        continue;
+      }
+      
+      if(discs[turn].test(cur_field_id)){
+        mask |= tmp_mask;
+        break;
+      }
+      
+      // cur_field_id == EMPTY
+      break;
+    }
+  }
+  
+  return mask.count();
+}
