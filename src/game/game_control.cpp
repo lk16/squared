@@ -145,6 +145,7 @@ bool game_control::timeout_handler()
     return true;
   }
   if(bot[turn()]){
+    mw->update_status_bar("I'm thinking...");
     on_bot_do_move();  
   }
   else{
@@ -158,7 +159,7 @@ void game_control::add_bot(color _c, int _max_depth, int _max_endgame_depth)
   if(bot[_c]){
     delete bot[_c];
   }
-  bot[_c] = new bot_ali(_c,_max_depth,_max_endgame_depth);
+  bot[_c] = new bot_ali(_c,_max_depth,_max_endgame_depth,_max_endgame_depth);
 }
 
 void game_control::remove_bot(color col)

@@ -25,7 +25,7 @@ struct bot_ali:
   board* board_stack;
   
   
-  bot_ali(color c, int max_depth, int max_endgame_depth);
+  bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
   ~bot_ali();
   
   /// picks a move!
@@ -37,15 +37,15 @@ struct bot_ali:
   /// calculates the heuristic for b->turn using negamax, positive better for white
   int negamax(board* b,int alpha, int beta,int depth_remaining);
 
+  /// calculates the win/draw/loss for perfect play of b with player white
+  int negamax_win_draw_loss(board* b);
+  
   /// calculates the result for perfect play of b, possitive better for white
   /// this is NOT multiplied with EXACT_SCORE_FACTOR
   int negamax_exact(board* b,int alpha, int beta);
   
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
-  
-  /// calculates the heuristic for WHITE
-  int minimax(board *b,int depth_remaining);
   
 };
 

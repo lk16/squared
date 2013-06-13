@@ -24,7 +24,6 @@ set(CMAKE_CXX_FLAGS
 
 SET(objects
   bots/bot_ali.cpp
-  bots/bot_base.cpp
   game/board.cpp
   game/game_control.cpp
   gui_base/clickable_image.cpp
@@ -52,6 +51,5 @@ target_link_libraries(../squared
 ADD_EXECUTABLE(../debug
   main/debug.cpp
   bots/bot_ali.cpp
-  bots/bot_base.cpp
   game/board.cpp
 )

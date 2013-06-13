@@ -124,8 +124,8 @@ void main_window::on_menu_settings_settings()
 {
   int input_level[2],output_level[2];
   
-  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_max_depth() : -1;
-  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_max_depth() : -1;
+  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
+  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
   
   
   settings_dialog sd(*this,input_level[BLACK],input_level[WHITE]);

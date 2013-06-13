@@ -39,7 +39,7 @@ double get_time_diff(timeval* start,timeval* end){
 
 void test_speed_ali_heuristic(){
   board b;
-  bot_ali ali(BLACK,3,3);
+  bot_ali ali(BLACK,3,3,3);
   long long counter = 0;
   timeval start,end;
   double diff = 0.0;

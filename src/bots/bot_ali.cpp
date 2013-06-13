@@ -1,8 +1,8 @@
 #include "bot_ali.hpp"
 #include <string.h>
 
-bot_ali::bot_ali(color _c, int _max_depth, int _max_endgame_depth):
-  bot_base(_c, _max_depth, _max_endgame_depth)
+bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
+  bot_base(_c,sd,wdl,pd)
 {  
   int loc[TOTAL_FIELDS] =
   {
@@ -40,33 +40,46 @@ void bot_ali::do_move(const board* b,board* res)
   b->get_children(board_stack,&child_count);
   assert(child_count>0);
   
+  /* assign first board to res so if we find that we cant prevent losing all
+  discs we dont return uninitialized data and also if we have only one move
+  we can just return */
+  *res = board_stack[0];
+  
   if(child_count==1){
-    *res = board_stack[0];
     return;
   } 
   
-  int heurs[TOTAL_FIELDS/2];
-  int alpha = MIN_HEURISTIC;
   int empty_fields = TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count();
   
   std::cout << name << " searching at depth ";
-  std::cout << ((empty_fields <= max_endgame_depth) ? empty_fields : max_depth) << '\n';
+  std::cout << ((empty_fields <= perfect_depth) ? empty_fields : search_depth) << '\n';
   
   
+  if(search_depth>6 && (empty_fields>perfect_depth)){
+    int heurs[TOTAL_FIELDS/2];
+    for(int id=child_count-1;id>=0;--id){
+      heurs[id] = -negamax(board_stack+id,MIN_HEURISTIC,MAX_HEURISTIC,4);
+    }
+    b->get_children(board_stack,&child_count); //rebuild board stack
+    sort_boards(board_stack,heurs,child_count);
+  }
+  
+    
+  int cur_heur;
+  int best_heur = (empty_fields <= perfect_depth) ? (-TOTAL_FIELDS) : MIN_HEURISTIC;
   for(int id=child_count-1;id>=0;--id){
-    if(empty_fields <= max_endgame_depth){
-      heurs[id] = -negamax_exact(board_stack+id,alpha,TOTAL_FIELDS);
+     if(empty_fields <= perfect_depth){
+      cur_heur = -negamax_exact(board_stack+id,-TOTAL_FIELDS,TOTAL_FIELDS);
     }
     else{
-      heurs[id] = -negamax(board_stack+id,MIN_HEURISTIC,MAX_HEURISTIC,max_depth);
+      cur_heur = -negamax(board_stack+id,MIN_HEURISTIC,MAX_HEURISTIC,search_depth);
     }
-    if(heurs[id] > alpha){
-      alpha = heurs[id];
+    if(cur_heur > best_heur){
+      best_heur = cur_heur;
       *res = board_stack[id];
     }
-    std::cout << "Move " << (child_count-id) << "/" << (child_count);
-    std::cout << ": " << alpha << std::endl;
-    
+    std::cout << "move " << (child_count-id) << "/" << (child_count);
+    std::cout << ": " << best_heur << std::endl;
   }
   
   
@@ -79,39 +92,7 @@ void bot_ali::do_move(const board* b,board* res)
   std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
 }
 
-int bot_ali::minimax(board* b, int depth_remaining)
-{
-  nodes++; 
-  if(depth_remaining==0){
-    return heuristic(b);
-  }  
-  
-  int move_count;
-  b->get_children(b+1,&move_count);
-  if(move_count==0){
-    *(b+1) = *b;
-    (b+1)->turn = opponent((b+1)->turn);
-    if(!(b+1)->has_moves()){
-      return EXACT_SCORE_FACTOR * b->get_disc_diff();    
-    }
-    return minimax(b+1,depth_remaining-1);
-  }
-  
-  int best;
-  if(b->turn == WHITE){
-    best = MIN_HEURISTIC;
-    for(int id=move_count-1;id>=0;id--){
-      best = max(best,minimax(b+1+id,depth_remaining-1));
-    }
-  }
-  else{
-    best = MAX_HEURISTIC;
-    for(int id=move_count-1;id>=0;id--){
-      best = min(best,minimax(b+1+id,depth_remaining-1));
-    }
-  }
-  return best;
-}
+
 
 
 
@@ -172,6 +153,17 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
   }
   return alpha;
 }
+
+int bot_ali::negamax_win_draw_loss(board* b)
+{
+  /* this works because 
+  WHITE win: res >= 2
+  BLACK win: res <= -2 */
+  int res = negamax_exact(b,-1,1); 
+  return b->turn == WHITE ? res : -res;
+}
+
+
 
 void bot_ali::sort_boards(board *boards,int* heurs, int count)
 {
