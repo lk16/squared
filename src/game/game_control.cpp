@@ -6,7 +6,7 @@ game_control::game_control(main_window* _mw):
   current(new board())
 {
   bot[WHITE] = bot[BLACK] = NULL;
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),20);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
 }
 
 game_control::~game_control()
@@ -154,12 +154,12 @@ bool game_control::timeout_handler()
   return true;
 }
 
-void game_control::add_bot(color _c, int _max_depth, int _max_endgame_depth)
+void game_control::add_bot(color _c, int d,int wld,int pd)
 {
   if(bot[_c]){
     delete bot[_c];
   }
-  bot[_c] = new bot_ali(_c,_max_depth,_max_endgame_depth,_max_endgame_depth);
+  bot[_c] = new bot_ali(_c,d,wld,pd);
 }
 
 void game_control::remove_bot(color col)

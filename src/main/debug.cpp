@@ -2,8 +2,7 @@
 #undef NDEBUG
 #endif
 
-#define MILLION (1000000)
-#define BILLION (1000 * MILLION)
+#define TEST_COUNT (5000000)
 
 
 #include "game/util.hpp"
@@ -37,7 +36,7 @@ double get_time_diff(timeval* start,timeval* end){
   - (start->tv_sec + (start->tv_usec / 1000000.0));
 }
 
-void test_speed_ali_heuristic(){
+void test_speed_ali_heuristic(board* ptr,int size){
   board b;
   bot_ali ali(BLACK,3,3,3);
   long long counter = 0;
@@ -46,15 +45,11 @@ void test_speed_ali_heuristic(){
   int dummy;
   
   gettimeofday(&start,NULL);
-  while(counter < MILLION){
+  while(counter < TEST_COUNT){
     counter++;
-    b.discs[WHITE] = ((unsigned long long)rand() << 32) | rand();  
-    b.discs[BLACK] = (((unsigned long long)rand() << 32) | rand());
-    b.discs[BLACK] &= (~b.discs[WHITE].to_ulong());  
-    // b.turn is not initialized
     
     /// ### ### ### ///
-    dummy +=  ali.heuristic(&b);
+    dummy +=  ali.heuristic(ptr+(counter%size));
     /// ### ### ### ///
   }
   gettimeofday(&end,NULL);
@@ -65,7 +60,7 @@ void test_speed_ali_heuristic(){
   
 }
 
-void test_speed_get_children(){
+void test_speed_get_children(board* ptr,int size){
   board b[33];
   long long counter = 0;
   timeval start,end;
@@ -73,15 +68,12 @@ void test_speed_get_children(){
   int dummy;
   
   gettimeofday(&start,NULL);
-  while(counter < MILLION){
+  while(counter < TEST_COUNT){
     counter++;
-    b[0].discs[WHITE] = ((unsigned long long)rand() << 32) | rand();  
-    b[0].discs[BLACK] = (((unsigned long long)rand() << 32) | rand());
-    b[0].discs[BLACK] &= (~b[0].discs[WHITE].to_ulong());  
     // b.turn is not initialized
     
     /// ### ### ### ///
-    b[0].get_children(b+1,&dummy);
+    ptr[counter%size].get_children(b,&dummy);
     /// ### ### ### ///
   }
   gettimeofday(&end,NULL);
@@ -92,7 +84,7 @@ void test_speed_get_children(){
   
 }
 
-void test_speed_has_moves(){
+void test_speed_has_moves(board* ptr,int size){
   board b;
   long long counter = 0;
   timeval start,end;
@@ -100,15 +92,11 @@ void test_speed_has_moves(){
   bool dummy;
   
   gettimeofday(&start,NULL);
-  while(counter < MILLION){
+  while(counter < TEST_COUNT){
     counter++;
-    b.discs[WHITE] = ((unsigned long long)rand() << 32) | rand();  
-    b.discs[BLACK] = (((unsigned long long)rand() << 32) | rand());
-    b.discs[BLACK] &= (~b.discs[WHITE].to_ulong());  
-    b.turn = (color)(counter % 2);
     
     /// ### ### ### ///
-    dummy |= b.has_moves();
+    dummy |= ptr[counter%size].has_moves();
     /// ### ### ### ///
   }
   gettimeofday(&end,NULL);
@@ -119,9 +107,27 @@ void test_speed_has_moves(){
   
 }
 
+void get_random_boards(board* ptr,int size){
+  for(int i=0;i<size;i++){
+    ptr[i].discs[WHITE] = ((unsigned long long)rand() << 32) | rand();  
+    ptr[i].discs[BLACK] = (((unsigned long long)rand() << 32) | rand());
+    ptr[i].discs[BLACK] &= (~ptr[i].discs[WHITE].to_ulong());  
+    ptr[i].turn = (color)(i % 2);
+  }
+}
+
 int main(){
-  test_speed_has_moves();
-  test_speed_ali_heuristic();
-  test_speed_get_children();
+  board b[1000];
+  get_random_boards(b,1000);
+  
+  test_speed_has_moves(b,1000);
+  test_speed_ali_heuristic(b,1000);
+//  test_speed_get_children(b,1000); // segfaults?
+  
+  b[0].reset();
+  b->show();
+  bot_ali ali(BLACK,10,10,12);
+  ali.do_move(b,b+33);
+  (b+33)->show();
   return 0;
 }

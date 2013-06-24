@@ -21,7 +21,7 @@ main_window::main_window():
 
 void main_window::init_ui(){
     
-  this->set_default_size(600,600);
+  this->set_default_size(400,400);
   this->set_title(Glib::ustring("Squared"));
   
   action_group = Gtk::ActionGroup::create();
@@ -90,6 +90,8 @@ void main_window::init_ui(){
   
   vbox.pack_start(status_bar,Gtk::PACK_SHRINK);
   
+  this->set_resizable(false);
+  
   show_all_children();
 }
 
@@ -130,7 +132,6 @@ void main_window::on_menu_settings_settings()
   
   settings_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
   
-  std::cout << "Show settings\n";
   if(sd.run() == Gtk::RESPONSE_OK){
     
     sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
@@ -139,13 +140,15 @@ void main_window::on_menu_settings_settings()
       control.remove_bot(BLACK);
     }
     else{
-      control.add_bot(BLACK,output_level[BLACK],2*output_level[BLACK]);
+      int x = output_level[BLACK];
+      control.add_bot(BLACK,x,max(2*x+2,16),max(2*x+2,16));
     }
     if(output_level[WHITE]==-1){
       control.remove_bot(WHITE);
     }
     else{
-      control.add_bot(WHITE,output_level[WHITE],2*output_level[WHITE]);
+      int x = output_level[WHITE];
+      control.add_bot(WHITE,x,max(2*x+2,16),max(2*x+2,16));
     }
   
   }
