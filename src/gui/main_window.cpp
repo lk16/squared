@@ -1,6 +1,5 @@
 #include "main_window.hpp"
 
-
 main_window::main_window():
   table(FIELD_SIZE,FIELD_SIZE),
   control(this),
@@ -10,12 +9,8 @@ main_window::main_window():
 {
   init_ui();
   
-
-  
   control.on_new_game();
   show_all_children();
-  
-  
 }
 
 

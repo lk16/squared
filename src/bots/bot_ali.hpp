@@ -3,6 +3,7 @@
 
 #include <bitset>
 #include <cassert>
+#include <string.h>
 
 #include "game/util.hpp"
 #include "bots/bot_base.hpp"

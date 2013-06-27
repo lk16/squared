@@ -1,5 +1,4 @@
 #include "bot_ali.hpp"
-#include <string.h>
 
 bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   bot_base(_c,sd,wdl,pd)
@@ -254,7 +253,7 @@ int bot_ali::heuristic(const board* b)
     - 4, // 1 
     - 2, // 2
     - 2, // 3
-    -10, // 4
+    -20, // 4
     - 2, // 5
     - 2, // 6
     - 1, // 7
