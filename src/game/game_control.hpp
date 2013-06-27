@@ -6,10 +6,9 @@
 
 #include <glibmm/main.h>
 
+#include "game/board.hpp"
 #include "bots/bot_base.hpp"
 #include "bots/bot_ali.hpp"
-#include "game/board.hpp"
-
 
 class main_window;
 

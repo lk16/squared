@@ -23,7 +23,6 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   /* this should be enough: 16 children avg for 
      whenever somebody is crazy enough to caculate 
      the perfect sore from the start (depth=60) */  
-  board_stack = new board[1000];
   
   name = "bot_ali";
 }
@@ -164,6 +163,14 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
     return -negamax(b+1,-beta,-alpha,depth_remaining-1);
   }
   
+  if(depth_remaining > 5){
+    int heur[32];
+    for(int id=0;id<move_count;id++){
+      heur[id] = heuristic(b+1+id);
+    }
+    sort_boards(b+1,heur,move_count);
+  }
+  
   for(int id=move_count-1;id>=0;id--){
     int value = -negamax(b+1+id,-beta,-alpha,depth_remaining-1);
     if(value>=beta){
@@ -206,7 +213,7 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
 
 void bot_ali::sort_boards(board *boards,int* heurs, int count)
 {
-  bool loop;
+  /*bool loop;
   do{
     loop = false;
     for(int i=0;i<count-1;++i){
@@ -217,7 +224,14 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
       }
       assert(heurs[i] <= heurs[i+1]);
     }
-  }while(loop);
+  }while(loop);*/
+  int best_id = 0;
+  for(int i=1;i<count;++i){
+    if(heurs[best_id] > heurs[i]){
+      best_id = i;
+    }
+  }
+  std::swap(boards[best_id],boards[0]);
 }
 
 
@@ -236,23 +250,23 @@ int bot_ali::heuristic(const board* b)
   */
 
   static int open_loc_val[10] = {
-     200, // 0
-    - 50, // 1 
-    - 20, // 2
-    - 20, // 3
-    -100, // 4
-    - 20, // 5
-    - 20, // 6
-    - 10, // 7
-    - 10, // 8
-       0  // 9
+     50, // 0
+    - 4, // 1 
+    - 2, // 2
+    - 2, // 3
+    -10, // 4
+    - 2, // 5
+    - 2, // 6
+    - 1, // 7
+    - 1, // 8
+      0  // 9
   };
 
   int res = 0;
   
   for(int i=0;i<10;i++){
     res += open_loc_val[i] * (
-        (b->discs[WHITE] & location_bitsets[i]).count()
+       (b->discs[WHITE] & location_bitsets[i]).count()
       -(b->discs[BLACK] & location_bitsets[i]).count()
     );
   }
@@ -260,6 +274,4 @@ int bot_ali::heuristic(const board* b)
   return res;
 }
 
-bot_ali::~bot_ali(){
-  delete[] board_stack;
-}
+bot_ali::~bot_ali(){}

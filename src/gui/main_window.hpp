@@ -6,14 +6,15 @@
 #include <vector>
 #include <vector>
 
-
 #include <gtkmm.h>
 #include <gtkmm/stock.h>
 
 #include "bots/bot_ali.hpp"
+
 #include "game/game_control.hpp"
 #include "game/util.hpp"
 #include "game/board.hpp"
+
 #include "gui_base/clickable_image.hpp"
 #include "gui_base/scaling_image.hpp"
 #include "gui/settings_dialog.hpp"
