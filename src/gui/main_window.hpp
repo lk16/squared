@@ -4,7 +4,6 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include <vector>
 
 #include <gtkmm.h>
 #include <gtkmm/stock.h>

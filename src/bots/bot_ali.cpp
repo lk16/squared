@@ -19,10 +19,6 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
     location_bitsets[loc[i]].set(i);
   }
   
-  /* this should be enough: 16 children avg for 
-     whenever somebody is crazy enough to caculate 
-     the perfect sore from the start (depth=60) */  
-  
   name = "bot_ali";
 }
 
@@ -79,6 +75,13 @@ void bot_ali::do_move(const board* b,board* res)
       break;
   }
   std::cout << std::endl;
+  
+#if 0
+  std::cout << "Heuristic of this board: " << heuristic(b) << std::endl;
+  std::cout << "Black value of this board: " << b->discs[BLACK].to_ulong() << std::endl; 
+  std::cout << "White value of this board: " << b->discs[WHITE].to_ulong() << std::endl;
+  std::cout << "Turn of this board: " << b->turn << std::endl;
+#endif
   
   
   if(search_depth>6){
@@ -162,10 +165,12 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
     return -negamax(b+1,-beta,-alpha,depth_remaining-1);
   }
   
-  if(depth_remaining > 5){
+  if(depth_remaining > 6){
     int heur[32];
     for(int id=0;id<move_count;id++){
-      heur[id] = heuristic(b+1+id);
+      int tmp;
+      b->get_children(NULL,&tmp);
+      heur[id] = -tmp;
     }
     sort_boards(b+1,heur,move_count);
   }
@@ -197,6 +202,16 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
     return -negamax_exact(b+1,-beta,-alpha);
   }
   
+  if( (~b->discs[BLACK] & ~b->discs[WHITE]).count() > 14){ 
+    int heur[32];
+    for(int id=0;id<move_count;id++){
+      int tmp;
+      b->get_children(NULL,&tmp);
+      heur[id] = -tmp;
+    }
+    sort_boards(b+1,heur,move_count);
+  }
+  
   for(int id=move_count-1;id>=0;id--){
     int value = -negamax_exact(b+1+id,-beta,-alpha);
     if(value>=beta){
@@ -212,7 +227,7 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
 
 void bot_ali::sort_boards(board *boards,int* heurs, int count)
 {
-  /*bool loop;
+  bool loop;
   do{
     loop = false;
     for(int i=0;i<count-1;++i){
@@ -223,14 +238,7 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
       }
       assert(heurs[i] <= heurs[i+1]);
     }
-  }while(loop);*/
-  int best_id = 0;
-  for(int i=1;i<count;++i){
-    if(heurs[best_id] > heurs[i]){
-      best_id = i;
-    }
-  }
-  std::swap(boards[best_id],boards[0]);
+  }while(loop);
 }
 
 
@@ -249,16 +257,16 @@ int bot_ali::heuristic(const board* b)
   */
 
   static int open_loc_val[10] = {
-     50, // 0
-    - 4, // 1 
-    - 2, // 2
-    - 2, // 3
-    -20, // 4
-    - 2, // 5
-    - 2, // 6
-    - 1, // 7
-    - 1, // 8
-      0  // 9
+     500, // 0
+    - 39, // 1 
+    - 24, // 2
+    - 23, // 3
+    -161, // 4
+    - 19, // 5
+    - 15, // 6
+    -  9, // 7
+    -  6, // 8
+       4  // 9
   };
 
   int res = 0;

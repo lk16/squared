@@ -1,25 +1,7 @@
 #include "board.hpp"
 
-
 board* board::do_move(int field_id,board* result) const
-{
-  static const int diff[8] = {
-    -9,-8,-7,
-    -1   , 1,
-     7, 8, 9
-  };
-  
-  static const unsigned int border_flag[64] = {
-    0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-  };
-  
+{ 
   std::bitset<TOTAL_FIELDS> mask,tmp_mask;
   
    
@@ -34,11 +16,11 @@ board* board::do_move(int field_id,board* result) const
     while(true){
       
       //test walking off the board
-      if(border_flag[cur_field_id] & (1ul << i)){
+      if(board_border[cur_field_id] & (1ul << i)){
         break;
       }
       
-      cur_field_id += diff[i]; 
+      cur_field_id += board_direction[i]; 
       
       if(discs[opponent(turn)].test(cur_field_id)){
         tmp_mask.set(cur_field_id);
@@ -68,46 +50,41 @@ board* board::do_move(int field_id,board* result) const
 
 void board::get_children(board* out,int* move_count) const
 {
-  static const int diff[8] = {
-    -9,-8,-7,
-    -1   , 1,
-    7, 8, 9
-  };
-  
-  static const unsigned int border_flag[64] = {
-    0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-  };
-    
-  std::bitset<TOTAL_FIELDS> used = (discs[WHITE] | discs[BLACK]);
   *move_count = 0;
   
-  for(int field_id=0;field_id<TOTAL_FIELDS;field_id++){
+  std::bitset<64> opp = discs[opponent(turn)];
+  std::bitset<64> possible_moves;
+  
+  possible_moves |= ((opp << 9) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  possible_moves |= ((opp << 8));
+  possible_moves |= ((opp << 7) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  possible_moves |= ((opp << 1) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  possible_moves |= ((opp >> 1) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  possible_moves |= ((opp >> 7) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  possible_moves |= ((opp >> 8) & std::bitset<64>());
+  possible_moves |= ((opp >> 9) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  
+  possible_moves &= ~(discs[WHITE] | discs[BLACK]);
+  
+  for(int field_id=0;field_id<64;field_id++){
     
-    if(used.test(field_id)){
+    if(!possible_moves.test(field_id)){
       continue;
     }
   
-    std::bitset<TOTAL_FIELDS> mask;
+    std::bitset<64> to_flip;
   
     for(int i=0;i<8;++i){ 
-      std::bitset<TOTAL_FIELDS> tmp_mask;
-      tmp_mask.reset();
+      std::bitset<64> tmp_mask;
       int cur_field_id = field_id;
       while(true){
         
         //test walking off the board
-        if(border_flag[cur_field_id] & (1ul << i)){
+        if(board_border[cur_field_id] & (1ul << i)){
           break;
         }
         
-        cur_field_id += diff[i]; 
+        cur_field_id += board_direction[i]; 
         
         if(discs[opponent(turn)].test(cur_field_id)){
           tmp_mask.set(cur_field_id);
@@ -115,7 +92,7 @@ void board::get_children(board* out,int* move_count) const
         }
         
         if(discs[turn].test(cur_field_id)){
-          mask |= tmp_mask;
+          to_flip |= tmp_mask;
           break;
         }
         
@@ -124,13 +101,15 @@ void board::get_children(board* out,int* move_count) const
       }
     }
     
-    if(mask.any()){
-      *out = *this;
-      out->discs[turn] |= mask;
-      out->discs[turn].set(field_id);
-      out->discs[opponent(turn)] &= (~mask);
-      out->turn = opponent(out->turn);
-      ++out;
+    if(to_flip.any()){
+      if(out){
+        *out = *this;
+        out->discs[turn] |= to_flip;
+        out->discs[turn].set(field_id);
+        out->discs[opponent(turn)] &= (~to_flip);
+        out->turn = opponent(out->turn);
+        ++out;
+      }
       ++(*move_count);
     }  
   }
@@ -138,22 +117,6 @@ void board::get_children(board* out,int* move_count) const
 
 bool board::has_moves() const
 {
-  static const int diff[8] = {
-    -9,-8,-7, //  0x1, 0x2, 0x4
-    -1   , 1, //  0x8     ,0x10
-     7, 8, 9  // 0x20,0x40,0x80
-  };
-  
-  static const unsigned int border_flag[64] = {
-    0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-    0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-  };
   
   board dummy;
   std::bitset<TOTAL_FIELDS> used = (discs[WHITE] | discs[BLACK]);
@@ -170,11 +133,11 @@ bool board::has_moves() const
       while(true){
         
         //test walking off the board
-        if(border_flag[cur_field_id] & (1ul << i)){
+        if(board_border[cur_field_id] & (1ul << i)){
           break;
         }
           
-        cur_field_id += diff[i]; 
+        cur_field_id += board_direction[i]; 
         
         if(discs[opponent(turn)].test(cur_field_id)){
           good = true;

@@ -9,8 +9,25 @@
 
 #include "game/util.hpp"
 
+static const unsigned int board_border[64] = {
+  0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
+  0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
+};
+
+const int board_direction[8] = {
+  -9,-8,-7,-1,1,7,8,9
+};
+
+
 
 struct board{
+  
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
     
@@ -19,6 +36,9 @@ struct board{
   
   /// copies a board
   board(const board& b);
+  
+  /// create a board with given discvalues
+  board(unsigned long black_discs,unsigned long white_discs,color _turn);
   
   /// assigns a board from b
   board& operator=(const board& b);
@@ -60,7 +80,6 @@ struct board{
   
   /// calulate total flippable discs
   int get_mobility() const;  
-  
 };
 
 
@@ -82,6 +101,8 @@ inline void board::reset(){
   discs[WHITE].set(36);
   
   turn = BLACK;
+  
+
 }
 
 inline board::board(const board& b)
@@ -90,6 +111,16 @@ inline board::board(const board& b)
   discs[1] = b.discs[1];
   turn = b.turn;
 }
+
+inline board::board(long unsigned int black_discs, long unsigned int white_discs, color _turn)
+{
+  discs[BLACK] = black_discs;
+  discs[WHITE] = white_discs;
+  turn = _turn;
+}
+
+
+
 
 inline board& board::operator=(const board& b)
 {
