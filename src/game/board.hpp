@@ -6,6 +6,7 @@
 #include <iostream>
 #include <list>
 #include <sstream>
+#include <cstring>
 
 #include "game/util.hpp"
 
@@ -37,9 +38,6 @@ struct board{
   /// copies a board
   board(const board& b);
   
-  /// create a board with given discvalues
-  board(unsigned long black_discs,unsigned long white_discs,color _turn);
-  
   /// assigns a board from b
   board& operator=(const board& b);
   
@@ -49,20 +47,15 @@ struct board{
   /// resets the board to starting position
   void reset();
   
-  /// sets all bitset values. used for disc stability check
-  void set_all();
-  
   /// does move (field_id) for current turn
   /// if this is a valid move, (result++) is returned, and this->turn is flipped
   /// if not, result is returned and this->turn remains the same
   board* do_move(int field_id,board* result) const;
   
   /// gets all children from this board
-  void get_children(board* array,int* move_count) const;
+  /// if out==NULL it is unchanged
+  void get_children(board* out,int* move_count) const;
 
-  /// tests wheter current turn has valid moves
-  bool has_moves() const;
-  
   /// tests whether both players dont have any moves left
   bool test_game_ended() const;
   
@@ -74,12 +67,6 @@ struct board{
   
   /// calculate hash
   unsigned long long hash() const;
-  
-  /// count discs flipped by doing move field_id
-  int count_flipped(int field_id) const;
-  
-  /// calulate total flippable discs
-  int get_mobility() const;  
 };
 
 
@@ -107,33 +94,14 @@ inline void board::reset(){
 
 inline board::board(const board& b)
 {
-  discs[0] = b.discs[0];
-  discs[1] = b.discs[1];
-  turn = b.turn;
+  memcpy(this,&b,sizeof(board));
 }
-
-inline board::board(long unsigned int black_discs, long unsigned int white_discs, color _turn)
-{
-  discs[BLACK] = black_discs;
-  discs[WHITE] = white_discs;
-  turn = _turn;
-}
-
-
 
 
 inline board& board::operator=(const board& b)
 {
-  discs[0] = b.discs[0];
-  discs[1] = b.discs[1];
-  turn = b.turn;
+  memcpy(this,&b,sizeof(board));
   return *this;
-}
-
-inline void board::set_all()
-{
-  discs[0].set();
-  discs[1].set();
 }
 
 inline bool board::test_game_ended() const
@@ -142,23 +110,21 @@ inline bool board::test_game_ended() const
   if((discs[WHITE] | discs[BLACK]).count() == (unsigned int)TOTAL_FIELDS){
     return true;
   }
-  if(has_moves()){
-    return false;
+  int move_count;
+  get_children(NULL,&move_count);
+  if(move_count==0){
+    board copy = board(*this);
+    copy.turn = opponent(copy.turn);
+    copy.get_children(NULL,&move_count);
+    return move_count==0;
   }
-  
-  board copy = board(*this);
-  copy.turn = opponent(copy.turn);
-  return !copy.has_moves();
+  return false;
 }
 
 inline unsigned long long board::hash() const{
 
   
   unsigned long long black,white;
-  
-  if(FIELD_SIZE != 8){
-    return 0ull;  
-  }
  
   black = discs[BLACK].to_ulong();
   white = discs[WHITE].to_ulong();
@@ -180,9 +146,8 @@ inline unsigned long long board::hash() const{
 
 inline bool board::operator==(const board& b)
 {
-  return discs[0] == b.discs[0] 
-  && discs[1] == b.discs[1]
-  && turn == b.turn;
+  // the ! is because memcmp returns 0 when both memory blocks are equal
+  return !memcmp(this,&b,sizeof(board));
 }
 
 

@@ -32,6 +32,8 @@ struct bot_ali:
   std::bitset<TOTAL_FIELDS> location_bitsets[10];  
   board board_stack[1000];
   
+  bool shell_output;
+  
   
   bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
   ~bot_ali();
@@ -54,6 +56,7 @@ struct bot_ali:
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
   
+  void disable_shell_output();
 };
 
 #endif

@@ -7,10 +7,10 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   {
     0,1,2,3,3,2,1,0,
     1,4,5,6,6,5,4,1,
-    2,5,7,8,8,7,6,5,
+    2,5,7,8,8,7,5,2,
     3,6,8,9,9,8,6,3,
     3,6,8,9,9,8,6,3,
-    2,5,7,8,8,7,6,5,
+    2,5,7,8,8,7,5,2,
     1,4,5,6,6,5,4,1,
     0,1,2,3,3,2,1,0
   };
@@ -20,16 +20,24 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   }
   
   name = "bot_ali";
+  shell_output = true;
 }
+
+void bot_ali::disable_shell_output()
+{
+  shell_output = false;
+}
+
 
 void bot_ali::do_move(const board* b,board* res) 
 {  
   
-  nodes = 0;
-
   struct timeval start;
-  gettimeofday(&start,NULL);
   
+  if(shell_output){
+    nodes = 0;
+    gettimeofday(&start,NULL);
+  }
   int child_count;
   b->get_children(board_stack,&child_count);
   assert(child_count>0);
@@ -58,30 +66,38 @@ void bot_ali::do_move(const board* b,board* res)
   
   int best_heur;
   
-  std::cout << name << " searching at depth ";
+  if(shell_output){
+    std::cout << name << " searching at depth ";
+    switch(mode){
+      case NORMAL_MODE:   
+        std::cout << search_depth;
+        break;
+      case WDL_MODE:      
+      case PERFECT_MODE:  
+        std::cout << empty_fields;
+        break;
+    }
+    std::cout << std::endl;
   
+#if 0
+    std::cout << "Heuristic of this board: " << heuristic(b) << std::endl;
+    std::cout << "Black value of this board: " << b->discs[BLACK].to_ulong() << std::endl; 
+    std::cout << "White value of this board: " << b->discs[WHITE].to_ulong() << std::endl;
+    std::cout << "Turn of this board: " << b->turn << std::endl;
+#endif
+
+  }
   switch(mode){
     case NORMAL_MODE:   
       best_heur = MIN_HEURISTIC; 
-      std::cout << search_depth;
       break;
     case WDL_MODE:      
       best_heur = -1;
-      std::cout << empty_fields;
       break;
     case PERFECT_MODE:  
       best_heur = -TOTAL_FIELDS; 
-      std::cout << empty_fields;
       break;
   }
-  std::cout << std::endl;
-  
-#if 0
-  std::cout << "Heuristic of this board: " << heuristic(b) << std::endl;
-  std::cout << "Black value of this board: " << b->discs[BLACK].to_ulong() << std::endl; 
-  std::cout << "White value of this board: " << b->discs[WHITE].to_ulong() << std::endl;
-  std::cout << "Turn of this board: " << b->turn << std::endl;
-#endif
   
   
   if(search_depth>6){
@@ -110,32 +126,37 @@ void bot_ali::do_move(const board* b,board* res)
       best_heur = cur_heur;
       *res = board_stack[id];
     }
-    std::cout << "move " << (child_count-id) << "/" << (child_count);
-    std::cout << ": ";
-    switch(mode){
-      case WDL_MODE:
-        switch(best_heur){
-          case -1: std::cout << "loss"; break;
-          case  0: std::cout << "draw"; break;
-          case  1: std::cout << "win"; break;
-          default: CRASH; break;
-        }
-        break;
-      default:
-        std::cout << best_heur;
-        break;
-    }
     
-    std::cout << std::endl;
+    if(shell_output){
+      std::cout << "move " << (child_count-id) << "/" << (child_count);
+      std::cout << ": ";
+      switch(mode){
+        case WDL_MODE:
+          switch(best_heur){
+            case -1: std::cout << "loss"; break;
+            case  0: std::cout << "draw"; break;
+            case  1: std::cout << "win"; break;
+            default: CRASH; break;
+          }
+          break;
+        default:
+          std::cout << best_heur;
+          break;
+      }
+      
+      std::cout << std::endl;
+    }
   }
   
-  struct timeval end;
-  gettimeofday(&end,NULL);  
-  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
-  (start.tv_sec + (start.tv_usec / 1000000.0));
+  if(shell_output){
+    struct timeval end;
+    gettimeofday(&end,NULL);  
+    double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
+    (start.tv_sec + (start.tv_usec / 1000000.0));
 
-  std::cout << nodes << " nodes in " << time_diff << " seconds: ";
-  std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
+    std::cout << nodes << " nodes in " << time_diff << " seconds: ";
+    std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
+  }
 }
 
 int bot_ali::negamax_wdl(board* b, int beta)
@@ -165,16 +186,6 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
     return -negamax(b+1,-beta,-alpha,depth_remaining-1);
   }
   
-  if(depth_remaining > 6){
-    int heur[32];
-    for(int id=0;id<move_count;id++){
-      int tmp;
-      b->get_children(NULL,&tmp);
-      heur[id] = -tmp;
-    }
-    sort_boards(b+1,heur,move_count);
-  }
-  
   for(int id=move_count-1;id>=0;id--){
     int value = -negamax(b+1+id,-beta,-alpha,depth_remaining-1);
     if(value>=beta){
@@ -196,13 +207,14 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
   if(move_count==0){
     *(b+1) = *b;
     (b+1)->turn = opponent((b+1)->turn);
-    if(!(b+1)->has_moves()){
+    (b+1)->get_children(b+2,&move_count);
+    if(move_count==0){
       return (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
     }
     return -negamax_exact(b+1,-beta,-alpha);
   }
   
-  if( (~b->discs[BLACK] & ~b->discs[WHITE]).count() > 14){ 
+  if( (~b->discs[BLACK] & ~b->discs[WHITE]).count() > 15){ 
     int heur[32];
     for(int id=0;id<move_count;id++){
       int tmp;
@@ -257,16 +269,16 @@ int bot_ali::heuristic(const board* b)
   */
 
   static int open_loc_val[10] = {
-     500, // 0
-    - 39, // 1 
-    - 24, // 2
-    - 23, // 3
-    -161, // 4
-    - 19, // 5
-    - 15, // 6
-    -  9, // 7
-    -  6, // 8
-       4  // 9
+      400, // 0
+     - 70, // 1 
+     - 40, // 2
+     - 40, // 3
+     -150, // 4
+     - 35, // 5
+     - 30, // 6
+     - 25, // 7
+     - 20, // 8
+     -  5  // 9
   };
 
   int res = 0;

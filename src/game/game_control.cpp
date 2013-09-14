@@ -46,7 +46,9 @@ void game_control::on_bot_do_move()
     current->show();
   }
 
-  if(!current->has_moves()){
+  int move_count;
+  current->get_children(NULL,&move_count);
+  if(move_count==0){
     return;
   }
   
@@ -65,10 +67,16 @@ void game_control::on_any_move(board* next)
   
   current = next;
   mw->update_fields();
-  if(!current->has_moves()){
+  
+  //if(!current->has_moves()){
+  int move_count;
+  current->get_children(NULL,&move_count);
+  if(move_count==0){
     board copy = *current;
     copy.turn = opponent(copy.turn);
-    if(copy.has_moves()){
+    //if(copy.has_moves()){
+    copy.get_children(NULL,&move_count);
+    if(move_count!=0){
       current->turn = opponent(turn());
       mw->update_fields();
     }
