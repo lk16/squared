@@ -31,7 +31,6 @@ struct board{
   
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
-  int heur;
     
   /// does NOTHING; call reset() to initialize
   board();
@@ -43,7 +42,7 @@ struct board{
   board& operator=(const board& b);
   
   /// checks for board equality
-  bool operator==(const board& b);
+  bool operator==(const board& b) const;
   
   /// resets the board to starting position
   void reset();
@@ -84,8 +83,6 @@ inline void board::reset(){
   
   turn = BLACK;
   
-  heur = -999999;
-  
 
 }
 
@@ -101,10 +98,9 @@ inline board& board::operator=(const board& b)
   return *this;
 }
 
-inline bool board::operator==(const board& b)
+inline bool board::operator==(const board& b) const
 {
   return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
-
 
 #endif

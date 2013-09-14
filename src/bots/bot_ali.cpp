@@ -129,7 +129,9 @@ void bot_ali::do_move(const board* b,board* res)
       std::cout << std::endl;
     }
   }
-  
+#if USE_HASHTABLE
+  table.clear();
+#endif  
   if(shell_output){
     struct timeval end;
     gettimeofday(&end,NULL);  
@@ -144,8 +146,25 @@ void bot_ali::do_move(const board* b,board* res)
 int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
 {           
   nodes++; 
+#if USE_HASHTABLE
+  if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
+    std::unordered_map<board,int>::iterator it = table.find(*b);
+    if(it!=table.end()){
+      return it->second;
+    }
+  }
+#endif
+  
+  
+  
   if(depth_remaining==0){
-    return b->turn==WHITE ? heuristic(b) : -heuristic(b);
+    int heur = (b->turn==WHITE) ? heuristic(b) : -heuristic(b);
+#if USE_HASHTABLE
+    if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
+      table.insert(std::pair<board,int>(*b,heur));
+    }
+#endif
+    return heur;
   }  
   
   int move_count;
@@ -169,6 +188,12 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
       alpha = value;
     }
   }
+  #if 0
+    USE_HASHTABLE
+  if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
+    table.insert(std::pair<board,int>(*b,alpha));
+  }
+  #endif
   return alpha;
 }
 

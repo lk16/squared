@@ -4,19 +4,12 @@
 #include <bitset>
 #include <cassert>
 #include <string.h>
+#include <unordered_map>
 
 #include "game/util.hpp"
 #include "bots/bot_base.hpp"
 
-#define bit4(a,b,c,d) (1ul<<a | 1ul<<b | 1ul<<c | 1ul<<d)
-#define bit8(a,b,c,d,e,f,g,h) (bit4(a,b,c,d) | bit4(e,f,g,h))
-#define bit12(a,b,c,d,e,f,g,h,i,j,k,l) (bit8(a,b,c,d,e,f,g,h) | bit4(i,j,k,l))
-
-
-
-#define corners_mask bit4(0,7,56,63)
-#define xsquares_mask bit4(9,14,49,54)
-
+#define USE_HASHTABLE 0
 
 struct bot_ali:
   public bot_base
@@ -30,9 +23,10 @@ struct bot_ali:
   
   std::bitset<TOTAL_FIELDS> location_bitsets[10];  
   board board_stack[1000];
-  
   bool shell_output;
-  
+#if USE_HASHTABLE
+  std::unordered_map<board,int> table;
+#endif
   
   bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
   ~bot_ali();

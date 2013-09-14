@@ -6,8 +6,8 @@ settings_dialog::settings_dialog(Gtk::Window& parent,int black_level,int white_l
   radio_w_human("Human"),
   radio_b_bot("Robot"),
   radio_b_human("Human"),
-  scale_w(1.0,11.0,1.0),
-  scale_b(1.0,11.0,1.0),
+  scale_w(1.0,13.0,1.0),
+  scale_b(1.0,13.0,1.0),
   frame_w("White"),
   frame_b("Black")
 {
