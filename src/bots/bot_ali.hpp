@@ -24,7 +24,6 @@ struct bot_ali:
   
   enum eval_mode{
     NORMAL_MODE,
-    WDL_MODE,
     PERFECT_MODE
   };
   

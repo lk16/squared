@@ -57,9 +57,6 @@ void bot_ali::do_move(const board* b,board* res)
   if(empty_fields > wdl_depth){
     mode = NORMAL_MODE;
   }
-  else if(empty_fields > perfect_depth){
-    mode = WDL_MODE;
-  }
   else{
     mode = PERFECT_MODE;
   }
@@ -71,8 +68,7 @@ void bot_ali::do_move(const board* b,board* res)
     switch(mode){
       case NORMAL_MODE:   
         std::cout << search_depth;
-        break;
-      case WDL_MODE:      
+        break;   
       case PERFECT_MODE:  
         std::cout << empty_fields;
         break;
@@ -90,9 +86,6 @@ void bot_ali::do_move(const board* b,board* res)
   switch(mode){
     case NORMAL_MODE:   
       best_heur = MIN_HEURISTIC; 
-      break;
-    case WDL_MODE:      
-      best_heur = -1;
       break;
     case PERFECT_MODE:  
       best_heur = -TOTAL_FIELDS; 
@@ -115,9 +108,6 @@ void bot_ali::do_move(const board* b,board* res)
       case NORMAL_MODE:
         cur_heur = -negamax(board_stack+id,MIN_HEURISTIC,-best_heur,search_depth);
         break;
-      case WDL_MODE: 
-        cur_heur = -negamax_wdl(board_stack+id,-best_heur);
-        break;
       case PERFECT_MODE:
         cur_heur = -negamax_exact(board_stack+id,-TOTAL_FIELDS,-best_heur);
         break;
@@ -131,14 +121,6 @@ void bot_ali::do_move(const board* b,board* res)
       std::cout << "move " << (child_count-id) << "/" << (child_count);
       std::cout << ": ";
       switch(mode){
-        case WDL_MODE:
-          switch(best_heur){
-            case -1: std::cout << "loss"; break;
-            case  0: std::cout << "draw"; break;
-            case  1: std::cout << "win"; break;
-            default: CRASH; break;
-          }
-          break;
         default:
           std::cout << best_heur;
           break;
@@ -158,14 +140,6 @@ void bot_ali::do_move(const board* b,board* res)
     std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
   }
 }
-
-int bot_ali::negamax_wdl(board* b, int beta)
-{
-  return negamax_exact(b,-beta,1);
-}
-
-
-
 
 int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
 {           

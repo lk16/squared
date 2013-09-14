@@ -31,6 +31,7 @@ struct board{
   
   std::bitset<TOTAL_FIELDS> discs[2];
   color turn;
+  int heur;
     
   /// does NOTHING; call reset() to initialize
   board();
@@ -55,18 +56,12 @@ struct board{
   /// gets all children from this board
   /// if out==NULL it is unchanged
   void get_children(board* out,int* move_count) const;
-
-  /// tests whether both players dont have any moves left
-  bool test_game_ended() const;
   
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
   
   /// returns disc count difference positive means white has more
   int get_disc_diff() const;
-  
-  /// calculate hash
-  unsigned long long hash() const;
 };
 
 
@@ -89,6 +84,8 @@ inline void board::reset(){
   
   turn = BLACK;
   
+  heur = -999999;
+  
 
 }
 
@@ -104,50 +101,9 @@ inline board& board::operator=(const board& b)
   return *this;
 }
 
-inline bool board::test_game_ended() const
-{
-  
-  if((discs[WHITE] | discs[BLACK]).count() == (unsigned int)TOTAL_FIELDS){
-    return true;
-  }
-  int move_count;
-  get_children(NULL,&move_count);
-  if(move_count==0){
-    board copy = board(*this);
-    copy.turn = opponent(copy.turn);
-    copy.get_children(NULL,&move_count);
-    return move_count==0;
-  }
-  return false;
-}
-
-inline unsigned long long board::hash() const{
-
-  
-  unsigned long long black,white;
- 
-  black = discs[BLACK].to_ulong();
-  white = discs[WHITE].to_ulong();
-
-#define hash_64bit(a) \
-  a = (a+0x479ab41d) + (a<<8);  \
-  a = (a^0xe4aa10ce) ^ (a>>5);  \
-  a = (a+0x9942f0a6) - (a<<14); \
-  a = (a^0x5aedd67d) ^ (a>>3);  \
-  a = (a+0x17bea992) + (a<<7);  
-  
-  hash_64bit(black);
-  hash_64bit(white);
-
-#undef hash_64bit
-  
-  return black ^ white;
-}
-
 inline bool board::operator==(const board& b)
 {
-  // the ! is because memcmp returns 0 when both memory blocks are equal
-  return !memcmp(this,&b,sizeof(board));
+  return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
 
 
