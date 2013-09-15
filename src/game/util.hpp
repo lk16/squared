@@ -98,9 +98,22 @@ inline T fromstr(std::string x){
   return temp;
 }
 
-/* returns with high probablility values close to min */
-inline int rand_exp(int min,int max,double rate){
-  return min + (max-min)*(std::log(1.0-(rand()/(double)RAND_MAX))/(-rate));
+inline std::string big_number(long long x){
+  std::stringstream ss;
+  if(x>10000000l){
+    x /= 1000000l;
+    ss << x << 'M';
+  }
+  else if(x>1000l){
+    x /= 1000l;
+    ss << x << 'K';
+  }
+  else{
+    ss << x;
+  }
+  
+  return ss.str();
 }
+
 
 #endif

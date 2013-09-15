@@ -46,10 +46,12 @@ void bot_ali::do_move(const board* b,board* res)
   discs we dont return uninitialized data and also if we have only one move
   we can just return */
   *res = board_stack[0];
-  
+
+#if !BOT_ALI_ALWAYS_SHOW_HEUR
   if(child_count==1){
     return;
   } 
+#endif 
   
   int empty_fields = TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count();
   
@@ -129,7 +131,7 @@ void bot_ali::do_move(const board* b,board* res)
       std::cout << std::endl;
     }
   }
-#if USE_HASHTABLE
+#if BOT_ALI_USE_HASHTABLE 
   table.clear();
 #endif  
   if(shell_output){
@@ -138,15 +140,15 @@ void bot_ali::do_move(const board* b,board* res)
     double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) - 
     (start.tv_sec + (start.tv_usec / 1000000.0));
 
-    std::cout << nodes << " nodes in " << time_diff << " seconds: ";
-    std::cout << (int)(nodes/(time_diff<0.000001 ? 1 : time_diff)) << " nodes / sec\n";
+    std::cout << big_number(nodes) << " nodes in " << time_diff << " seconds: ";
+    std::cout << big_number((long)(nodes/(time_diff<0.000001 ? 1 : time_diff))) << " nodes / sec\n";
   }
 }
 
 int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
 {           
   nodes++; 
-#if USE_HASHTABLE
+#if BOT_ALI_USE_HASHTABLE 
   if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
     std::unordered_map<board,int>::iterator it = table.find(*b);
     if(it!=table.end()){
@@ -159,7 +161,7 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
   
   if(depth_remaining==0){
     int heur = (b->turn==WHITE) ? heuristic(b) : -heuristic(b);
-#if USE_HASHTABLE
+#if BOT_ALI_USE_HASHTABLE 
     if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
       table.insert(std::pair<board,int>(*b,heur));
     }
@@ -188,12 +190,11 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
       alpha = value;
     }
   }
-  #if 0
-    USE_HASHTABLE
+#if BOT_ALI_USE_HASHTABLE 
   if(search_depth-depth_remaining>=4 && search_depth-depth_remaining<=7){
     table.insert(std::pair<board,int>(*b,alpha));
   }
-  #endif
+#endif
   return alpha;
 }
 

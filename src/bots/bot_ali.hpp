@@ -4,12 +4,14 @@
 #include <bitset>
 #include <cassert>
 #include <string.h>
+#include <functional>
 #include <unordered_map>
 
 #include "game/util.hpp"
 #include "bots/bot_base.hpp"
 
-#define USE_HASHTABLE 0
+#define BOT_ALI_USE_HASHTABLE     0
+#define BOT_ALI_ALWAYS_SHOW_HEUR  1
 
 struct bot_ali:
   public bot_base
@@ -24,7 +26,7 @@ struct bot_ali:
   std::bitset<TOTAL_FIELDS> location_bitsets[10];  
   board board_stack[1000];
   bool shell_output;
-#if USE_HASHTABLE
+#if BOT_ALI_USE_HASHTABLE   
   std::unordered_map<board,int> table;
 #endif
   
