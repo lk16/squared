@@ -10,6 +10,8 @@
 
 #include "game/util.hpp"
 
+
+
 static const unsigned int board_border[64] = {
   0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
   0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
@@ -102,5 +104,15 @@ inline bool board::operator==(const board& b) const
 {
   return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
+
+/*namespace std{
+  template<>
+  struct hash<board>{
+    size_t operator()(const board& b) const{
+      return 3*b.discs[BLACK].to_ulong() + 5*b.discs[WHITE].to_ulong() + 7*b.turn;
+    }
+  };
+  
+}*/
 
 #endif
