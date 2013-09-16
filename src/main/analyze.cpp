@@ -1,10 +1,3 @@
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
-#define TEST_COUNT (5000000)
-
-
 #include "game/util.hpp"
 #include "game/board.hpp"
 #include "bots/bot_ali.hpp"
@@ -172,6 +165,8 @@ void print_stats(const board* b){
     stats[ 1+i] = std::bitset<64>(b->discs[BLACK] & pos_bs[i]).count();
     stats[11+i] = std::bitset<64>(b->discs[WHITE] & pos_bs[i]).count();
   }
+
+  
   
   for(color c=BLACK;c<=WHITE;c=(color)(c+1)){
     int opp = opponent(c);
@@ -180,9 +175,13 @@ void print_stats(const board* b){
     std::bitset<64> stable = b->discs[opp];
     for(int i=0;i<stats[c==BLACK ? 21 : 22];i++){
       stable &= stack[1+i].discs[opp];
+      stats[c==BLACK ? 25 : 26] += ((~stack[0].discs[c]) & stack[1+i].discs[c]).count();
     }
     stats[c==BLACK ? 23 : 24] = stable.count();
   }
+
+
+
   
   // output the collected data
   for(int i=0;i<stats_size;i++){

@@ -48,8 +48,8 @@ target_link_libraries(../squared
 
 
 
-#ADD_EXECUTABLE(../analyze
-#  main/analyze.cpp
-#  bots/bot_ali.cpp
-#  game/board.cpp
-#)
+ADD_EXECUTABLE(../analyze
+  main/analyze.cpp
+  bots/bot_ali.cpp
+  game/board.cpp
+)
