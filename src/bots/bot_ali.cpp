@@ -201,7 +201,7 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
 
 int bot_ali::negamax_stack(board* stack,int alpha, int beta,int max_depth)
 {
-#if 0
+#if 1
   depth_data_t depth_data[max_depth];
   int move_count;
   
@@ -227,30 +227,41 @@ int bot_ali::negamax_stack(board* stack,int alpha, int beta,int max_depth)
   int inspected = move_count;
   
   
-  do{
+  while(next_it_depth==-1){
     cur_depth = next_it_depth;
     depth_data_t* cdd = depth_data+cur_depth;
-    depth_data[cur_depth+1].alpha = -cdd->beta;
-    depth_data[cur_depth+1].beta  = -cdd->alpha;
-    depth_data[cur_depth+1].child_start = cdd->child_start+cdd->child_left;
-    stack[inspected].get_children(stack + (cdd+1)->child_start,&move_count);
-    if(move_count!=0){
-      next_it_depth = cur_depth+1;
+    if(cur_depth==max_depth){
+      // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+      next_it_depth = cur_depth-1;
     }
     else{
-      stack[inspected+1] = stack[inspected];
-      stack[inspected+1].turn = opponent(stack[inspected+1].turn);
-      stack[inspected+1].get_children(NULL,&move_count);
+      stack[inspected].get_children(stack + (cdd+1)->child_start,&move_count);
       if(move_count!=0){
-        next_it_depth = cur_depth
+        next_it_depth = cur_depth+1;
+        depth_data[next_it_depth].alpha = -cdd->beta;
+        depth_data[next_it_depth].beta  = -cdd->alpha;
+        depth_data[next_it_depth].child_start = cdd->child_start+cdd->child_left;
+        depth_data[next_it_depth].child_left = move_count;
       }
       else{
-        // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+        stack[inspected+1] = stack[inspected];
+        stack[inspected+1].turn = opponent(stack[inspected+1].turn);
+        stack[inspected+1].get_children(NULL,&move_count);
+        if(move_count!=0){
+          depth_data[next_it_depth].alpha = cdd->alpha;
+          depth_data[next_it_depth].beta  = cdd->beta;
+          depth_data[next_it_depth].child_start = cdd->child_start+cdd->child_left;
+          depth_data[next_it_depth].child_left = 1;
+          next_it_depth = cur_depth+1;
+        }
+        else{
+          // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+          next_it_depth = cur_depth-1;
+        }
       }
     }
-    
       
-  }while(next_it_depth!=-1);
+  }
   
   
   if(depth_remaining==0){
