@@ -198,6 +198,85 @@ int bot_ali::negamax(board* b,int alpha, int beta,int depth_remaining)
   return alpha;
 }
 
+
+int bot_ali::negamax_stack(board* stack,int alpha, int beta,int max_depth)
+{
+#if 0
+  depth_data_t depth_data[max_depth];
+  int move_count;
+  
+  stack[0].get_children(stack+1,&move_count);
+  if(move_count==0){
+    stack[0].turn = opponent(stack[0].turn);
+    stack[0].get_children(stack+1,&move_count);
+    if(move_count==0){
+      return EXACT_SCORE_FACTOR * 
+      (stack[0].turn==WHITE ?  stack[0].get_disc_diff() : -stack[0].get_disc_diff());    
+    }
+    return -negamax_stack(stack,-beta,-alpha,max_depth);
+  }
+  
+  
+  depth_data[0].alpha = alpha;
+  depth_data[0].beta = beta;
+  depth_data[0].child_left = move_count;
+  depth_data[0].child_start = 1;
+  
+  int next_it_depth = 0;
+  int cur_depth = 0;
+  int inspected = move_count;
+  
+  
+  do{
+    cur_depth = next_it_depth;
+    depth_data_t* cdd = depth_data+cur_depth;
+    depth_data[cur_depth+1].alpha = -cdd->beta;
+    depth_data[cur_depth+1].beta  = -cdd->alpha;
+    depth_data[cur_depth+1].child_start = cdd->child_start+cdd->child_left;
+    stack[inspected].get_children(stack + (cdd+1)->child_start,&move_count);
+    if(move_count!=0){
+      next_it_depth = cur_depth+1;
+    }
+    else{
+      stack[inspected+1] = stack[inspected];
+      stack[inspected+1].turn = opponent(stack[inspected+1].turn);
+      stack[inspected+1].get_children(NULL,&move_count);
+      if(move_count!=0){
+        next_it_depth = cur_depth
+      }
+      else{
+        // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+      }
+    }
+    
+      
+  }while(next_it_depth!=-1);
+  
+  
+  if(depth_remaining==0){
+    int heur = (b->turn==WHITE) ? heuristic(b) : -heuristic(b);
+    return heur;
+  }  
+  
+  int move_count;
+  
+  
+  for(int id=move_count-1;id>=0;id--){
+    int value = -negamax(b+1+id,-beta,-alpha,depth_remaining-1);
+    if(value>=beta){
+      return beta;
+    }
+    if(value>=alpha){
+      alpha = value;
+    }
+  }
+  return alpha;
+#else
+  return 0;
+#endif
+}
+
+
 int bot_ali::negamax_exact(board* b,int alpha, int beta)
 {           
   nodes++; 

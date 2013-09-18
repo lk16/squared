@@ -42,6 +42,10 @@ struct bot_ali:
   /// calculates the heuristic for b->turn using negamax, positive better for white
   int negamax(board* b,int alpha, int beta,int depth_remaining);
   
+  /// negamax without recursive calls
+  int negamax_stack(board* stack,int alpha,int beta,int depth_remaining);
+   
+  
   /// calculates the result for perfect play of b, possitive better for white
   /// this is NOT multiplied with EXACT_SCORE_FACTOR
   int negamax_exact(board* b,int alpha, int beta);
@@ -52,6 +56,13 @@ struct bot_ali:
   void sort_boards(board *boards,int* heurs, int count);
   
   void disable_shell_output();
+};
+
+// used in negamax_stack()
+struct depth_data_t{
+  int alpha,beta;
+  int child_start; // index of first child at this depth
+  int child_left; // number of children that still have to be evalulated at this depth
 };
 
 #endif
