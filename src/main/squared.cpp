@@ -54,14 +54,39 @@ void run_no_gui(){
 #endif
 }
 
+void run_debug(){
+  board b,tmp;
+  std::bitset<64> bs;
+  b.reset();
+  b.show();
+  b.try_move(19,&bs);
+  b.show();
+  b.undo_move(19,&bs);
+  b.show();
+
+
+
+}
+
+
+
 
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   main_window window;
   
-  if(argc>=2 && std::string(argv[1])=="no-gui"){
-    run_no_gui();
+  if(argc>=2){
+    std::string argv1(argv[1]);
+    if(argv1=="no-gui"){
+      run_no_gui();
+    }
+    else if(argv1=="debug"){
+      run_debug();
+    }
+    else{
+      std::cout << "Invalid parameter: " << argv1 << '\n';
+    }
   }
   else{
     Gtk::Main::run(window);

@@ -1,6 +1,7 @@
 #ifndef SQUARED_UTIL_HPP
 #define SQUARED_UTIL_HPP
 
+#include <bitset>
 #include <cassert>
 #include <cstdlib>
 #include <cmath>
@@ -11,7 +12,7 @@
 
 #define LOCATION __FILE__ << ':' << __LINE__ << '\t'
 
-#if 1 // #ifndef NDEBUG
+#ifndef NDEBUG
 
   #define SHOW_VAR(a) std::cout << LOCATION << #a << " = " << (a) << std::endl 
   #define SHOW_VAR2(a,b)     SHOW_VAR(a);      SHOW_VAR(b)
@@ -113,6 +114,19 @@ inline std::string big_number(long long x){
   }
   
   return ss.str();
+}
+
+inline void show_bitset(const std::bitset<64>& bs){
+  int x,y;
+  std::cout << "+-----------------+\n";
+  for(y=0;y<8;y++){
+    std::cout << "| ";
+    for(x=0;x<8;x++){
+      std::cout << (bs.test(y*FIELD_SIZE+x) ? "@ " : "  ");
+    }
+    std::cout << "|\n";
+  }
+  std::cout << "+-----------------+\n";
 }
 
 

@@ -179,3 +179,52 @@ int board::get_disc_diff() const
     return 0;
   }
 }
+
+void board::try_move(int field_id, std::bitset<64>* undo_data)
+{
+  undo_data->reset();
+  
+  for(int i=0;i<8;++i){     
+  
+    std::bitset<64> tmp_mask;
+    int cur_field_id = field_id;
+    
+    while(true){
+      
+      // will i walk off the board next step?
+      if(board_border[cur_field_id] & (1ul << i)){
+        break;
+      }
+      
+      // walk ahead        
+      cur_field_id += board_direction[i]; 
+      
+      // current field = my color
+      if(discs[turn].test(cur_field_id)){
+        (*undo_data) |= tmp_mask;
+        break;
+      }
+      
+      // current field = opponent color
+      if(discs[opponent(turn)].test(cur_field_id)){
+        tmp_mask.set(cur_field_id);
+        continue;
+      }
+      
+      // current fiend = empty
+      break;
+    }
+  }
+  discs[turn] |= (*undo_data) | std::bitset<64>(1ul << field_id);
+  discs[opponent(turn)] &= ~(*undo_data);
+  turn = opponent(turn);
+}
+
+void board::undo_move(int field_id, std::bitset<64>* undo_data)
+{
+  turn = opponent(turn);
+  discs[opponent(turn)] |= (*undo_data);
+  discs[turn] &= ~((*undo_data) | std::bitset<64>(1ul << field_id));
+
+}
+

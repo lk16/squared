@@ -118,21 +118,6 @@ void get_reasonable_board(board* out,int num_discs){
   }
 }
 
-void show_bitset(const std::bitset<64>& bs){
-  int x,y;
-  std::cout << "+-----------------+\n";
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      std::cout << (bs.test(y*FIELD_SIZE+x) ? "@ " : "  ");
-    }
-    std::cout << "|\n";
-  }
-  std::cout << "+-----------------+\n";
-}
-
-
-
 void print_stats(const board* b){
   int stats_size = 40;
   int stats[stats_size];

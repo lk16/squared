@@ -59,7 +59,7 @@ struct board{
   void do_move(int field_id,board* out) const;
   
   
-  /// out will represent a bitset of which each bit represents a square
+  /// out will represent a bitset of which each set bit represents a square
   /// that COULD BE a valid move
   void get_possible_moves(std::bitset<64> *out) const;
   
@@ -73,6 +73,10 @@ struct board{
   
   /// returns disc count difference positive means white has more
   int get_disc_diff() const;
+  
+  /// experimental methods
+  void try_move(int field_id,std::bitset<64>* undo_data);
+  void undo_move(int field_id,std::bitset<64>* undo_data); 
 };
 
 
