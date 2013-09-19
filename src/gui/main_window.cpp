@@ -8,7 +8,6 @@ main_window::main_window():
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
-  
   control.on_new_game();
   show_all_children();
 }
@@ -154,9 +153,8 @@ void main_window::update_fields()
   const board *b;
   int x,y;
   std::string imagefile;
-  board dummy;
   
-  b = control.current;
+  b = &control.current;
   
    
   for(y=0;y<FIELD_SIZE;y++){
@@ -167,7 +165,7 @@ void main_window::update_fields()
       else if(b->discs[BLACK].test(y*FIELD_SIZE+x)){
         imagefile = "black.png";
       }
-      else if(&dummy != b->do_move(y*FIELD_SIZE+x,&dummy)){
+      else if(b->is_valid_move(y*FIELD_SIZE+x)){
         imagefile = "move.png";
       }
       else{

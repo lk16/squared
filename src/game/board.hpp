@@ -49,10 +49,20 @@ struct board{
   /// resets the board to starting position
   void reset();
   
-  /// does move (field_id) for current turn
-  /// if this is a valid move, (result++) is returned, and this->turn is flipped
-  /// if not, result is returned and this->turn remains the same
-  board* do_move(int field_id,board* result) const;
+  /// checks whether for *this and this->turn, field_id is a valid move
+  /// WARNING: NOT EFFICIENT
+  bool is_valid_move(int field_id) const;
+  
+  /// performs move for *this and this->turn
+  /// will crash if fed an invalid move
+  /// WARNING: NOT EFFICIENT
+  void do_move(int field_id,board* out) const;
+  
+  
+  /// out will represent a bitset of which each bit represents a square
+  /// that COULD BE a valid move
+  void get_possible_moves(std::bitset<64> *out) const;
+  
   
   /// gets all children from this board
   /// if out==NULL it is unchanged
@@ -90,13 +100,15 @@ inline void board::reset(){
 
 inline board::board(const board& b)
 {
-  memcpy(this,&b,sizeof(board));
+  *this = b;
 }
 
 
 inline board& board::operator=(const board& b)
 {
-  memcpy(this,&b,sizeof(board));
+  discs[BLACK] = b.discs[BLACK];
+  discs[WHITE] = b.discs[WHITE];
+  turn = b.turn;
   return *this;
 }
 

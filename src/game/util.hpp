@@ -11,7 +11,7 @@
 
 #define LOCATION __FILE__ << ':' << __LINE__ << '\t'
 
-#ifndef NDEBUG
+#if 1 // #ifndef NDEBUG
 
   #define SHOW_VAR(a) std::cout << LOCATION << #a << " = " << (a) << std::endl 
   #define SHOW_VAR2(a,b)     SHOW_VAR(a);      SHOW_VAR(b)
