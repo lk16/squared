@@ -31,7 +31,7 @@ const int board_direction[8] = {
 
 struct board{
   
-  std::bitset<TOTAL_FIELDS> discs[2];
+  std::bitset<64> discs[2];
   color turn;
     
   /// does NOTHING; call reset() to initialize
@@ -49,20 +49,21 @@ struct board{
   /// resets the board to starting position
   void reset();
   
+  /// switches the turn member
+  void switch_turn();
+  
   /// checks whether for *this and this->turn, field_id is a valid move
   /// WARNING: NOT EFFICIENT
   bool is_valid_move(int field_id) const;
   
   /// performs move for *this and this->turn
-  /// will crash if fed an invalid move
+  /// might crash if fed an invalid move
   /// WARNING: NOT EFFICIENT
   void do_move(int field_id,board* out) const;
-  
   
   /// out will represent a bitset of which each set bit represents a square
   /// that COULD BE a valid move
   void get_possible_moves(std::bitset<64> *out) const;
-  
   
   /// gets all children from this board
   /// if out==NULL it is unchanged
@@ -74,8 +75,10 @@ struct board{
   /// returns disc count difference positive means white has more
   int get_disc_diff() const;
   
-  /// experimental methods
-  void try_move(int field_id,std::bitset<64>* undo_data);
+  /// tries a move, if not valid, returns false
+  bool try_move(int field_id,std::bitset<64>* undo_data);
+  
+  /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
 };
 
@@ -120,6 +123,12 @@ inline bool board::operator==(const board& b) const
 {
   return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
+
+inline void board::switch_turn()
+{
+  turn = opponent(turn);
+}
+
 
 /*namespace std{
   template<>

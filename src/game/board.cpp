@@ -139,16 +139,16 @@ void board::show() const
   std::cout << "+-----------------+\n";
   
   /* middle */
-  for(y=0;y<FIELD_SIZE;y++){
+  for(y=0;y<8;y++){
     std::cout << "| ";
-    for(x=0;x<FIELD_SIZE;x++){
-      if(discs[BLACK].test(y*FIELD_SIZE+x)){
+    for(x=0;x<8;x++){
+      if(discs[BLACK].test(y*8+x)){
           std::cout << "\033[31;1m@\033[0m ";
       }
-      else if(discs[WHITE].test(y*FIELD_SIZE+x)){
+      else if(discs[WHITE].test(y*8+x)){
           std::cout << "\033[34;1m@\033[0m ";
       }
-      else if(is_valid_move(y*FIELD_SIZE+x)){
+      else if(is_valid_move(y*8+x)){
         std::cout << ". ";
       }  
       else{
@@ -170,18 +170,22 @@ int board::get_disc_diff() const
   count[WHITE] = discs[WHITE].count();
   
   if(count[WHITE] > count[BLACK]){ /* WHITE wins */
-    return (TOTAL_FIELDS)-(2*count[BLACK]);
+    return 64 - (2*count[BLACK]);
   }
   else if(count[WHITE] < count[BLACK]){ /* BLACK wins */
-    return ((-TOTAL_FIELDS)+(2*count[WHITE]));
+    return -64 + (2*count[WHITE]);
   }
   else{ /* draw */
     return 0;
   }
 }
 
-void board::try_move(int field_id, std::bitset<64>* undo_data)
+bool board::try_move(int field_id, std::bitset<64>* undo_data)
 {
+  if((discs[BLACK] | discs[WHITE]).test(field_id)){
+    return false;
+  }
+  
   undo_data->reset();
   
   for(int i=0;i<8;++i){     
@@ -215,16 +219,34 @@ void board::try_move(int field_id, std::bitset<64>* undo_data)
       break;
     }
   }
-  discs[turn] |= (*undo_data) | std::bitset<64>(1ul << field_id);
+  if(undo_data->none()){
+    return false;
+  }
+  
+  
+  assert((discs[turn] & (*undo_data)) == std::bitset<64>());
+  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
+  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
+  
+  discs[turn] |= ((*undo_data) | std::bitset<64>(1ul << field_id));
   discs[opponent(turn)] &= ~(*undo_data);
+  
   turn = opponent(turn);
+  
+  return true;
 }
 
 void board::undo_move(int field_id, std::bitset<64>* undo_data)
 {
-  turn = opponent(turn);
-  discs[opponent(turn)] |= (*undo_data);
-  discs[turn] &= ~((*undo_data) | std::bitset<64>(1ul << field_id));
-
+  turn = opponent(turn); 
+  
+  discs[turn] &= ~((*undo_data));
+  discs[turn].reset(field_id);
+  discs[opponent(turn)] |= (*undo_data);  
+  
+  
+  assert((discs[turn] & (*undo_data)) == std::bitset<64>());
+  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
+  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
 }
 

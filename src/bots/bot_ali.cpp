@@ -3,7 +3,7 @@
 bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   bot_base(_c,sd,wdl,pd)
 {  
-  int loc[TOTAL_FIELDS] =
+  int loc[64] =
   {
     0,1,2,3,3,2,1,0,
     1,4,5,6,6,5,4,1,
@@ -15,7 +15,7 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
     0,1,2,3,3,2,1,0
   };
   
-  for(int i=0;i<TOTAL_FIELDS;i++){
+  for(int i=0;i<64;i++){
     location_bitsets[loc[i]].set(i);
   }
   
@@ -43,30 +43,36 @@ void bot_ali::do_move(const board* b,board* res)
   b->get_children(children,&child_count);
   assert(child_count>0);
   
-  /* assign first board to res so if we find that we cant prevent losing all
-  discs we dont return uninitialized data and also if we have only one move
-  we can just return */
-  *res = children[0];
+  
 
 #if !BOT_ALI_ALWAYS_SHOW_HEUR
   if(child_count==1){
+    *res = children[0];
     return;
   } 
 #endif 
   
-  int empty_fields = TOTAL_FIELDS - (b->discs[BLACK] | b->discs[WHITE]).count();
+  int empty_fields = 64 - (b->discs[BLACK] | b->discs[WHITE]).count();
   eval_mode mode = (empty_fields > wdl_depth) ? NORMAL_MODE : PERFECT_MODE;
 
-  int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-TOTAL_FIELDS);
+  int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-64);
   
-  int best_id = -1;
+  // if we cannot prevent losing all discs, we at least have valid data to return
+  int best_id = 0;
   
   if(shell_output){
     std::cout << name << " searching at depth ";
     std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
   }
   
-  // TODO sorting children
+  if(search_depth>6){
+    int heurs[32];
+    for(int i=0;i<child_count;i++){
+      heurs[i] = -negamax(children+i,MIN_HEURISTIC,MAX_HEURISTIC,4);
+    }
+    b->get_children(children,&child_count);
+    sort_boards(children,heurs,child_count);
+  }
   
     
   for(int id=child_count-1;id>=0;--id){
@@ -76,7 +82,7 @@ void bot_ali::do_move(const board* b,board* res)
         cur_heur = -negamax(children+id,MIN_HEURISTIC,-best_heur,search_depth);
         break;
       case PERFECT_MODE:
-        cur_heur = -negamax_exact(children+id,-TOTAL_FIELDS,-best_heur);
+        cur_heur = -negamax_exact(children+id,-64,-best_heur);
         break;
     }
     if(cur_heur > best_heur){
@@ -119,35 +125,43 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
   std::bitset<64> undo_data,possible_moves;
   
   b->get_possible_moves(&possible_moves);
+  int move;
   
-  for(int i=0;i<64;i++){
-    if(!possible_moves.test(i)){
-      continue;
+  board copy2(*b);
+  
+  while(true){
+    move = find_first_set_64(possible_moves.to_ulong());
+    if(move==0){
+      break;
     }
-    b->try_move(i,&undo_data);
-    if(undo_data.none()){
-      b->undo_move(i,&undo_data);
-      continue;
+    move--;
+    if(b->try_move(move,&undo_data)){
+      int value = -negamax(b,-beta,-alpha,depth_remaining-1);
+      b->undo_move(move,&undo_data);
+      if(value >= beta){
+        return beta;
+      }
+      if(value >= alpha){
+        alpha = value;
+      }
+      move_count++;
+      assert(copy2==(*b));
     }
-    move_count++;
-    int value = -negamax(b,-beta,-alpha,depth_remaining-1);
-    b->undo_move(i,&undo_data);
-    if(value>=beta){
-      return beta;
-    }
-    if(value>=alpha){
-      alpha = value;
-    }
+    possible_moves.reset(move);
   }
   if(move_count!=0){
     return alpha;
   }
   else{
+    b->switch_turn();
     b->get_children(NULL,&move_count);
     if(move_count!=0){
-      return -negamax(b,-beta,-alpha,depth_remaining-1);
+      int heur = -negamax(b,-beta,-alpha,depth_remaining-1);
+      b->switch_turn();
+      return heur;
     }
     else{
+      b->switch_turn();
       return EXACT_SCORE_FACTOR * 
       (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff()); 
     }
@@ -160,40 +174,45 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
 
 int bot_ali::negamax_exact(board* b,int alpha, int beta)
 {           
+  
   nodes++; 
   
   int move_count=0;
   std::bitset<64> undo_data,possible_moves;
   
   b->get_possible_moves(&possible_moves);
+  int move;
   
-  for(int i=0;i<64;i++){
-    if(!possible_moves.test(i)){
-      continue;
+  while(true){
+    move = find_first_set_64(possible_moves.to_ulong());
+    if(move==0){
+      break;
     }
-    b->try_move(i,&undo_data);
-    if(undo_data.none()){
-      b->undo_move(i,&undo_data);
-      continue;
+    move--;
+    if(b->try_move(move,&undo_data)){
+      int value = -negamax_exact(b,-beta,-alpha);
+      b->undo_move(move,&undo_data);
+      if(value >= beta){
+        return beta;
+      }
+      if(value >= alpha){
+        alpha = value;
+      }
+      move_count++;
     }
-    move_count++;
-    int value = -negamax_exact(b,-beta,-alpha);
-    b->undo_move(i,&undo_data);
-    if(value>=beta){
-      return beta;
-    }
-    if(value>=alpha){
-      alpha = value;
-    }
+    possible_moves.reset(move);
   }
   if(move_count!=0){
     return alpha;
   }
   else{
     if((b->discs[BLACK] | b->discs[WHITE]).count()!=64){
+      b->switch_turn();
       b->get_children(NULL,&move_count);
       if(move_count!=0){
-        return -negamax_exact(b,-beta,-alpha);
+        int heur = -negamax_exact(b,-beta,-alpha);
+        b->switch_turn();
+        return heur;
       }
     }
     return (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    

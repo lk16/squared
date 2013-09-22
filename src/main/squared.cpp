@@ -55,17 +55,14 @@ void run_no_gui(){
 }
 
 void run_debug(){
-  board b,tmp;
   std::bitset<64> bs;
-  b.reset();
-  b.show();
-  b.try_move(19,&bs);
-  b.show();
-  b.undo_move(19,&bs);
-  b.show();
-
-
-
+  bs.set(19);
+  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
+  bs.reset(19);
+  bs.set(52);
+  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
+  bs.set(19);
+  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
 }
 
 

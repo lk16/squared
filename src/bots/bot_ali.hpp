@@ -23,7 +23,7 @@ struct bot_ali:
   };
   
   
-  std::bitset<TOTAL_FIELDS> location_bitsets[10];  
+  std::bitset<64> location_bitsets[10];  
   bool shell_output;
   
 #if BOT_ALI_USE_HASHTABLE   
@@ -45,8 +45,6 @@ struct bot_ali:
   /// calculates the result for perfect play of b, possitive better for white
   /// this is NOT multiplied with EXACT_SCORE_FACTOR
   int negamax_exact(board* b,int alpha, int beta);
-  
-  
   
     
   /// sort boards descending according to heurs

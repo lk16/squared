@@ -42,17 +42,11 @@
 /// subdirectory where xml files containing ui are stored
 #define UI_PATH std::string("./xml/")
 
-/// size of othello field, assuming width==height
-#define FIELD_SIZE (8)
-
-/// total number of fields 
-#define TOTAL_FIELDS (FIELD_SIZE*FIELD_SIZE)
-
 /// perfect score factor
 #define EXACT_SCORE_FACTOR (1000)
 
 /// heighest possible heuristic value
-#define MAX_HEURISTIC (EXACT_SCORE_FACTOR * TOTAL_FIELDS)
+#define MAX_HEURISTIC (EXACT_SCORE_FACTOR * 64)
 
 /// lowest possible heuristic value
 #define MIN_HEURISTIC (-1 * MAX_HEURISTIC)
@@ -122,11 +116,24 @@ inline void show_bitset(const std::bitset<64>& bs){
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      std::cout << (bs.test(y*FIELD_SIZE+x) ? "@ " : "  ");
+      std::cout << (bs.test(y*8+x) ? "@ " : "  ");
     }
     std::cout << "|\n";
   }
   std::cout << "+-----------------+\n";
+}
+
+// returns 0 if ul==0ul, returns 1 + least significant bit otherwise
+inline int find_first_set_64(unsigned long ul){
+  int res = __builtin_ffs(ul & 0x00000000FFFFFFFF);
+  if(res!=0){
+    return res;
+  }
+  res = __builtin_ffs(ul >> 32);
+  if(res!=0){
+    return 32 + res;
+  }
+  return 0;
 }
 
 

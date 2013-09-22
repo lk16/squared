@@ -1,10 +1,10 @@
 #include "main_window.hpp"
 
 main_window::main_window():
-  table(FIELD_SIZE,FIELD_SIZE),
+  table(8,8),
   control(this),
   aspect_frame("",0.5,0.5,1),
-  fields(FIELD_SIZE,std::vector<clickable_image*>(FIELD_SIZE)),
+  fields(8,std::vector<clickable_image*>(8)),
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
@@ -73,7 +73,7 @@ void main_window::init_ui(){
   
   for(int y=0;y<8;y++){ 
     for(int x=0;x<8;x++){
-      fields[x][y]=new clickable_image(this,y*FIELD_SIZE+x,IMAGE_PATH + "empty.png");
+      fields[x][y]=new clickable_image(this,y*8+x,IMAGE_PATH + "empty.png");
       table.attach(*fields[x][y],x,x+1,y,y+1);
     }
   }
@@ -104,8 +104,8 @@ void main_window::on_menu_game_quit()
 
 main_window::~main_window()
 {
-  for(int y=0;y<FIELD_SIZE;y++){
-    for(int x=0;x<FIELD_SIZE;x++){
+  for(int y=0;y<8;y++){
+    for(int x=0;x<8;x++){
       delete fields[x][y];
     }
   }
@@ -157,15 +157,15 @@ void main_window::update_fields()
   b = &control.current;
   
    
-  for(y=0;y<FIELD_SIZE;y++){
-    for(x=0;x<FIELD_SIZE;x++){
-      if(b->discs[WHITE].test(y*FIELD_SIZE+x)){
+  for(y=0;y<8;y++){
+    for(x=0;x<8;x++){
+      if(b->discs[WHITE].test(y*8+x)){
         imagefile = "white.png";
       }
-      else if(b->discs[BLACK].test(y*FIELD_SIZE+x)){
+      else if(b->discs[BLACK].test(y*8+x)){
         imagefile = "black.png";
       }
-      else if(b->is_valid_move(y*FIELD_SIZE+x)){
+      else if(b->is_valid_move(y*8+x)){
         imagefile = "move.png";
       }
       else{
@@ -173,7 +173,7 @@ void main_window::update_fields()
       }
       table.remove(*fields[x][y]);
       delete fields[x][y];
-      fields[x][y] = new clickable_image(this,y*FIELD_SIZE+x,IMAGE_PATH + imagefile);
+      fields[x][y] = new clickable_image(this,y*8+x,IMAGE_PATH + imagefile);
       table.attach(*fields[x][y],x,x+1,y,y+1);
       table.show_all_children();
     }

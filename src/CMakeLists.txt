@@ -13,13 +13,13 @@ set(DEBUG_FLAGS
 )
 
 set(OPTIMIZING_FLAGS
-  "-I .. -std=c++0x -Wall -Wextra -O3 -DNDEBUG -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
+  "-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
 
 set(CMAKE_CXX_FLAGS 
-  ${OPTIMIZING_FLAGS}
-  #${DEBUG_FLAGS} 
+  #${OPTIMIZING_FLAGS}
+  ${DEBUG_FLAGS} 
 ) 
 
 SET(objects
