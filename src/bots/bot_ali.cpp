@@ -158,10 +158,12 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
     if(move_count!=0){
       int heur = -negamax(b,-beta,-alpha,depth_remaining-1);
       b->switch_turn();
+      assert(copy2==(*b));
       return heur;
     }
     else{
       b->switch_turn();
+      assert(copy2==(*b));
       return EXACT_SCORE_FACTOR * 
       (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff()); 
     }
@@ -179,6 +181,7 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
   
   int move_count=0;
   std::bitset<64> undo_data,possible_moves;
+  board copy2(*b);
   
   b->get_possible_moves(&possible_moves);
   int move;
@@ -199,7 +202,9 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
         alpha = value;
       }
       move_count++;
+      assert(copy2==(*b));
     }
+    assert(copy2==(*b));
     possible_moves.reset(move);
   }
   if(move_count!=0){
@@ -212,9 +217,12 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
       if(move_count!=0){
         int heur = -negamax_exact(b,-beta,-alpha);
         b->switch_turn();
+        assert(copy2==(*b));
         return heur;
       }
+      b->switch_turn();
     }
+    assert(copy2==(*b));
     return (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
   }
 }
