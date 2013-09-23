@@ -143,8 +143,8 @@ void print_stats(const board* b){
   board stack[1000];
   stack[0] = *b;
   
-  stats[0] = -bot_ali(WHITE,60,60,60).negamax_exact(stack,-64,64);
-
+  //stats[0] = -bot_ali(WHITE,60,60,60).negamax_exact(stack,-64,64);
+  CRASH;
   
   for(int i=0;i<10;i++){
     stats[ 1+i] = std::bitset<64>(b->discs[BLACK] & pos_bs[i]).count();

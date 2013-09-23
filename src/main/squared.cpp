@@ -55,14 +55,6 @@ void run_no_gui(){
 }
 
 void run_debug(){
-  std::bitset<64> bs;
-  bs.set(19);
-  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
-  bs.reset(19);
-  bs.set(52);
-  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
-  bs.set(19);
-  std::cout << find_first_set_64(bs.to_ulong()) << '\n';
 }
 
 

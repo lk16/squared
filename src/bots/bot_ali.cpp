@@ -65,24 +65,25 @@ void bot_ali::do_move(const board* b,board* res)
     std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
   }
   
-  if(search_depth>6){
+  if(search_depth>BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
     int heurs[32];
     for(int i=0;i<child_count;i++){
-      heurs[i] = -negamax(children+i,MIN_HEURISTIC,MAX_HEURISTIC,4);
+      inspected = children[i];
+      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC,search_depth-4);
     }
-    b->get_children(children,&child_count);
     sort_boards(children,heurs,child_count);
   }
   
     
-  for(int id=child_count-1;id>=0;--id){
+  for(int id=0;id<child_count;++id){
     int cur_heur;
+    inspected = children[id];
     switch(mode){
       case NORMAL_MODE:
-        cur_heur = -negamax(children+id,MIN_HEURISTIC,-best_heur,search_depth);
+        cur_heur = -negamax(MIN_HEURISTIC,-best_heur,search_depth);
         break;
       case PERFECT_MODE:
-        cur_heur = -negamax_exact(children+id,-64,-best_heur);
+        cur_heur = -negamax_exact(-64,-best_heur);
         break;
     }
     if(cur_heur > best_heur){
@@ -91,12 +92,11 @@ void bot_ali::do_move(const board* b,board* res)
     }
     
     if(shell_output){
-      std::cout << "move " << (child_count-id) << "/" << (child_count);
+      std::cout << "move " << (id+1) << "/" << (child_count);
       std::cout << ": " << best_heur << std::endl;
     }
   }
   
-  b->get_children(children,&child_count);
   *res = children[best_id];
   
   
@@ -111,33 +111,34 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
-int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
+int bot_ali::negamax(int alpha, int beta, int depth_remaining)
 {
  
   nodes++; 
   
   if(depth_remaining==0){
-    int heur = (b->turn==WHITE) ? heuristic(b) : -heuristic(b);
+    int heur = heuristic();
+    if(inspected.turn==BLACK){
+      heur = -heur;
+    }
     return heur;
   }  
   
   int move_count=0;
   std::bitset<64> undo_data,possible_moves;
   
-  b->get_possible_moves(&possible_moves);
-  int move;
+  inspected.get_possible_moves(&possible_moves);
   
-  board copy2(*b);
   
   while(true){
-    move = find_first_set_64(possible_moves.to_ulong());
+    int move = find_first_set_64(possible_moves.to_ulong());
     if(move==0){
       break;
     }
     move--;
-    if(b->try_move(move,&undo_data)){
-      int value = -negamax(b,-beta,-alpha,depth_remaining-1);
-      b->undo_move(move,&undo_data);
+    if(inspected.try_move(move,&undo_data)){
+      int value = -negamax(-beta,-alpha,depth_remaining-1);
+      inspected.undo_move(move,&undo_data);
       if(value >= beta){
         return beta;
       }
@@ -145,7 +146,6 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
         alpha = value;
       }
       move_count++;
-      assert(copy2==(*b));
     }
     possible_moves.reset(move);
   }
@@ -153,19 +153,22 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
     return alpha;
   }
   else{
-    b->switch_turn();
-    b->get_children(NULL,&move_count);
+    inspected.switch_turn();
+    inspected.get_children(NULL,&move_count);
+    int heur;
     if(move_count!=0){
-      int heur = -negamax(b,-beta,-alpha,depth_remaining-1);
-      b->switch_turn();
-      assert(copy2==(*b));
+      heur = -negamax(-beta,-alpha,depth_remaining-1);
+      inspected.switch_turn();
       return heur;
     }
     else{
-      b->switch_turn();
-      assert(copy2==(*b));
-      return EXACT_SCORE_FACTOR * 
-      (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff()); 
+      // at this point inspected.turn is switched
+      inspected.switch_turn();
+      heur = EXACT_SCORE_FACTOR * inspected.get_disc_diff();
+      if(inspected.turn==BLACK){
+        heur = -heur;
+      }
+      return heur;
     }
   }
   
@@ -174,27 +177,25 @@ int bot_ali::negamax(board* b, int alpha, int beta, int depth_remaining)
 
 
 
-int bot_ali::negamax_exact(board* b,int alpha, int beta)
+int bot_ali::negamax_exact(int alpha, int beta)
 {           
   
   nodes++; 
   
   int move_count=0;
   std::bitset<64> undo_data,possible_moves;
-  board copy2(*b);
   
-  b->get_possible_moves(&possible_moves);
-  int move;
+  inspected.get_possible_moves(&possible_moves);
   
   while(true){
-    move = find_first_set_64(possible_moves.to_ulong());
+    int move = find_first_set_64(possible_moves.to_ulong());
     if(move==0){
       break;
     }
     move--;
-    if(b->try_move(move,&undo_data)){
-      int value = -negamax_exact(b,-beta,-alpha);
-      b->undo_move(move,&undo_data);
+    if(inspected.try_move(move,&undo_data)){
+      int value = -negamax_exact(-beta,-alpha);
+      inspected.undo_move(move,&undo_data);
       if(value >= beta){
         return beta;
       }
@@ -202,28 +203,26 @@ int bot_ali::negamax_exact(board* b,int alpha, int beta)
         alpha = value;
       }
       move_count++;
-      assert(copy2==(*b));
     }
-    assert(copy2==(*b));
     possible_moves.reset(move);
   }
   if(move_count!=0){
     return alpha;
   }
   else{
-    if((b->discs[BLACK] | b->discs[WHITE]).count()!=64){
-      b->switch_turn();
-      b->get_children(NULL,&move_count);
+    if((inspected.discs[BLACK] | inspected.discs[WHITE]).count()!=64){
+      inspected.switch_turn();
+      inspected.get_children(NULL,&move_count);
+      int heur;
       if(move_count!=0){
-        int heur = -negamax_exact(b,-beta,-alpha);
-        b->switch_turn();
-        assert(copy2==(*b));
+        heur = -negamax_exact(-beta,-alpha);
+        inspected.switch_turn();
         return heur;
       }
-      b->switch_turn();
+      inspected.switch_turn();
     }
-    assert(copy2==(*b));
-    return (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
+    return (inspected.turn==WHITE ?  inspected.get_disc_diff() : 
+      -inspected.get_disc_diff());    
   }
 }
 
@@ -233,19 +232,18 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
   bool loop;
   do{
     loop = false;
-    for(int i=0;i<count-1;++i){
-      if(heurs[i] > heurs[i+1]){
-        std::swap(heurs[i],heurs[i+1]);
-        std::swap(boards[i],boards[i+1]);
+    for(int i=1;i<count;++i){
+      if(heurs[i-1] < heurs[i]){
+        std::swap(heurs[i-1],heurs[i]);
+        std::swap(boards[i-1],boards[i]);
         loop = true;
       }
-      assert(heurs[i] <= heurs[i+1]);
     }
   }while(loop);
 }
 
 
-int bot_ali::heuristic(const board* b)
+int bot_ali::heuristic()
 {
 
   /*  
@@ -276,8 +274,8 @@ int bot_ali::heuristic(const board* b)
   
   for(int i=0;i<10;i++){
     res += open_loc_val[i] * (
-       (b->discs[WHITE] & location_bitsets[i]).count()
-      -(b->discs[BLACK] & location_bitsets[i]).count()
+       (inspected.discs[WHITE] & location_bitsets[i]).count()
+       -(inspected.discs[BLACK] & location_bitsets[i]).count()
     );
   }
   
