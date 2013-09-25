@@ -230,11 +230,7 @@ int bot_ali::negamax_stack(board* stack,int alpha, int beta,int max_depth)
   while(next_it_depth==-1){
     cur_depth = next_it_depth;
     depth_data_t* cdd = depth_data+cur_depth;
-    if(cur_depth==max_depth){
-      // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
-      next_it_depth = cur_depth-1;
-    }
-    else{
+    if(cur_depth!=max_depth){
       stack[inspected].get_children(stack + (cdd+1)->child_start,&move_count);
       if(move_count!=0){
         next_it_depth = cur_depth+1;
@@ -248,40 +244,30 @@ int bot_ali::negamax_stack(board* stack,int alpha, int beta,int max_depth)
         stack[inspected+1].turn = opponent(stack[inspected+1].turn);
         stack[inspected+1].get_children(NULL,&move_count);
         if(move_count!=0){
+          next_it_depth = cur_depth+1;
           depth_data[next_it_depth].alpha = cdd->alpha;
           depth_data[next_it_depth].beta  = cdd->beta;
           depth_data[next_it_depth].child_start = cdd->child_start+cdd->child_left;
           depth_data[next_it_depth].child_left = 1;
-          next_it_depth = cur_depth+1;
         }
         else{
-          // TODO set right var to (b->turn==WHITE ?  b->get_disc_diff() : -b->get_disc_diff());    
-          next_it_depth = cur_depth-1;
+          int heur = stack[inspected].get_disc_diff();
+          if(stack[inspected].turn==BLACK){
+            heur = -heur;
+          }
+          if(heur >= cdd->beta){
+            // cut-off
+            depth_data[cur_depth-1].beta = cdd->beta;
+            next_it_depth = cur_depth -1;
+          }
+          else if(heur >= cdd->alpha){
+            depth_data[cur_depth-1].alpha = heur;
+          }          
         }
       }
     }
-      
   }
   
-  
-  if(depth_remaining==0){
-    int heur = (b->turn==WHITE) ? heuristic(b) : -heuristic(b);
-    return heur;
-  }  
-  
-  int move_count;
-  
-  
-  for(int id=move_count-1;id>=0;id--){
-    int value = -negamax(b+1+id,-beta,-alpha,depth_remaining-1);
-    if(value>=beta){
-      return beta;
-    }
-    if(value>=alpha){
-      alpha = value;
-    }
-  }
-  return alpha;
 #else
   return 0;
 #endif
