@@ -261,8 +261,8 @@ int board::get_stable_disc_count_diff(int max_depth) const
   a[0] = *this;
   
   for(int d=0;d<max_depth;d++){
+    insert_index = 0;
     if(expand_a){
-      insert_index = 0;
       for(int i=0;i<a_size;i++){
         int move_count;
         a[i].get_children(b+insert_index,&move_count);
@@ -270,7 +270,6 @@ int board::get_stable_disc_count_diff(int max_depth) const
       }
     }
     else{
-      insert_index = 0;
       for(int i=0;i<b_size;i++){
         int move_count;
         b[i].get_children(a+insert_index,&move_count);

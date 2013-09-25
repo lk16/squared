@@ -55,6 +55,8 @@ void run_no_gui(){
 }
 
 void run_debug(){
+  board b;
+  std::cout << b.get_stable_disc_count_diff(3) << std::endl;
 }
 
 
