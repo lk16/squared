@@ -46,8 +46,14 @@ struct board{
   /// checks for board equality
   bool operator==(const board& b) const;
   
+  /// applies binary and on both discs[BLACK] and discs[WHITE]
+  board& operator&=(const board& b);
+  
   /// resets the board to starting position
   void reset();
+  
+  /// sets all bits in discs[BLACK] and discs[WHITE]
+  void set_all();
   
   /// switches the turn member
   void switch_turn();
@@ -128,6 +134,20 @@ inline void board::switch_turn()
 {
   turn = opponent(turn);
 }
+
+inline board& board::operator&=(const board& b)
+{
+  discs[BLACK] &= b.discs[BLACK];
+  discs[WHITE] &= b.discs[WHITE];
+  return *this;
+}
+
+inline void board::set_all()
+{
+  discs[BLACK].set();
+  discs[WHITE].set(); 
+}
+
 
 
 /*namespace std{
