@@ -31,7 +31,7 @@ const int board_direction[8] = {
 
 struct board{
   
-  std::bitset<TOTAL_FIELDS> discs[2];
+  std::bitset<64> discs[2];
   color turn;
     
   /// does NOTHING; call reset() to initialize
@@ -49,10 +49,29 @@ struct board{
   /// resets the board to starting position
   void reset();
   
-  /// does move (field_id) for current turn
-  /// if this is a valid move, (result++) is returned, and this->turn is flipped
-  /// if not, result is returned and this->turn remains the same
-  board* do_move(int field_id,board* result) const;
+  /// set all bits in discs[BLACK] and discs[WHITE]
+  void set_all();
+  
+  /// switches the turn member
+  void switch_turn();
+  
+  
+  /// apply binary and to discs[BLACK] and discs[WHITE]
+  board& operator&=(const board& b);
+  
+  
+  /// checks whether for *this and this->turn, field_id is a valid move
+  /// WARNING: NOT EFFICIENT
+  bool is_valid_move(int field_id) const;
+  
+  /// performs move for *this and this->turn
+  /// might crash if fed an invalid move
+  /// WARNING: NOT EFFICIENT
+  void do_move(int field_id,board* out) const;
+  
+  /// out will represent a bitset of which each set bit represents a square
+  /// that COULD BE a valid move
+  void get_possible_moves(std::bitset<64> *out) const;
   
   /// gets all children from this board
   /// if out==NULL it is unchanged
@@ -63,6 +82,16 @@ struct board{
   
   /// returns disc count difference positive means white has more
   int get_disc_diff() const;
+  
+  /// tries a move, if not valid, returns false
+  bool try_move(int field_id,std::bitset<64>* undo_data);
+  
+  /// recovers a board state before move field_id, with flipped discs in undo_data 
+  void undo_move(int field_id,std::bitset<64>* undo_data); 
+  
+  
+  /// estimate number of stable discs, without going deeper than max_depth
+  int get_stable_disc_count_diff(int max_depth) const;
 };
 
 
@@ -90,13 +119,22 @@ inline void board::reset(){
 
 inline board::board(const board& b)
 {
-  memcpy(this,&b,sizeof(board));
+  *this = b;
 }
+
+inline void board::set_all()
+{
+  discs[BLACK].set();
+  discs[WHITE].set();
+}
+
 
 
 inline board& board::operator=(const board& b)
 {
-  memcpy(this,&b,sizeof(board));
+  discs[BLACK] = b.discs[BLACK];
+  discs[WHITE] = b.discs[WHITE];
+  turn = b.turn;
   return *this;
 }
 
@@ -104,6 +142,20 @@ inline bool board::operator==(const board& b) const
 {
   return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
+
+inline board& board::operator&=(const board& b)
+{
+  discs[BLACK] &= b.discs[BLACK];
+  discs[WHITE] &= b.discs[WHITE];
+  return *this;
+}
+
+
+inline void board::switch_turn()
+{
+  turn = opponent(turn);
+}
+
 
 /*namespace std{
   template<>

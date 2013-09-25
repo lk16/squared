@@ -28,7 +28,7 @@ struct game_control{
   
   void on_human_do_move(int field_id);
   void on_bot_do_move();
-  void on_any_move(board* next);
+  void on_any_move();
   
   bool timeout_handler();
   
@@ -38,16 +38,12 @@ struct game_control{
   bot_base* bot[2]; 
   
   main_window* mw;
-  board* current;
+  board current;
   
-  std::stack<board*> undo_stack,redo_stack;
+  std::stack<board> undo_stack,redo_stack;
   
 };
 
-inline color game_control::turn() const
-{
-  return current->turn;
-}
 
 
 #endif

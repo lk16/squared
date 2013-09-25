@@ -54,14 +54,28 @@ void run_no_gui(){
 #endif
 }
 
+void run_debug(){
+}
+
+
+
 
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   main_window window;
   
-  if(argc>=2 && std::string(argv[1])=="no-gui"){
-    run_no_gui();
+  if(argc>=2){
+    std::string argv1(argv[1]);
+    if(argv1=="no-gui"){
+      run_no_gui();
+    }
+    else if(argv1=="debug"){
+      run_debug();
+    }
+    else{
+      std::cout << "Invalid parameter: " << argv1 << '\n';
+    }
   }
   else{
     Gtk::Main::run(window);

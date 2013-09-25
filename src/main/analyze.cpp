@@ -118,21 +118,6 @@ void get_reasonable_board(board* out,int num_discs){
   }
 }
 
-void show_bitset(const std::bitset<64>& bs){
-  int x,y;
-  std::cout << "+-----------------+\n";
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      std::cout << (bs.test(y*FIELD_SIZE+x) ? "@ " : "  ");
-    }
-    std::cout << "|\n";
-  }
-  std::cout << "+-----------------+\n";
-}
-
-
-
 void print_stats(const board* b){
   int stats_size = 40;
   int stats[stats_size];
@@ -158,8 +143,8 @@ void print_stats(const board* b){
   board stack[1000];
   stack[0] = *b;
   
-  stats[0] = -bot_ali(WHITE,60,60,60).negamax_exact(stack,-64,64);
-
+  //stats[0] = -bot_ali(WHITE,60,60,60).negamax_exact(stack,-64,64);
+  CRASH;
   
   for(int i=0;i<10;i++){
     stats[ 1+i] = std::bitset<64>(b->discs[BLACK] & pos_bs[i]).count();

@@ -1,52 +1,50 @@
 #include "board.hpp"
 
-board* board::do_move(int field_id,board* result) const
+bool board::is_valid_move(int field_id) const
 { 
-  std::bitset<TOTAL_FIELDS> mask,tmp_mask;
-  
-   
-  if(discs[WHITE].test(field_id) || discs[BLACK].test(field_id)){
-    return result;
+  // if the square is not empty, it cannot be a valid move
+  if((discs[WHITE] | discs[BLACK]).test(field_id)){
+    return false;
   }
   
-  
-  for(int i=0;i<8;++i){ 
-    tmp_mask.reset();
-    int cur_field_id = field_id;
-    while(true){
-      
-      //test walking off the board
-      if(board_border[cur_field_id] & (1ul << i)){
-        break;
-      }
-      
-      cur_field_id += board_direction[i]; 
-      
-      if(discs[opponent(turn)].test(cur_field_id)){
-        tmp_mask.set(cur_field_id);
-        continue;
-      }
-      
-      if(discs[turn].test(cur_field_id)){
-        mask |= tmp_mask;
-        break;
-      }
-      
-      // cur_field_id == EMPTY
-      break;
+  // check if field_id is my color in any of the children
+  board children[32];
+  int move_count;
+  get_children(children,&move_count);
+  for(int i=0;i<move_count;i++){
+    if(children[i].discs[turn].test(field_id)){
+      return true;
     }
   }
-  
-  if(mask.any()){
-    *result = *this;
-    result->discs[turn] |= mask;
-    result->discs[turn].set(field_id);
-    result->discs[opponent(turn)] &= (~mask);
-    result->turn = opponent(result->turn);
-    return ++result;
-  }
-  return result;
+  return false;
 }
+
+void board::do_move(int field_id, board* out) const
+{
+  *out = *this;
+  
+  // if the square is not empty, it cannot be a valid move 
+  if((discs[WHITE] | discs[BLACK]).test(field_id)){
+    CRASH;
+  }
+  
+  
+  // check if field_id is my color in any of the children
+  board children[32];
+  int move_count;
+  get_children(children,&move_count);
+  for(int i=0;i<move_count;i++){
+    if(children[i].discs[turn].test(field_id)){
+      *out = children[i];
+      return;
+    }
+  }
+  CRASH;
+}
+
+
+
+
 
 void board::get_children(board* out,int* move_count) const
 {
@@ -57,18 +55,7 @@ void board::get_children(board* out,int* move_count) const
   std::bitset<64> to_flip,tmp_mask;
   
   
-  // a field is considered a possible move when:
-  // - it is horizontal/vertical/diagonal adjacent to an disc of opponent(turn)
-  // - it is empty
-  possible_moves |= ((opp << 9) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
-  possible_moves |=  (opp << 8);
-  possible_moves |= ((opp << 7) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
-  possible_moves |= ((opp << 1) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
-  possible_moves |= ((opp >> 1) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
-  possible_moves |= ((opp >> 7) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
-  possible_moves |=  (opp >> 8);
-  possible_moves |= ((opp >> 9) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
-  possible_moves &= ~(discs[WHITE] | discs[BLACK]);
+  get_possible_moves(&possible_moves);
   
   for(int field_id=0;field_id<64;field_id++){
     
@@ -81,27 +68,30 @@ void board::get_children(board* out,int* move_count) const
       
       tmp_mask.reset();
       int cur_field_id = field_id;
+      
       while(true){
         
-        //test walking off the board
+        // will i walk off the board next step?
         if(board_border[cur_field_id] & (1ul << i)){
           break;
         }
         
+        // walk ahead        
         cur_field_id += board_direction[i]; 
+        
+        // current field = my color
         if(discs[turn].test(cur_field_id)){
           to_flip |= tmp_mask;
           break;
         }
+        
+        // current field = opponent color
         if(discs[opponent(turn)].test(cur_field_id)){
           tmp_mask.set(cur_field_id);
           continue;
         }
         
-        
-        
-        
-        // cur_field_id == EMPTY
+        // current fiend = empty
         break;
       }
     }
@@ -119,30 +109,46 @@ void board::get_children(board* out,int* move_count) const
   }
 }
 
+void board::get_possible_moves(std::bitset<64> *out) const
+{
+  const std::bitset<64> *opp = &(discs[opponent(turn)]);
+  
+  // a field is considered a possible move when:
+  // - it is horizontal/vertical/diagonal adjacent to an disc of opponent(turn)
+  // - it is empty
+  
+  *out |= (((*opp) << 9) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  *out |=  ((*opp) << 8);
+  *out |= (((*opp) << 7) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  *out |= (((*opp) << 1) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  *out |= (((*opp) >> 1) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  *out |= (((*opp) >> 7) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  *out |=  ((*opp) >> 8);
+  *out |= (((*opp) >> 9) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  *out &= ~(discs[WHITE] | discs[BLACK]);
+}
+
+
+
 
 void board::show() const
 {
   int x,y;
-  board dummy;
   
   /* top line */
-  std::cout << "+-";
-  for(x=0;x<FIELD_SIZE;x++){
-    std::cout << "--";
-  }
-  std::cout << "+\n";
+  std::cout << "+-----------------+\n";
   
   /* middle */
-  for(y=0;y<FIELD_SIZE;y++){
+  for(y=0;y<8;y++){
     std::cout << "| ";
-    for(x=0;x<FIELD_SIZE;x++){
-      if(discs[BLACK].test(y*FIELD_SIZE+x)){
+    for(x=0;x<8;x++){
+      if(discs[BLACK].test(y*8+x)){
           std::cout << "\033[31;1m@\033[0m ";
       }
-      else if(discs[WHITE].test(y*FIELD_SIZE+x)){
+      else if(discs[WHITE].test(y*8+x)){
           std::cout << "\033[34;1m@\033[0m ";
       }
-      else if(&dummy != do_move(y*FIELD_SIZE+x,&dummy)){
+      else if(is_valid_move(y*8+x)){
         std::cout << ". ";
       }  
       else{
@@ -153,11 +159,7 @@ void board::show() const
   }
   
   /* bottom line */
-  std::cout << "+-";
-  for(x=0;x<FIELD_SIZE;x++){
-    std::cout << "--";
-  }
-  std::cout << "+\n";
+  std::cout << "+-----------------+\n";
 }
 
 int board::get_disc_diff() const
@@ -168,12 +170,131 @@ int board::get_disc_diff() const
   count[WHITE] = discs[WHITE].count();
   
   if(count[WHITE] > count[BLACK]){ /* WHITE wins */
-    return (TOTAL_FIELDS)-(2*count[BLACK]);
+    return 64 - (2*count[BLACK]);
   }
   else if(count[WHITE] < count[BLACK]){ /* BLACK wins */
-    return ((-TOTAL_FIELDS)+(2*count[WHITE]));
+    return -64 + (2*count[WHITE]);
   }
   else{ /* draw */
     return 0;
   }
 }
+
+bool board::try_move(int field_id, std::bitset<64>* undo_data)
+{
+  if((discs[BLACK] | discs[WHITE]).test(field_id)){
+    return false;
+  }
+  
+  undo_data->reset();
+  
+  for(int i=0;i<8;++i){     
+  
+    std::bitset<64> tmp_mask;
+    int cur_field_id = field_id;
+    
+    while(true){
+      
+      // will i walk off the board next step?
+      if(board_border[cur_field_id] & (1ul << i)){
+        break;
+      }
+      
+      // walk ahead        
+      cur_field_id += board_direction[i]; 
+      
+      // current field = my color
+      if(discs[turn].test(cur_field_id)){
+        (*undo_data) |= tmp_mask;
+        break;
+      }
+      
+      // current field = opponent color
+      if(discs[opponent(turn)].test(cur_field_id)){
+        tmp_mask.set(cur_field_id);
+        continue;
+      }
+      
+      // current fiend = empty
+      break;
+    }
+  }
+  if(undo_data->none()){
+    return false;
+  }
+  
+  
+  assert((discs[turn] & (*undo_data)) == std::bitset<64>());
+  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
+  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
+  
+  discs[turn] |= ((*undo_data) | std::bitset<64>(1ul << field_id));
+  discs[opponent(turn)] &= ~(*undo_data);
+  
+  turn = opponent(turn);
+  
+  return true;
+}
+
+void board::undo_move(int field_id, std::bitset<64>* undo_data)
+{
+  turn = opponent(turn); 
+  
+  discs[turn] &= ~((*undo_data));
+  discs[turn].reset(field_id);
+  discs[opponent(turn)] |= (*undo_data);  
+  
+  
+  assert((discs[turn] & (*undo_data)) == std::bitset<64>());
+  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
+  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
+}
+
+int board::get_stable_disc_count_diff(int max_depth) const
+{
+  board a[1000000];
+  board b[1000000];
+  bool expand_a = true;
+  int insert_index = 0;
+  int a_size = 1;
+  int b_size = 0;
+  a[0] = *this;
+  
+  for(int d=0;d<max_depth;d++){
+    if(expand_a){
+      insert_index = 0;
+      for(int i=0;i<a_size;i++){
+        int move_count;
+        a[i].get_children(b+insert_index,&move_count);
+        insert_index += move_count;
+      }
+    }
+    else{
+      insert_index = 0;
+      for(int i=0;i<b_size;i++){
+        int move_count;
+        b[i].get_children(a+insert_index,&move_count);
+        insert_index += move_count;
+      }
+    }
+    expand_a = !expand_a;
+  }
+  
+  board stable;
+  stable.set_all();
+  
+  if(expand_a){
+    for(int i=0;i<a_size;i++){
+      stable &= a[i];
+    }
+  }
+  else{
+    for(int i=0;i<a_size;i++){
+      stable &= b[i];
+    }
+  }
+  
+  return stable.discs[WHITE].count() - stable.discs[BLACK].count();
+}
+
+

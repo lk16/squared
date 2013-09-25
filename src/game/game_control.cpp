@@ -2,8 +2,7 @@
 #include "gui/main_window.hpp"
 
 game_control::game_control(main_window* _mw):
-  mw(_mw),
-  current(new board())
+  mw(_mw)
 {
   bot[WHITE] = bot[BLACK] = NULL;
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
@@ -12,18 +11,25 @@ game_control::game_control(main_window* _mw):
 game_control::~game_control()
 {
   while(!redo_stack.empty()){
-    delete redo_stack.top();
     redo_stack.pop();
   } 
   while(!undo_stack.empty()){
-    delete undo_stack.top();
     undo_stack.pop();
   } 
-  delete current;
   
-  if(bot[WHITE]) delete bot[WHITE];
-  if(bot[BLACK]) delete bot[BLACK];
+  if(bot[BLACK]){
+    delete bot[BLACK];
+  }
+  if(bot[WHITE]){
+    delete bot[WHITE];
+  }
   
+}
+
+
+color game_control::turn() const
+{
+  return current.turn;
 }
 
 
@@ -33,51 +39,49 @@ void game_control::on_human_do_move(int field_id)
     return;
   }
 
-  board *move = new board;
  
-  if(move != current->do_move(field_id,move)){
-    on_any_move(move);
+ if(current.is_valid_move(field_id)){
+    undo_stack.push(current);
+    current.do_move(field_id,&current);
+    on_any_move();
   }
 }
 
 void game_control::on_bot_do_move()
 {
   if(bot[BLACK] && bot[WHITE]){
-    current->show();
+    current.show();
   }
 
   int move_count;
-  current->get_children(NULL,&move_count);
+  current.get_children(NULL,&move_count);
   if(move_count==0){
     return;
   }
   
-  board* move = new board;
-  bot[turn()]->do_move(current,move);
-  on_any_move(move); 
+  board old = current;
+  
+  bot[turn()]->do_move(&old,&current);
+  undo_stack.push(old);
+  on_any_move(); 
 }
 
-void game_control::on_any_move(board* next)
+void game_control::on_any_move()
 {
   while(!redo_stack.empty()){
-    delete redo_stack.top();
     redo_stack.pop();
   }
-  undo_stack.push(current);
   
-  current = next;
   mw->update_fields();
   
-  //if(!current->has_moves()){
   int move_count;
-  current->get_children(NULL,&move_count);
+  current.get_children(NULL,&move_count);
   if(move_count==0){
-    board copy = *current;
+    board copy(current);
     copy.turn = opponent(copy.turn);
-    //if(copy.has_moves()){
     copy.get_children(NULL,&move_count);
     if(move_count!=0){
-      current->turn = opponent(turn());
+      current.turn = opponent(turn());
       mw->update_fields();
     }
     else{
@@ -93,7 +97,7 @@ void game_control::on_undo()
   if(undo_stack.empty()){
     return;
   }
-  while(bot[undo_stack.top()->turn]){
+  while(bot[undo_stack.top().turn]){
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
@@ -109,7 +113,7 @@ void game_control::on_redo()
   if(redo_stack.empty()){
     return;
   } 
-  while(bot[undo_stack.top()->turn]){
+  while(bot[undo_stack.top().turn]){
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
@@ -123,15 +127,13 @@ void game_control::on_redo()
 void game_control::on_new_game()
 {
   while(!redo_stack.empty()){
-    delete redo_stack.top();
     redo_stack.pop();
   } 
   while(!undo_stack.empty()){
-    delete undo_stack.top();
     undo_stack.pop();
   } 
   
-  current->reset();
+  current.reset();
   mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
 }
@@ -140,8 +142,8 @@ void game_control::on_game_ended()
 {
   std::string text;
   
-  text += "Game has ended. White (" + tostr<int>(current->discs[WHITE].count()) + ") - Black (";
-  text += tostr<int>(current->discs[BLACK].count())+ ")";
+  text += "Game has ended. White (" + tostr<int>(current.discs[WHITE].count()) + ") - Black (";
+  text += tostr<int>(current.discs[BLACK].count())+ ")";
   
   std::cout << text << std::endl;
   mw->update_status_bar(text);
@@ -150,9 +152,9 @@ void game_control::on_game_ended()
 bool game_control::timeout_handler()
 {
   int child_count;
-  current->get_children(NULL,&child_count);
+  current.get_children(NULL,&child_count);
   if(child_count==0){
-    board copy(*current);
+    board copy(current);
     copy.get_children(NULL,&child_count);
     if(child_count==0){
       return true;
