@@ -7,6 +7,7 @@
 #include <list>
 #include <sstream>
 #include <cstring>
+#include <vector>
 
 #include "game/util.hpp"
 
@@ -72,8 +73,14 @@ struct board{
   void get_possible_moves(std::bitset<64> *out) const;
   
   /// gets all children from this board
-  /// if out==NULL it is unchanged
-  void get_children(board* out,int* move_count) const;
+  /// returns a possibly increased out pointer
+  board* get_children(board* out) const;
+  
+  
+  /// gets all descendants at a certain depth
+  
+  std::vector<board> get_descendants(int depth) const;
+  
   
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
@@ -86,6 +93,9 @@ struct board{
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
+  
+  /// estimate number of stable discs, without going deeper than max_depth
+  int get_stable_disc_count_diff(int max_depth) const;
 };
 
 
@@ -116,7 +126,6 @@ inline board::board(const board& b)
   *this = b;
 }
 
-
 inline board& board::operator=(const board& b)
 {
   discs[BLACK] = b.discs[BLACK];
@@ -130,16 +139,17 @@ inline bool board::operator==(const board& b) const
   return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
 }
 
-inline void board::switch_turn()
-{
-  turn = opponent(turn);
-}
-
 inline board& board::operator&=(const board& b)
 {
   discs[BLACK] &= b.discs[BLACK];
   discs[WHITE] &= b.discs[WHITE];
   return *this;
+}
+
+
+inline void board::switch_turn()
+{
+  turn = opponent(turn);
 }
 
 inline void board::set_all()

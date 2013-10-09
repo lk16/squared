@@ -1,6 +1,11 @@
 #include <gtkmm.h>
 
+#include <vector>
+
+
 #include "gui/main_window.hpp"
+
+
 
 void run_no_gui(){
 #if 0 
@@ -55,6 +60,19 @@ void run_no_gui(){
 }
 
 void run_debug(){
+  
+  board b;
+  std::vector<board> desc;
+  
+  b.reset();
+  
+  for(int i=1;i<13;i++){
+    desc = b.get_descendants(i);
+    std::cout << "At depth " << i << ": " << desc.size() << " descendants\n";
+    desc.clear();
+  }
+  
+  
 }
 
 

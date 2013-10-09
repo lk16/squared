@@ -53,9 +53,9 @@ void game_control::on_bot_do_move()
     current.show();
   }
 
-  int move_count;
-  current.get_children(NULL,&move_count);
-  if(move_count==0){
+  board tmp[32];
+  
+  if(current.get_children(tmp) == tmp){
     return;
   }
   
@@ -72,22 +72,20 @@ void game_control::on_any_move()
     redo_stack.pop();
   }
   
-  mw->update_fields();
+  std::vector<board> testing = current.get_descendants(5);
+  std::cout << "descendants at depth 5: " << testing.size() << "\n";
   
-  int move_count;
-  current.get_children(NULL,&move_count);
-  if(move_count==0){
-    board copy(current);
-    copy.turn = opponent(copy.turn);
-    copy.get_children(NULL,&move_count);
-    if(move_count!=0){
-      current.turn = opponent(turn());
-      mw->update_fields();
-    }
-    else{
+  
+  
+  
+  board tmp[32];
+  if(current.get_children(tmp) == tmp){
+    current.switch_turn();
+    if(current.get_children(tmp) == tmp){
       on_game_ended();
     }
   }
+  mw->update_fields();
 }
 
 
@@ -151,12 +149,11 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  int child_count;
-  current.get_children(NULL,&child_count);
-  if(child_count==0){
+  board tmp[32];
+  if(current.get_children(tmp) == tmp){
     board copy(current);
-    copy.get_children(NULL,&child_count);
-    if(child_count==0){
+    current.switch_turn();
+    if(copy.get_children(tmp) == tmp){
       return true;
     }
   }

@@ -8,6 +8,7 @@
 #include <time.h>
 #include <vector>
 
+#if 0
 /**
   @param in an input board
   @param out the best move according to the heuristic of bot_ali, or NULL if no moves
@@ -179,19 +180,8 @@ long get_time_diff(timeval* start,timeval* end){
   + (end->tv_usec - start->tv_usec);
 }
 
-
-int main(){
-#if 1
-  time_t seed = time(NULL);
-  srand(seed);
-  std::cout << "Seed: " << seed << "\n";
 #endif
 
-  board x;
-  
-  for(int count=1;true;count++){
-    get_reasonable_board(&x,48);
-    print_stats(&x);
-  }
+int main(){
   return 0;
 }

@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include <vector>
 
 bool board::is_valid_move(int field_id) const
 { 
@@ -9,8 +10,7 @@ bool board::is_valid_move(int field_id) const
   
   // check if field_id is my color in any of the children
   board children[32];
-  int move_count;
-  get_children(children,&move_count);
+  int move_count = get_children(children) - children;
   for(int i=0;i<move_count;i++){
     if(children[i].discs[turn].test(field_id)){
       return true;
@@ -31,8 +31,7 @@ void board::do_move(int field_id, board* out) const
   
   // check if field_id is my color in any of the children
   board children[32];
-  int move_count;
-  get_children(children,&move_count);
+  int move_count = get_children(children) - children;
   for(int i=0;i<move_count;i++){
     if(children[i].discs[turn].test(field_id)){
       *out = children[i];
@@ -46,10 +45,9 @@ void board::do_move(int field_id, board* out) const
 
 
 
-void board::get_children(board* out,int* move_count) const
+board* board::get_children(board* out_begin) const
 {
-  *move_count = 0;
-  
+  board* out_end = out_begin;
   std::bitset<64> opp = discs[opponent(turn)];
   std::bitset<64> possible_moves;
   std::bitset<64> to_flip,tmp_mask;
@@ -97,16 +95,16 @@ void board::get_children(board* out,int* move_count) const
     }
     
     if(to_flip.any()){
-      if(out){
-        memcpy(out,this,sizeof(board));
-        out->discs[turn] |= to_flip | std::bitset<64>(1ul << field_id);
-        out->discs[opponent(turn)] &= (~to_flip);
-        out->turn = opponent(out->turn);
-        ++out;
+      if(out_end){
+        *out_end = *this;
+        out_end->discs[turn] |= to_flip | std::bitset<64>(1ul << field_id);
+        out_end->discs[opponent(turn)] &= (~to_flip);
+        out_end->switch_turn();
+        ++out_end;
       }
-      ++(*move_count);
     }  
   }
+  return out_end;
 }
 
 void board::get_possible_moves(std::bitset<64> *out) const
@@ -249,4 +247,47 @@ void board::undo_move(int field_id, std::bitset<64>* undo_data)
   assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
   assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
 }
+
+std::vector<board> board::get_descendants(int depth) const
+{
+  std::vector<board> a,b;
+  board buff[32];
+  
+  
+  a.push_back(*this);
+  
+  std::vector<board>::const_iterator it;
+  
+  for(int d=0;d<depth;d++){
+    b.clear();
+    for(it=a.begin();it!=a.end();it++){
+      b.insert(b.end(),buff,it->get_children(buff));
+    }
+    b.swap(a);
+    if(a.empty()){
+      break; // we cannot expand an emty depth level
+    }
+  }
+  
+  return b;
+}
+
+
+
+
+
+int board::get_stable_disc_count_diff(int max_depth) const
+{
+  board stable;
+  stable.set_all();
+  
+  std::vector<board> desc = get_descendants(max_depth);
+  
+  for(std::vector<board>::const_iterator it=desc.begin();it!=desc.end();it++){
+    stable &= *it;
+  }
+  
+  return stable.discs[WHITE].count() - stable.discs[BLACK].count();
+}
+
 
