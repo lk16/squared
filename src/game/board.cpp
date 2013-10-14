@@ -248,24 +248,31 @@ void board::undo_move(int field_id, std::bitset<64>* undo_data)
   assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
 }
 
-std::vector<board> board::get_descendants(int depth) const
+std::set<board> board::get_descendants(int depth) const
 {
-  std::vector<board> a,b;
+  std::set<board> a,b;
   board buff[32];
   
   
-  a.push_back(*this);
+  a.insert(*this);
   
-  std::vector<board>::const_iterator it;
+  if(depth == 0){
+    return a;
+  }
+  
+  std::set<board>::const_iterator it;
   
   for(int d=0;d<depth;d++){
     b.clear();
     for(it=a.begin();it!=a.end();it++){
-      b.insert(b.end(),buff,it->get_children(buff));
+      const board* buff_end = it->get_children(buff);
+      for(const board* buff_it=buff;buff_it!=buff_end;buff_it++){
+        b.insert(*buff_it);
+      }
     }
     b.swap(a);
     if(a.empty()){
-      break; // we cannot expand an emty depth level
+      break; // we cannot expand an empty depth level
     }
   }
   
@@ -281,9 +288,9 @@ int board::get_stable_disc_count_diff(int max_depth) const
   board stable;
   stable.set_all();
   
-  std::vector<board> desc = get_descendants(max_depth);
+  std::set<board> desc = get_descendants(max_depth);
   
-  for(std::vector<board>::const_iterator it=desc.begin();it!=desc.end();it++){
+  for(std::set<board>::const_iterator it=desc.begin();it!=desc.end();it++){
     stable &= *it;
   }
   

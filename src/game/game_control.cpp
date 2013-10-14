@@ -72,12 +72,6 @@ void game_control::on_any_move()
     redo_stack.pop();
   }
   
-  std::vector<board> testing = current.get_descendants(5);
-  std::cout << "descendants at depth 5: " << testing.size() << "\n";
-  
-  
-  
-  
   board tmp[32];
   if(current.get_children(tmp) == tmp){
     current.switch_turn();

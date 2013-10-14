@@ -45,11 +45,3 @@ ADD_EXECUTABLE(../squared
 target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
 )
-
-
-
-ADD_EXECUTABLE(../analyze
-  main/analyze.cpp
-  bots/bot_ali.cpp
-  game/board.cpp
-)

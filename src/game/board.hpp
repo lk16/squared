@@ -7,7 +7,8 @@
 #include <list>
 #include <sstream>
 #include <cstring>
-#include <vector>
+#include <set>
+#include <unordered_map>
 
 #include "game/util.hpp"
 
@@ -47,6 +48,9 @@ struct board{
   /// checks for board equality
   bool operator==(const board& b) const;
   
+  /// checks for ordering
+  bool operator<(const board& b) const;
+  
   /// applies binary and on both discs[BLACK] and discs[WHITE]
   board& operator&=(const board& b);
   
@@ -78,9 +82,10 @@ struct board{
   
   
   /// gets all descendants at a certain depth
+  std::set<board> get_descendants(int depth) const;
   
-  std::vector<board> get_descendants(int depth) const;
-  
+  /// get hash
+  unsigned long hash() const;
   
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
@@ -99,6 +104,14 @@ struct board{
 };
 
 
+namespace std{
+  template<>
+  struct hash<board>{
+    size_t operator()(board b) const{
+      return b.hash();
+    }
+  };
+}
 
 inline board::board()
 {
@@ -158,16 +171,22 @@ inline void board::set_all()
   discs[WHITE].set(); 
 }
 
+inline bool board::operator<(const board& b) const
+{
+  if(discs[BLACK] != b.discs[BLACK]){
+    return discs[BLACK].to_ulong() < b.discs[BLACK].to_ulong();
+  }
+  if(discs[WHITE] != b.discs[WHITE]){
+    return discs[WHITE].to_ulong() < b.discs[WHITE].to_ulong();
+  }
+  return (int)turn < (int)b.turn;
+}
 
 
-/*namespace std{
-  template<>
-  struct hash<board>{
-    size_t operator()(const board& b) const{
-      return 3*b.discs[BLACK].to_ulong() + 5*b.discs[WHITE].to_ulong() + 7*b.turn;
-    }
-  };
-  
-}*/
+inline long unsigned int board::hash() const
+{
+  return 3*discs[BLACK].to_ulong() + 5*discs[WHITE].to_ulong() + 7*turn;
+}
+
 
 #endif
