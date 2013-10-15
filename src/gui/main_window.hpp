@@ -15,10 +15,8 @@
 #include "game/board.hpp"
 
 #include "gui_base/clickable_image.hpp"
-#include "gui_base/scaling_image.hpp"
 #include "gui/settings_dialog.hpp"
 
-struct clickable_image;
 class board;
 
 class main_window:
@@ -27,7 +25,6 @@ class main_window:
 
 public:
   main_window();
-  virtual ~main_window();
 
   void init_ui();
   
@@ -37,10 +34,7 @@ public:
   /* allow easy updating of the statusbar */
   void update_status_bar(const std::string& text);
   
-  
   /* public members */
-  Gtk::Table table;
-  Gtk::Statusbar status_bar;
   game_control control;
   
 protected:  
@@ -51,9 +45,11 @@ protected:
   void on_menu_settings_settings();
   
   /* Member widgets: */
+  Gtk::Table table;
+  Gtk::Statusbar status_bar;
   Gtk::VBox vbox;
   Gtk::AspectFrame aspect_frame;
-  std::vector<std::vector<clickable_image*> > fields;
+  clickable_image fields[8][8];
   
   
   /* Other */

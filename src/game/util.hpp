@@ -123,17 +123,17 @@ inline void show_bitset(const std::bitset<64>& bs){
   std::cout << "+-----------------+\n";
 }
 
-// returns 0 if ul==0ul, returns 1 + least significant bit otherwise
+// returns -1 if ul==0ul, returns least significant bit otherwise
 inline int find_first_set_64(unsigned long ul){
   int res = __builtin_ffs(ul & 0x00000000FFFFFFFF);
   if(res!=0){
-    return res;
+    return res - 1;
   }
   res = __builtin_ffs(ul >> 32);
   if(res!=0){
-    return 32 + res;
+    return 31 + res;
   }
-  return 0;
+  return -1;
 }
 
 

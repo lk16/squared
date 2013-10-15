@@ -1,10 +1,13 @@
 #include "bot_ali.hpp"
-#include <../../../src/fador-mineserver-7a12610/include/tools.h>
 
 bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
-  bot_base(_c,sd,wdl,pd),
-  table(1023)
+  bot_base(_c,sd,wdl,pd)
 {
+  
+#if BOT_ALI_USE_HASHTABLE 
+  table.reserve(250000);
+#endif  
+  
   int loc[64] =
   {
     0,1,2,3,3,2,1,0,
@@ -35,10 +38,6 @@ void bot_ali::do_move(const board* b,board* res)
 {
   
   struct timeval start;
-  
-  
-  
-
   
   
   if(shell_output){
@@ -75,9 +74,8 @@ void bot_ali::do_move(const board* b,board* res)
     std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
   }
 
-#if BOT_ALI_EXPAND_CHILDREN 
 
-  std::vector<std::pair<board,int> > descendants;
+
   
   if(search_depth>BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
     int heurs[32];
@@ -87,32 +85,7 @@ void bot_ali::do_move(const board* b,board* res)
     }
     sort_boards(children,heurs,child_count);
   }
-  for(int id=0;id<(int)descendants.size();++id){
-    inspected = descendants[id].first;
-    
-    int cur_heur;
-    switch(mode){
-      case NORMAL_MODE:
-        cur_heur = -negamax(MIN_HEURISTIC,-best_heur,search_depth);
-        break;
-      case PERFECT_MODE:
-        cur_heur = -negamax_exact(-64,-best_heur);
-        break;
-    }
-    if(cur_heur > best_heur){
-      best_heur = cur_heur;
-      best_id = descendants[id].second;
-    }
-    
-    if(shell_output){
-      if(((id+1)%100==0) || (id+1)==(int)descendants.size()){
-        std::cout << "move " << (id+1) << "/" << (descendants.size());
-        std::cout << ": " << best_heur << std::endl;
-      }
-    }
-  }
-  
-#else
+
 
   for(int id=0;id<child_count;++id){
     inspected = children[id];
@@ -136,7 +109,6 @@ void bot_ali::do_move(const board* b,board* res)
     }
   }
   
-#endif
   
 #if BOT_ALI_USE_HASHTABLE  
   //std::cout << "table.size() = " << table.size() << '\n';
@@ -197,11 +169,9 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
   while(true){
   
     int move = find_first_set_64(possible_moves.to_ulong());
-    if(move==0){
+    if(move == -1){
       break;
-    }
-    move--;
-  
+    }  
     if(inspected.try_move(move,&undo_data)){
       int value = -negamax(-beta,-alpha,depth_remaining-1);
       inspected.undo_move(move,&undo_data);
@@ -270,9 +240,9 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   nodes++;
   
-  
+
+#if BOT_ALI_USE_HASHTABLE 
   int max_moves_left = 64 - (inspected.discs[WHITE] | inspected.discs[BLACK]).count();
-  
   bool valid_hash_table_depth = (max_moves_left > 14);
   if(valid_hash_table_depth){
     std::unordered_map<board,int>::const_iterator it = table.find(inspected);
@@ -280,7 +250,7 @@ int bot_ali::negamax_exact(int alpha, int beta)
       return it->second;
     }
   }
-  
+#endif  
   
   int child_count=0;
   std::bitset<64> undo_data,possible_moves;
@@ -289,17 +259,18 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   while(true){
     int move = find_first_set_64(possible_moves.to_ulong());
-    if(move==0){
+    if(move == -1){
       break;
     }
-    move--;
     if(inspected.try_move(move,&undo_data)){
       int value = -negamax_exact(-beta,-alpha);
       inspected.undo_move(move,&undo_data);
       if(value >= beta){
+#if BOT_ALI_USE_HASHTABLE 
         if(valid_hash_table_depth){
           table.insert(std::make_pair<board,int>(inspected,beta));
         }
+#endif
         return beta;
       }
       if(value >= alpha){
@@ -323,19 +294,23 @@ int bot_ali::negamax_exact(int alpha, int beta)
       if(inspected.get_children(tmp) != tmp){
         heur = -negamax_exact(-beta,-alpha);
         inspected.switch_turn();
+#if BOT_ALI_USE_HASHTABLE 
         if(valid_hash_table_depth){
           table.insert(std::make_pair<board,int>(inspected,heur));
         }
+#endif
         return heur;
       }
       inspected.switch_turn();
     }
     int tmp =  (inspected.turn==WHITE ? inspected.get_disc_diff() :
-      -inspected.get_disc_diff());
-      
+    -inspected.get_disc_diff());
+    
+#if BOT_ALI_USE_HASHTABLE 
     if(valid_hash_table_depth){
       table.insert(std::make_pair<board,int>(inspected,tmp));
     }
+#endif
     return tmp;
   }
 }
@@ -394,33 +369,6 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
   }while(loop);
 }
 
-void bot_ali::sort_board_int_pairs(std::vector< std::pair< board, int > >& boards)
-{
-  int* heurs = new int[boards.size()];
-  
-  for(int i=0;i<(int)boards.size();i++){
-    inspected = boards[i].first;
-    heurs[i] = heuristic();
-  }
-  
-  
-  
-  
-  bool loop;
-  do{
-    loop = false;
-    for(int i=1;i<(int)boards.size();++i){
-      if(heurs[i-1] < heurs[i]){
-        std::swap(heurs[i-1],heurs[i]);
-        std::swap(boards[i-1],boards[i]);
-        loop = true;
-      }
-    }
-  }while(loop);
-  
-  delete heurs;
-  
-}
 
 
 

@@ -16,7 +16,6 @@
 #define BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT 5
 #define BOT_ALI_MIN_HASH_TABLE_DEPTH     6
 #define BOT_ALI_MAX_HASH_TABLE_DEPTH     12
-#define BOT_ALI_EXPAND_CHILDREN          0
 
 struct bot_ali:
   public bot_base
@@ -37,9 +36,10 @@ private:
   board inspected;
   
 public:
-  
+#if BOT_ALI_USE_HASHTABLE 
   std::unordered_map<board,int> table;
-  
+#endif
+
   bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
   ~bot_ali();
   

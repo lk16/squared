@@ -1,10 +1,9 @@
 #include "main_window.hpp"
 
 main_window::main_window():
-  table(8,8),
   control(this),
+  table(8,8),
   aspect_frame("",0.5,0.5,1),
-  fields(8,std::vector<clickable_image*>(8)),
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
@@ -73,8 +72,8 @@ void main_window::init_ui(){
   
   for(int y=0;y<8;y++){ 
     for(int x=0;x<8;x++){
-      fields[x][y]=new clickable_image(this,y*8+x,IMAGE_PATH + "empty.png");
-      table.attach(*fields[x][y],x,x+1,y,y+1);
+      fields[x][y].init(this,y*8+x,IMAGE_PATH + "empty.png");
+      table.attach(fields[x][y],x,x+1,y,y+1);
     }
   }
   
@@ -99,15 +98,6 @@ void main_window::on_menu_game_quit()
   dialog.add_button(Gtk::Stock::YES,Gtk::RESPONSE_YES);
   if(dialog.run() == Gtk::RESPONSE_YES){
     hide();
-  }
-}
-
-main_window::~main_window()
-{
-  for(int y=0;y<8;y++){
-    for(int x=0;x<8;x++){
-      delete fields[x][y];
-    }
   }
 }
 
@@ -171,11 +161,7 @@ void main_window::update_fields()
       else{
         imagefile = "empty.png";
       }
-      table.remove(*fields[x][y]);
-      delete fields[x][y];
-      fields[x][y] = new clickable_image(this,y*8+x,IMAGE_PATH + imagefile);
-      table.attach(*fields[x][y],x,x+1,y,y+1);
-      table.show_all_children();
+      fields[x][y].set_image(IMAGE_PATH + imagefile);
     }
   }
 }
