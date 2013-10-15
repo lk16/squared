@@ -130,19 +130,46 @@ board* board::get_children(board* out_begin) const
 void board::get_possible_moves(std::bitset<64> *out) const
 {
   const std::bitset<64> *opp = &(discs[opponent(turn)]);
+  const std::bitset<64> any = get_non_empty_fields();
   
   // a field is considered a possible move when:
   // - it is horizontal/vertical/diagonal adjacent to an disc of opponent(turn)
+  // - in same direction of adjacent list one step further there is no empty space
   // - it is empty
   
-  *out |= (((*opp) << 9) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  
+  out->reset();
+  
+  
+  
+  /*
+    show_bitset(std::bitset<64>(0x00003F3F3F3F3F3F)); // +9
+    show_bitset(std::bitset<64>(0x0000FCFCFCFCFCFC)); // +7
+    show_bitset(std::bitset<64>(0x3F3F3F3F3F3F3F3F)); // +1
+    show_bitset(std::bitset<64>(0xFCFCFCFCFCFCFCFC)); // -1
+    show_bitset(std::bitset<64>(0x3F3F3F3F3F3F0000)); // -7
+    show_bitset(std::bitset<64>(0xFCFCFCFCFCFC0000)); // -9
+    show_bitset(std::bitset<64>(0x0000FFFFFFFFFFFF)); // +8
+    show_bitset(std::bitset<64>(0xFFFFFFFFFFFF0000)); // -8
+    TODO MAKE THIS MORE EFFICIENT
+  */
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  *out |= (((*opp) << 9) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
   *out |=  ((*opp) << 8);
-  *out |= (((*opp) << 7) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
-  *out |= (((*opp) << 1) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
-  *out |= (((*opp) >> 1) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
-  *out |= (((*opp) >> 7) & std::bitset<64>(0xFEFEFEFEFEFEFEFE));
+  *out |= (((*opp) << 7) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
+  *out |= (((*opp) << 1) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
+  *out |= (((*opp) >> 1) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
+  *out |= (((*opp) >> 7) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
   *out |=  ((*opp) >> 8);
-  *out |= (((*opp) >> 9) & std::bitset<64>(0x7F7F7F7F7F7F7F7F));
+  *out |= (((*opp) >> 9) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
   *out &= ~(discs[WHITE] | discs[BLACK]);
 }
 
