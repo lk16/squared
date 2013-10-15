@@ -14,28 +14,30 @@
 
 
 
-static const unsigned int board_border[64] = {
-  0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-};
-
-const int board_direction[8] = {
-  -9,-8,-7,-1,1,7,8,9
-};
-
 
 
 struct board{
   
+  // static constants
+  static const unsigned int border[64]; // border flags
+  static const int direction[8];        // index difference of walking directions
+  static std::bitset<64> bit[64];       // (1 << x) for x in [0,63]
+  static std::bitset<64> location[10];  // location on board as shown below
+  
+  // 0,1,2,3,3,2,1,0,
+  // 1,4,5,6,6,5,4,1,
+  // 2,5,7,8,8,7,5,2,
+  // 3,6,8,9,9,8,6,3,
+  // 3,6,8,9,9,8,6,3,
+  // 2,5,7,8,8,7,5,2,
+  // 1,4,5,6,6,5,4,1,
+  // 0,1,2,3,3,2,1,0
+  
+  
   std::bitset<64> discs[2];
   color turn;
-    
+  
+  
   /// does NOTHING; call reset() to initialize
   board();
   
@@ -57,11 +59,17 @@ struct board{
   /// resets the board to starting position
   void reset();
   
+  /// initializes constants
+  static void init_constants();
+  
+  
   /// sets all bits in discs[BLACK] and discs[WHITE]
   void set_all();
   
   /// switches the turn member
   void switch_turn();
+  
+  
   
   /// checks whether for *this and this->turn, field_id is a valid move
   /// WARNING: NOT EFFICIENT
@@ -80,9 +88,14 @@ struct board{
   /// returns a possibly increased out pointer
   board* get_children(board* out) const;
   
-  
   /// gets all descendants at a certain depth
   std::set<board> get_descendants(int depth) const;
+  
+  /// gets whatever name says
+  std::bitset<64> get_empty_fields() const;
+  std::bitset<64> get_non_empty_fields() const;
+  
+  
   
   /// get hash
   unsigned long hash() const;
@@ -187,6 +200,19 @@ inline long unsigned int board::hash() const
 {
   return 3*discs[BLACK].to_ulong() + 5*discs[WHITE].to_ulong() + 7*turn;
 }
+
+inline std::bitset<64> board::get_empty_fields() const
+{
+  return ~get_non_empty_fields();
+}
+
+inline std::bitset<64> board::get_non_empty_fields() const
+{
+  return discs[WHITE] | discs[BLACK];
+}
+
+
+
 
 
 #endif

@@ -26,8 +26,6 @@ struct bot_ali:
     PERFECT_MODE
   };
   
-  
-  std::bitset<64> location_bitsets[10];  
   bool shell_output;
   
 private:

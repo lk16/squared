@@ -8,7 +8,7 @@ main_window::main_window():
 {
   init_ui();
   control.on_new_game();
-  show_all_children();
+  show_all_children(); // TODO << doesnt work properly
 }
 
 
@@ -63,7 +63,7 @@ void main_window::init_ui(){
     std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what();
   }
   
-  add(vbox);
+  this->add(vbox);
   
   Gtk::Widget* menubar = ui_manager->get_widget("/MenuBar");
   if(menubar){
@@ -77,6 +77,7 @@ void main_window::init_ui(){
     }
   }
   
+  
   vbox.pack_start(aspect_frame,Gtk::PACK_EXPAND_WIDGET);
   aspect_frame.set_shadow_type(Gtk::SHADOW_NONE);
   aspect_frame.add(table);
@@ -84,8 +85,6 @@ void main_window::init_ui(){
   vbox.pack_start(status_bar,Gtk::PACK_SHRINK);
   
   this->set_resizable(false);
-  
-  show_all_children();
 }
 
 void main_window::on_menu_game_quit()
@@ -168,6 +167,5 @@ void main_window::update_fields()
 
 void main_window::update_status_bar(const std::string& text)
 {
-  status_bar.pop();
   status_bar.push(text);
 }

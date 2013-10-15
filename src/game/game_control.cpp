@@ -86,33 +86,39 @@ void game_control::on_any_move()
 
 void game_control::on_undo()
 {
-  if(undo_stack.empty()){
-    return;
-  }
-  while(bot[undo_stack.top().turn]){
+  while(!undo_stack.empty() && bot[undo_stack.top().turn]){
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
-  }  
-  redo_stack.push(current);
-  current = undo_stack.top();
-  undo_stack.pop();
+  } 
+  
+  if(undo_stack.empty()){
+    mw->update_status_bar("Cannot undo");
+  }
+  else{
+    redo_stack.push(current);
+    current = undo_stack.top();
+    undo_stack.pop();
+  }
   mw->update_fields();
 }
 
 void game_control::on_redo()
 { 
-  if(redo_stack.empty()){
-    return;
+  while(!redo_stack.empty() && bot[redo_stack.top().turn]){
+    undo_stack.push(current);
+    current = redo_stack.top();
+    redo_stack.pop();
   } 
-  while(bot[undo_stack.top().turn]){
-    redo_stack.push(current);
-    current = undo_stack.top();
-    undo_stack.pop();
+  
+  if(redo_stack.empty()){
+    mw->update_status_bar("Cannot redo");
   }
-  undo_stack.push(current);
-  current = redo_stack.top();
-  redo_stack.pop();
+  else{
+    undo_stack.push(current);
+    current = redo_stack.top();
+    redo_stack.pop();
+  }
   mw->update_fields();
 }
 
@@ -152,11 +158,11 @@ bool game_control::timeout_handler()
     }
   }
   if(bot[turn()]){
-    mw->update_status_bar("I'm thinking...");
+    //mw->update_status_bar("I'm thinking...");
     on_bot_do_move();  
   }
   else{
-    mw->update_status_bar("It is your turn.");
+    //mw->update_status_bar("It is your turn.");
   }
   return true;
 }

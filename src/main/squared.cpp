@@ -31,6 +31,10 @@ int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   main_window window;
   
+  // has to be done
+  board::init_constants();
+  
+  
   if(argc>=2){
     std::string argv1(argv[1]);
     if(argv1=="testing"){

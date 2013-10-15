@@ -7,23 +7,7 @@ bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
 #if BOT_ALI_USE_HASHTABLE 
   table.reserve(250000);
 #endif  
-  
-  int loc[64] =
-  {
-    0,1,2,3,3,2,1,0,
-    1,4,5,6,6,5,4,1,
-    2,5,7,8,8,7,5,2,
-    3,6,8,9,9,8,6,3,
-    3,6,8,9,9,8,6,3,
-    2,5,7,8,8,7,5,2,
-    1,4,5,6,6,5,4,1,
-    0,1,2,3,3,2,1,0
-  };
-  
-  for(int i=0;i<64;i++){
-    location_bitsets[loc[i]].set(i);
-  }
-  
+
   name = "bot_ali";
   shell_output = true;
 }
@@ -405,8 +389,8 @@ int bot_ali::heuristic()
   
   for(int i=0;i<10;i++){
     res += open_loc_val[i] * (
-       (inspected.discs[WHITE] & location_bitsets[i]).count()
-       -(inspected.discs[BLACK] & location_bitsets[i]).count()
+       (inspected.discs[WHITE] & board::location[i]).count()
+       -(inspected.discs[BLACK] & board::location[i]).count()
     );
   }
   
