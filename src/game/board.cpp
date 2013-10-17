@@ -19,10 +19,81 @@ const int board::direction[8] = {
 
 std::bitset<64> board::bit[64];
 std::bitset<64> board::location[10];
-const std::bitset<64> board::no_left (0xFEFEFEFEFEFEFEFE);
-const std::bitset<64> board::no_right(0x7F7F7F7F7F7F7F7F);
-const std::bitset<64> board::no_up   (0x00FFFFFFFFFFFFFF);
-const std::bitset<64> board::no_down (0xFFFFFFFFFFFFFF00);
+
+const std::bitset<64> board::walk_possible[8][7] = {
+  { // up left
+    std::bitset<64>(0xFEFEFEFEFEFEFEFE),
+    std::bitset<64>(0xFCFCFCFCFCFCFCFC),
+    std::bitset<64>(0xF8F8F8F8F8F8F8F8),
+    std::bitset<64>(0xF0F0F0F0F0F0F0F0),
+    std::bitset<64>(0xE0E0E0E0E0E0E0E0),
+    std::bitset<64>(0xC0C0C0C0C0C0C0C0),
+    std::bitset<64>(0x8080808080808080)
+  },
+  { // up
+    std::bitset<64>(0xFFFFFFFFFFFFFF00),
+    std::bitset<64>(0xFFFFFFFFFFFF0000),
+    std::bitset<64>(0xFFFFFFFFFF000000),
+    std::bitset<64>(0xFFFFFFFF00000000),
+    std::bitset<64>(0xFFFFFF0000000000),
+    std::bitset<64>(0xFFFF000000000000),
+    std::bitset<64>(0xFF00000000000000)
+  },
+  { // up right
+    std::bitset<64>(0x7F7F7F7F7F7F7F7F),
+    std::bitset<64>(0x3F3F3F3F3F3F3F3F),
+    std::bitset<64>(0x1F1F1F1F1F1F1F1F),
+    std::bitset<64>(0x0F0F0F0F0F0F0F0F),
+    std::bitset<64>(0x0707070707070707),
+    std::bitset<64>(0x0303030303030303),
+    std::bitset<64>(0x0101010101010101)
+  },
+  { // left
+    std::bitset<64>(0xFEFEFEFEFEFEFEFE),
+    std::bitset<64>(0xFCFCFCFCFCFCFCFC),
+    std::bitset<64>(0xF8F8F8F8F8F8F8F8),
+    std::bitset<64>(0xF0F0F0F0F0F0F0F0),
+    std::bitset<64>(0xE0E0E0E0E0E0E0E0),
+    std::bitset<64>(0xC0C0C0C0C0C0C0C0),
+    std::bitset<64>(0x8080808080808080)
+  },
+  { // right
+    std::bitset<64>(0x7F7F7F7F7F7F7F7F),
+    std::bitset<64>(0x3F3F3F3F3F3F3F3F),
+    std::bitset<64>(0x1F1F1F1F1F1F1F1F),
+    std::bitset<64>(0x0F0F0F0F0F0F0F0F),
+    std::bitset<64>(0x0707070707070707),
+    std::bitset<64>(0x0303030303030303),
+    std::bitset<64>(0x0101010101010101)
+  },
+  { // down left
+  std::bitset<64>(0xFEFEFEFEFEFEFEFE),
+  std::bitset<64>(0xFCFCFCFCFCFCFCFC),
+  std::bitset<64>(0xF8F8F8F8F8F8F8F8),
+  std::bitset<64>(0xF0F0F0F0F0F0F0F0),
+  std::bitset<64>(0xE0E0E0E0E0E0E0E0),
+  std::bitset<64>(0xC0C0C0C0C0C0C0C0),
+  std::bitset<64>(0x8080808080808080)
+  },
+  { // down
+    std::bitset<64>(0x00FFFFFFFFFFFFFF),
+    std::bitset<64>(0x0000FFFFFFFFFFFF),
+    std::bitset<64>(0x000000FFFFFFFFFF),
+    std::bitset<64>(0x00000000FFFFFFFF),
+    std::bitset<64>(0x0000000000FFFFFF),
+    std::bitset<64>(0x000000000000FFFF),
+    std::bitset<64>(0x00000000000000FF)
+  },
+  { // down right
+  std::bitset<64>(0x7F7F7F7F7F7F7F7F),
+  std::bitset<64>(0x3F3F3F3F3F3F3F3F),
+  std::bitset<64>(0x1F1F1F1F1F1F1F1F),
+  std::bitset<64>(0x0F0F0F0F0F0F0F0F),
+  std::bitset<64>(0x0707070707070707),
+  std::bitset<64>(0x0303030303030303),
+  std::bitset<64>(0x0101010101010101)
+  }
+};
 
 
 bool board::is_valid_move(int field_id) const
@@ -131,110 +202,174 @@ board* board::get_children(board* out_begin) const
   return out_end;
 }
 
-void board::get_possible_moves_experimental(std::bitset<64>* out) const
+void board::get_possible_moves(std::bitset<64>* out) const
 {
   out->reset();
   
-  const unsigned long opp = discs[opponent(turn)].to_ulong();
-  const unsigned long mine = discs[turn].to_ulong();
+  const std::bitset<64>& opp = discs[opponent(turn)].to_ulong();
+  const std::bitset<64>& mine = discs[turn].to_ulong();
   
-  *out |= 
-  (
-    ((opp << 9) & 0xFEFEFEFEFEFEFEFE) 
-    & 
+  for(int d=0;d<4;d++){
+    
+    int diff = -board::direction[d];
+    assert(diff > 0);
+    
+    *out |= 
     (
-      ((mine << 18) & 0xFCFCFCFCFCFCFCFC)
-      |
+      ((opp << (diff*1)) & board::walk_possible[d][0]) 
+      & 
       (
-        ((opp << 18) & 0xFCFCFCFCFCFCFCFC)
-        &
+        ((mine << (diff*2)) & board::walk_possible[d][1])
+        |
         (
-          ((mine << 27) & 0xF8F8F8F8F8F8F8F8)
-          |
+          ((opp << (diff*2)) & board::walk_possible[d][1])
+          &
           (
-            ((opp << 27) & 0xF8F8F8F8F8F8F8F8)
-            &
+            ((mine << (diff*3)) & board::walk_possible[d][2])
+            |
             (
-              ((mine << 36) & 0xF0F0F0F0F0F0F0F0)
-              |
+              ((opp << (diff*3)) & board::walk_possible[d][2])
+              &
               (
-                ((opp << 36) & 0xF0F0F0F0F0F0F0F0)
-                &
+                ((mine << (diff*4)) & board::walk_possible[d][3])
+                |
                 (
-                  ((mine << 45) & 0xE0E0E0E0E0E0E0E0)
-                  |
+                  ((opp << (diff*4)) & board::walk_possible[d][3])
+                  &
                   (
-                    ((opp << 45) & 0xE0E0E0E0E0E0E0E0)
-                    &
+                    ((mine << (diff*5)) & board::walk_possible[d][4])
+                    |
                     (
-                      ((mine << 54) & 0xC0C0C0C0C0C0C0C0)
-                      |
+                      ((opp << (diff*5)) & board::walk_possible[d][4])
+                      &
                       (
-                        ((opp << 54) & 0xC0C0C0C0C0C0C0C0)
-                        &
-                        ((mine << 63) & 0x8080808080808080)
+                        ((mine << (diff*6)) & board::walk_possible[d][5])
+                        |
+                        (
+                          ((opp << (diff*6)) & board::walk_possible[d][5])
+                          &
+                          ((mine << (diff*7)) & board::walk_possible[d][6])
+                        )
                       )
                     )
-                  )
-                )  
+                  )  
+                )
               )
             )
           )
         )
       )
-    )
+    );
+  }
+  
+    for(int d=0;d<4;d++){
     
-  );
+    int diff = -board::direction[d];
+    assert(diff > 0);
+    
+    *out |= 
+    (
+      ((opp << (diff*1)) & board::walk_possible[d][0]) 
+      & 
+      (
+        ((mine << (diff*2)) & board::walk_possible[d][1])
+        |
+        (
+          ((opp << (diff*2)) & board::walk_possible[d][1])
+          &
+          (
+            ((mine << (diff*3)) & board::walk_possible[d][2])
+            |
+            (
+              ((opp << (diff*3)) & board::walk_possible[d][2])
+              &
+              (
+                ((mine << (diff*4)) & board::walk_possible[d][3])
+                |
+                (
+                  ((opp << (diff*4)) & board::walk_possible[d][3])
+                  &
+                  (
+                    ((mine << (diff*5)) & board::walk_possible[d][4])
+                    |
+                    (
+                      ((opp << (diff*5)) & board::walk_possible[d][4])
+                      &
+                      (
+                        ((mine << (diff*6)) & board::walk_possible[d][5])
+                        |
+                        (
+                          ((opp << (diff*6)) & board::walk_possible[d][5])
+                          &
+                          ((mine << (diff*7)) & board::walk_possible[d][6])
+                        )
+                      )
+                    )
+                  )  
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+  }
   
-  
+  for(int d=4;d<8;d++){
+    
+    int diff = board::direction[d];
+    assert(diff > 0);
+    
+    *out |= 
+    (
+      ((opp >> (diff*1)) & board::walk_possible[d][0]) 
+      & 
+      (
+        ((mine >> (diff*2)) & board::walk_possible[d][1])
+        |
+        (
+          ((opp >> (diff*2)) & board::walk_possible[d][1])
+          &
+          (
+            ((mine >> (diff*3)) & board::walk_possible[d][2])
+            |
+            (
+              ((opp >> (diff*3)) & board::walk_possible[d][2])
+              &
+              (
+                ((mine >> (diff*4)) & board::walk_possible[d][3])
+                |
+                (
+                  ((opp >> (diff*4)) & board::walk_possible[d][3])
+                  &
+                  (
+                    ((mine >> (diff*5)) & board::walk_possible[d][4])
+                    |
+                    (
+                      ((opp >> (diff*5)) & board::walk_possible[d][4])
+                      &
+                      (
+                        ((mine >> (diff*6)) & board::walk_possible[d][5])
+                        |
+                        (
+                          ((opp >> (diff*6)) & board::walk_possible[d][5])
+                          &
+                          ((mine >> (diff*7)) & board::walk_possible[d][6])
+                        )
+                      )
+                    )
+                  )  
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+  }
   
   *out &= get_empty_fields();
 }
-
-
-
-
-
-void board::get_possible_moves(std::bitset<64> *out) const
-{
-  const std::bitset<64> *opp = &(discs[opponent(turn)]);
-  const std::bitset<64> any = get_non_empty_fields();
-  
-  // a field is considered a possible move when:
-  // - it is horizontal/vertical/diagonal adjacent to an disc of opponent(turn)
-  // - in same direction of adjacent list one step further there is no empty space
-  // - it is empty
-  
-  
-  out->reset();
-  
-  /*
-  //TODO FIX THIS
-  *out |= ((*opp << 9) & (any << 18) & std::bitset<64>(0xFCFCFCFCFCFC0000));
-  *out |= ((*opp << 8) & (any << 16) & std::bitset<64>(0xFFFFFFFFFFFF0000));
-  *out |= ((*opp << 7) & (any << 14) & std::bitset<64>(0x3F3F3F3F3F3F0000));
-  *out |= ((*opp << 1) & (any <<  2) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
-  *out |= ((*opp >> 1) & (any >>  2) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
-  *out |= ((*opp >> 7) & (any >> 14) & std::bitset<64>(0x0000FCFCFCFCFCFC));
-  *out |= ((*opp >> 8) & (any >> 16) & std::bitset<64>(0x0000FFFFFFFFFFFF));
-  *out |= ((*opp >> 9) & (any >> 18) & std::bitset<64>(0x00003F3F3F3F3F3F));
-  // */
-  
-  
-  
-  *out |= (((*opp) << 9) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
-  *out |=  ((*opp) << 8);
-  *out |= (((*opp) << 7) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
-  *out |= (((*opp) << 1) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
-  *out |= (((*opp) >> 1) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
-  *out |= (((*opp) >> 7) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
-  *out |=  ((*opp) >> 8);
-  *out |= (((*opp) >> 9) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
-  *out &= ~(discs[WHITE] | discs[BLACK]);
-}
-
-
-
 
 void board::show() const
 {

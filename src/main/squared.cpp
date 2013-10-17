@@ -11,20 +11,11 @@ void testing_area(){
   board b;
   std::bitset<64> moves;
   
-  b.discs[WHITE].reset();
-  b.discs[BLACK].reset();
-  b.turn = BLACK;
-  
-  b.discs[BLACK].set(0);
-  b.discs[WHITE].set(9);
-  b.discs[WHITE].set(18);
-  b.discs[WHITE].set(27);
-  b.discs[WHITE].set(36);
-  b.discs[WHITE].set(45);
+  b.reset();
   
   b.show();
   
-  b.get_possible_moves_experimental(&moves);
+  b.get_possible_moves(&moves);
   
   show_bitset(moves);  
   
@@ -37,11 +28,15 @@ void timing_area(){
 
   timeval start,end;
   
-  const int max = 1000000000;
+  std::bitset<64> bla;
+  
+  const int max = 1000000;
   gettimeofday(&start,NULL);
   for(int i=0;i<max;i++){
-    // do something
+    b.get_possible_moves(&bla);
   }
+  
+  show_bitset(bla);
   
   gettimeofday(&end,NULL);
   
