@@ -23,6 +23,10 @@ struct board{
   static const int direction[8];        // index difference of walking directions
   static std::bitset<64> bit[64];       // (1 << x) for x in [0,63]
   static std::bitset<64> location[10];  // location on board as shown below
+  static std::bitset<64> row[8];
+  static const std::bitset<64> no_left,no_right,no_up,no_down; // border bits set 
+  
+  
   
   // 0,1,2,3,3,2,1,0,
   // 1,4,5,6,6,5,4,1,
@@ -83,6 +87,12 @@ struct board{
   /// out will represent a bitset of which each set bit represents a square
   /// that COULD BE a valid move
   void get_possible_moves(std::bitset<64> *out) const;
+  
+  /// out will represent a bitset of which each set bit represents a square
+  /// that COULD BE a valid move
+  /// WARNING: experimental
+  void get_possible_moves_experimental(std::bitset<64>* out) const;
+  
   
   /// gets all children from this board
   /// returns a possibly increased out pointer

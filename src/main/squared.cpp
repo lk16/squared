@@ -8,14 +8,25 @@
 
 void testing_area(){
   
-  show_bitset(std::bitset<64>(0x0000FCFCFCFCFCFC)); // +7
-  show_bitset(std::bitset<64>(0x00003F3F3F3F3F3F)); // +9
-  show_bitset(std::bitset<64>(0xFCFCFCFCFCFC0000)); // -9
-  show_bitset(std::bitset<64>(0x3F3F3F3F3F3F0000)); // -7
-  show_bitset(std::bitset<64>(0xFCFCFCFCFCFCFCFC)); // -1
-  show_bitset(std::bitset<64>(0x3F3F3F3F3F3F3F3F)); // +1
-  show_bitset(std::bitset<64>(0x0000FFFFFFFFFFFF)); // +8
-  show_bitset(std::bitset<64>(0xFFFFFFFFFFFF0000)); // -8
+  board b;
+  std::bitset<64> moves;
+  
+  b.discs[WHITE].reset();
+  b.discs[BLACK].reset();
+  b.turn = BLACK;
+  
+  b.discs[BLACK].set(0);
+  b.discs[WHITE].set(9);
+  b.discs[WHITE].set(18);
+  b.discs[WHITE].set(27);
+  b.discs[WHITE].set(36);
+  b.discs[WHITE].set(45);
+  
+  b.show();
+  
+  b.get_possible_moves_experimental(&moves);
+  
+  show_bitset(moves);  
   
 }
 

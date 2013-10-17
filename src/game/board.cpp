@@ -19,6 +19,10 @@ const int board::direction[8] = {
 
 std::bitset<64> board::bit[64];
 std::bitset<64> board::location[10];
+const std::bitset<64> board::no_left (0xFEFEFEFEFEFEFEFE);
+const std::bitset<64> board::no_right(0x7F7F7F7F7F7F7F7F);
+const std::bitset<64> board::no_up   (0x00FFFFFFFFFFFFFF);
+const std::bitset<64> board::no_down (0xFFFFFFFFFFFFFF00);
 
 
 bool board::is_valid_move(int field_id) const
@@ -127,6 +131,70 @@ board* board::get_children(board* out_begin) const
   return out_end;
 }
 
+void board::get_possible_moves_experimental(std::bitset<64>* out) const
+{
+  out->reset();
+  
+  const unsigned long opp = discs[opponent(turn)].to_ulong();
+  const unsigned long mine = discs[turn].to_ulong();
+  
+  *out |= 
+  (
+    ((opp << 9) & 0xFEFEFEFEFEFEFEFE) 
+    & 
+    (
+      ((mine << 18) & 0xFCFCFCFCFCFCFCFC)
+      |
+      (
+        ((opp << 18) & 0xFCFCFCFCFCFCFCFC)
+        &
+        (
+          ((mine << 27) & 0xF8F8F8F8F8F8F8F8)
+          |
+          (
+            ((opp << 27) & 0xF8F8F8F8F8F8F8F8)
+            &
+            (
+              ((mine << 36) & 0xF0F0F0F0F0F0F0F0)
+              |
+              (
+                ((opp << 36) & 0xF0F0F0F0F0F0F0F0)
+                &
+                (
+                  ((mine << 45) & 0xE0E0E0E0E0E0E0E0)
+                  |
+                  (
+                    ((opp << 45) & 0xE0E0E0E0E0E0E0E0)
+                    &
+                    (
+                      ((mine << 54) & 0xC0C0C0C0C0C0C0C0)
+                      |
+                      (
+                        ((opp << 54) & 0xC0C0C0C0C0C0C0C0)
+                        &
+                        ((mine << 63) & 0x8080808080808080)
+                      )
+                    )
+                  )
+                )  
+              )
+            )
+          )
+        )
+      )
+    )
+    
+  );
+  
+  
+  
+  *out &= get_empty_fields();
+}
+
+
+
+
+
 void board::get_possible_moves(std::bitset<64> *out) const
 {
   const std::bitset<64> *opp = &(discs[opponent(turn)]);
@@ -140,25 +208,17 @@ void board::get_possible_moves(std::bitset<64> *out) const
   
   out->reset();
   
-  
-  
   /*
-    show_bitset(std::bitset<64>(0x00003F3F3F3F3F3F)); // +9
-    show_bitset(std::bitset<64>(0x0000FCFCFCFCFCFC)); // +7
-    show_bitset(std::bitset<64>(0x3F3F3F3F3F3F3F3F)); // +1
-    show_bitset(std::bitset<64>(0xFCFCFCFCFCFCFCFC)); // -1
-    show_bitset(std::bitset<64>(0x3F3F3F3F3F3F0000)); // -7
-    show_bitset(std::bitset<64>(0xFCFCFCFCFCFC0000)); // -9
-    show_bitset(std::bitset<64>(0x0000FFFFFFFFFFFF)); // +8
-    show_bitset(std::bitset<64>(0xFFFFFFFFFFFF0000)); // -8
-    TODO MAKE THIS MORE EFFICIENT
-  */
-  
-  
-  
-  
-  
-  
+  //TODO FIX THIS
+  *out |= ((*opp << 9) & (any << 18) & std::bitset<64>(0xFCFCFCFCFCFC0000));
+  *out |= ((*opp << 8) & (any << 16) & std::bitset<64>(0xFFFFFFFFFFFF0000));
+  *out |= ((*opp << 7) & (any << 14) & std::bitset<64>(0x3F3F3F3F3F3F0000));
+  *out |= ((*opp << 1) & (any <<  2) & std::bitset<64>(0xFCFCFCFCFCFCFCFC));
+  *out |= ((*opp >> 1) & (any >>  2) & std::bitset<64>(0x3F3F3F3F3F3F3F3F));
+  *out |= ((*opp >> 7) & (any >> 14) & std::bitset<64>(0x0000FCFCFCFCFCFC));
+  *out |= ((*opp >> 8) & (any >> 16) & std::bitset<64>(0x0000FFFFFFFFFFFF));
+  *out |= ((*opp >> 9) & (any >> 18) & std::bitset<64>(0x00003F3F3F3F3F3F));
+  // */
   
   
   
