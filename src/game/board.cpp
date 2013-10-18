@@ -98,20 +98,9 @@ const std::bitset<64> board::walk_possible[8][7] = {
 
 bool board::is_valid_move(int field_id) const
 { 
-  // if the square is not empty, it cannot be a valid move
-  if((get_non_empty_fields() & board::bit[field_id]).any()){
-    return false;
-  }
-  
-  // check if field_id is my color in any of the children
-  board children[32];
-  int move_count = get_children(children) - children;
-  for(int i=0;i<move_count;i++){
-    if((children[i].discs[turn] & board::bit[field_id]).any()){
-      return true;
-    }
-  }
-  return false;
+  std::bitset<64> moves;
+  get_valid_moves(&moves);
+  return (moves & board::bit[field_id]).any();
 }
 
 void board::do_move(int field_id, board* out) const
@@ -148,7 +137,7 @@ board* board::get_children(board* out_begin) const
   std::bitset<64> to_flip,tmp_mask;
   
   
-  get_possible_moves(&possible_moves);
+  get_valid_moves(&possible_moves);
   
   for(int field_id=0;field_id<64;field_id++){
     
@@ -189,6 +178,7 @@ board* board::get_children(board* out_begin) const
       }
     }
     
+    assert(to_flip.any());
     if(to_flip.any()){
       if(out_end){
         *out_end = *this;
@@ -202,7 +192,7 @@ board* board::get_children(board* out_begin) const
   return out_end;
 }
 
-void board::get_possible_moves(std::bitset<64>* out) const
+void board::get_valid_moves(std::bitset<64>* out) const
 {
   out->reset();
   

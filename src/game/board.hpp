@@ -87,7 +87,7 @@ struct board{
   
   /// out will represent a bitset of which each set bit represents a square
   /// that COULD BE a valid move
-  void get_possible_moves(std::bitset<64> *out) const;
+  void get_valid_moves(std::bitset<64> *out) const;
   
   
   

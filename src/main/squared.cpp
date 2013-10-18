@@ -15,7 +15,7 @@ void testing_area(){
   
   b.show();
   
-  b.get_possible_moves(&moves);
+  b.get_valid_moves(&moves);
   
   show_bitset(moves);  
   
@@ -33,7 +33,7 @@ void timing_area(){
   const int max = 1000000;
   gettimeofday(&start,NULL);
   for(int i=0;i<max;i++){
-    b.get_possible_moves(&bla);
+    b.get_valid_moves(&bla);
   }
   
   show_bitset(bla);

@@ -146,7 +146,7 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
   int child_count=0;
   std::bitset<64> undo_data,possible_moves;
   
-  inspected.get_possible_moves(&possible_moves);
+  inspected.get_valid_moves(&possible_moves);
   
   
   
@@ -239,7 +239,7 @@ int bot_ali::negamax_exact(int alpha, int beta)
   int child_count=0;
   std::bitset<64> undo_data,possible_moves;
   
-  inspected.get_possible_moves(&possible_moves);
+  inspected.get_valid_moves(&possible_moves);
   
   while(true){
     int move = find_first_set_64(possible_moves.to_ulong());
