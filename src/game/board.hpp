@@ -77,16 +77,11 @@ struct board{
   
   
   /// checks whether for *this and this->turn, field_id is a valid move
-  /// WARNING: NOT EFFICIENT
   bool is_valid_move(int field_id) const;
   
-  /// performs move for *this and this->turn
-  /// might crash if fed an invalid move
-  /// WARNING: NOT EFFICIENT
-  void do_move(int field_id,board* out) const;
   
   /// out will represent a bitset of which each set bit represents a square
-  /// that COULD BE a valid move
+  /// that IS a valid move
   void get_valid_moves(std::bitset<64> *out) const;
   
   
@@ -94,6 +89,10 @@ struct board{
   /// gets all children from this board
   /// returns a possibly increased out pointer
   board* get_children(board* out) const;
+  
+  /// returns whether this board has any children for this->turn
+  bool has_children() const;
+  
   
   /// gets all descendants at a certain depth
   std::set<board> get_descendants(int depth) const;
@@ -113,8 +112,8 @@ struct board{
   /// returns disc count difference positive means white has more
   int get_disc_diff() const;
   
-  /// tries a move, if not valid, returns false
-  bool try_move(int field_id,std::bitset<64>* undo_data);
+  /// does a move
+  void do_move(int field_id,std::bitset<64>* undo_data);
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
@@ -150,8 +149,6 @@ inline void board::reset(){
   discs[WHITE].set(36);
   
   turn = BLACK;
-  
-
 }
 
 inline board::board(const board& b)
@@ -218,6 +215,12 @@ inline std::bitset<64> board::get_non_empty_fields() const
   return discs[WHITE] | discs[BLACK];
 }
 
+inline bool board::has_children() const
+{
+  std::bitset<64> moves;
+  get_valid_moves(&moves);
+  return moves.any();
+}
 
 
 

@@ -93,13 +93,6 @@ void bot_ali::do_move(const board* b,board* res)
     }
   }
   
-  
-#if BOT_ALI_USE_HASHTABLE  
-  //std::cout << "table.size() = " << table.size() << '\n';
-  table.clear();
-#endif
-  
-  
   *res = children[best_id];
 
   
@@ -127,93 +120,51 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
     return heur;
   }
   
-#if BOT_ALI_USE_HASHTABLE  
-  bool valid_hash_table_depth = (
-    (search_depth - depth_remaining) >= BOT_ALI_MIN_HASH_TABLE_DEPTH && 
-    (search_depth - depth_remaining) <= BOT_ALI_MAX_HASH_TABLE_DEPTH
-  );
-  if(valid_hash_table_depth){
-    std::unordered_map<board,int>::const_iterator it = table.find(inspected);
-    if(it != table.end()){
-      return it->second;
-    }
-  }
-#endif
-  
-  
-  
-  
-  int child_count=0;
-  std::bitset<64> undo_data,possible_moves;
+  std::bitset<64> possible_moves;
   
   inspected.get_valid_moves(&possible_moves);
+  if(possible_moves.none()){
+    inspected.switch_turn();
+    if(inspected.has_children()){
+      int heur = -negamax(-beta,-alpha,depth_remaining-1);
+      inspected.switch_turn();      
+      return heur;
+    
+    }
+    else{
+      // at this point inspected.turn is switched
+      inspected.switch_turn();
+      int heur = EXACT_SCORE_FACTOR * inspected.get_disc_diff();
+      if(inspected.turn==BLACK){
+        heur = -heur;
+      }
+      return heur;
+    }
+  }
   
-  
+  std::bitset<64> undo_data;
   
   while(true){
   
     int move = find_first_set_64(possible_moves.to_ulong());
     if(move == -1){
       break;
-    }  
-    if(inspected.try_move(move,&undo_data)){
-      int value = -negamax(-beta,-alpha,depth_remaining-1);
-      inspected.undo_move(move,&undo_data);
-      if(value >= beta){
-#if BOT_ALI_USE_HASHTABLE  
-        if(valid_hash_table_depth){
-          table.insert(std::make_pair<board,int>(inspected,beta));
-        }
-        return beta;
-#endif
-      }
-      if(value >= alpha){
-        alpha = value;
-      }
-      child_count++;
     }
+    
+    inspected.do_move(move,&undo_data);
+    int value = -negamax(-beta,-alpha,depth_remaining-1);
+    inspected.undo_move(move,&undo_data);
+    
+    if(value >= beta){
+      return beta;
+    }
+    if(value >= alpha){
+      alpha = value;
+    }
+    
     possible_moves.reset(move);
   }
-  if(child_count!=0){
-#if BOT_ALI_USE_HASHTABLE  
-    if(valid_hash_table_depth){
-      table.insert(std::make_pair<board,int>(inspected,alpha));
-    }
-#endif
-    return alpha;
-  }
-  else{
-    board tmp[32];
-    int heur;
-    
-    inspected.switch_turn();
-    
-    if(inspected.get_children(tmp) != tmp){
-      heur = -negamax(-beta,-alpha,depth_remaining-1);
-      inspected.switch_turn();      
-#if BOT_ALI_USE_HASHTABLE  
-      if(valid_hash_table_depth){
-        table.insert(std::make_pair<board,int>(inspected,heur));
-      }
-#endif
-      return heur;
-    }
-    else{
-      // at this point inspected.turn is switched
-      inspected.switch_turn();
-      heur = EXACT_SCORE_FACTOR * inspected.get_disc_diff();
-      if(inspected.turn==BLACK){
-        heur = -heur;
-      }
-#if BOT_ALI_USE_HASHTABLE  
-      if(valid_hash_table_depth){
-        table.insert(std::make_pair<board,int>(inspected,heur));
-      }
-#endif
-      return heur;
-    }
-  }
-  
+  return alpha;
 }
 
 
@@ -224,117 +175,48 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   nodes++;
   
-
-#if BOT_ALI_USE_HASHTABLE 
-  int max_moves_left = 64 - (inspected.discs[WHITE] | inspected.discs[BLACK]).count();
-  bool valid_hash_table_depth = (max_moves_left > 14);
-  if(valid_hash_table_depth){
-    std::unordered_map<board,int>::const_iterator it = table.find(inspected);
-    if(it != table.end()){
-      return it->second;
-    }
-  }
-#endif  
-  
-  int child_count=0;
   std::bitset<64> undo_data,possible_moves;
   
   inspected.get_valid_moves(&possible_moves);
+  if(possible_moves.none()){
+    inspected.switch_turn();
+    if(inspected.has_children()){
+      int heur = -negamax_exact(-beta,-alpha);
+      inspected.switch_turn();      
+      return heur;
+      
+    }
+    else{
+      // at this point inspected.turn is switched
+      inspected.switch_turn();
+      int heur = inspected.get_disc_diff();
+      if(inspected.turn==BLACK){
+        heur = -heur;
+      }
+      return heur;
+    }
+  }
+  
+  
   
   while(true){
     int move = find_first_set_64(possible_moves.to_ulong());
     if(move == -1){
       break;
     }
-    if(inspected.try_move(move,&undo_data)){
-      int value = -negamax_exact(-beta,-alpha);
-      inspected.undo_move(move,&undo_data);
-      if(value >= beta){
-#if BOT_ALI_USE_HASHTABLE 
-        if(valid_hash_table_depth){
-          table.insert(std::make_pair<board,int>(inspected,beta));
-        }
-#endif
-        return beta;
-      }
-      if(value >= alpha){
-        alpha = value;
-      }
-      child_count++;
+    inspected.do_move(move,&undo_data);
+    int value = -negamax_exact(-beta,-alpha);
+    inspected.undo_move(move,&undo_data);
+    if(value >= beta){
+      return beta;
+    }
+    if(value >= alpha){
+      alpha = value;
     }
     possible_moves.reset(move);
   }
-  
-  if(child_count!=0){
-    return alpha;
-  }
-  else{
-    if((inspected.discs[BLACK] | inspected.discs[WHITE]).count()!=64){
-      board tmp[32];
-      
-      inspected.switch_turn();
-     
-      int heur;
-      if(inspected.get_children(tmp) != tmp){
-        heur = -negamax_exact(-beta,-alpha);
-        inspected.switch_turn();
-#if BOT_ALI_USE_HASHTABLE 
-        if(valid_hash_table_depth){
-          table.insert(std::make_pair<board,int>(inspected,heur));
-        }
-#endif
-        return heur;
-      }
-      inspected.switch_turn();
-    }
-    int tmp =  (inspected.turn==WHITE ? inspected.get_disc_diff() :
-    -inspected.get_disc_diff());
-    
-#if BOT_ALI_USE_HASHTABLE 
-    if(valid_hash_table_depth){
-      table.insert(std::make_pair<board,int>(inspected,tmp));
-    }
-#endif
-    return tmp;
-  }
+  return alpha;
 }
-
-int bot_ali::hill_climbing(board* b,int look_ahead, int depth)
-{
-  
-  if(depth == 0){
-    int heur = heuristic();
-    if(inspected.turn == BLACK){
-      heur = -heur;
-    }
-    return heur;
-  }
-  
-  board children[32],*children_end;
-  children_end = b->get_children(children);
-  
-  board best;
-  int best_heur;
-  
-  best_heur = (b->turn == WHITE) ? MAX_HEURISTIC : MIN_HEURISTIC; 
-  
-  
-  for(board* it=children;it != children_end; it++){
-    inspected = *it;
-    int heur = negamax(MIN_HEURISTIC,MAX_HEURISTIC,look_ahead);
-    if((b->turn == WHITE) && (heur < best_heur)){
-      best_heur = heur;
-      best = *it;
-    }
-    if((b->turn == BLACK) && (heur < best_heur)){
-      best_heur = heur;
-      best = *it;
-    }
-  }
-  
-  return hill_climbing(&best,look_ahead,depth-1);
-}
-
 
 
 

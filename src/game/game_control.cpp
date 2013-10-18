@@ -42,7 +42,8 @@ void game_control::on_human_do_move(int field_id)
  
  if(current.is_valid_move(field_id)){
     undo_stack.push(current);
-    current.do_move(field_id,&current);
+    std::bitset<64> dummy;
+    current.do_move(field_id,&dummy);
     on_any_move();
   }
 }
