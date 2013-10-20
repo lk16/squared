@@ -17,6 +17,34 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
+/*
+0,1,2,3,3,2,1,0,
+1,4,5,6,6,5,4,1,
+2,5,7,8,8,7,5,2
+3,6,8,9,9,8,6,3,
+3,6,8,9,9,8,6,3,
+2,5,7,8,8,7,5,2
+1,4,5,6,6,5,4,1,
+0,1,2,3,3,2,1,0
+*/
+
+const int bot_ali::location_value[10] = {
+   347, // 0
+  - 39, // 1
+  - 23, // 2
+  - 40, // 3
+  -119, // 4
+  - 35, // 5
+  - 33, // 6
+  - 9, // 7
+  - 7, // 8
+  - 5 // 9
+};
+
+
+
+
+
 
 void bot_ali::do_move(const board* b,board* res)
 {
@@ -126,7 +154,7 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
   if(possible_moves.none()){
     inspected.switch_turn();
     if(inspected.has_children()){
-      int heur = -negamax(-beta,-alpha,depth_remaining-1);
+      int heur = -negamax(-beta,-alpha,depth_remaining);
       inspected.switch_turn();      
       return heur;
     
@@ -243,39 +271,14 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
 int bot_ali::heuristic()
 {
 
-  /*
-0,1,2,3,3,2,1,0,
-1,4,5,6,6,5,4,1,
-2,5,7,8,8,7,5,2
-3,6,8,9,9,8,6,3,
-3,6,8,9,9,8,6,3,
-2,5,7,8,8,7,5,2
-1,4,5,6,6,5,4,1,
-0,1,2,3,3,2,1,0
-*/
-
-  static int open_loc_val[10] = {
-      347, // 0
-     - 39, // 1
-     - 23, // 2
-     - 40, // 3
-     -119, // 4
-     - 35, // 5
-     - 33, // 6
-     - 9, // 7
-     - 7, // 8
-     - 5 // 9
-  };
-
   int res = 0;
   
   for(int i=0;i<10;i++){
-    res += open_loc_val[i] * (
+    res += bot_ali::location_value[i] * (
        (inspected.discs[WHITE] & board::location[i]).count()
        -(inspected.discs[BLACK] & board::location[i]).count()
     );
-  }
-  
+  }  
   return res;
 }
 

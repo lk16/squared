@@ -336,6 +336,7 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
 {
   assert(is_valid_move(field_id));
   
+  
   undo_data->reset();
   
   for(int i=0;i<8;++i){     
@@ -369,6 +370,7 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
       break;
     }
   }
+  
   
   assert((discs[turn] & (*undo_data)).none());
   assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));

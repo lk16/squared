@@ -25,15 +25,18 @@ struct bot_ali:
   
   bool shell_output;
   
+  static const int location_value[10];
+  
+  
 private:
+  
   // this board will be used by negamax(), negamax_exact(), heuristic(), and do_move()
   // it represents the currently inspected move
   board inspected;
   
+  
+  
 public:
-#if BOT_ALI_USE_HASHTABLE 
-  std::unordered_map<board,int> table;
-#endif
 
   bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
   ~bot_ali();
