@@ -24,6 +24,7 @@ struct board{
   static std::bitset<64> bit[64];       // (1 << x) for x in [0,63]
   static std::bitset<64> location[10];  // location on board as shown below
   
+  
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const std::bitset<64> walk_possible[8][7];
@@ -93,6 +94,8 @@ struct board{
   /// returns whether this board has any children for this->turn
   bool has_children() const;
   
+  /// returns the number of children, without calculating the actual children
+  int count_children() const;
   
   /// gets all descendants at a certain depth
   std::set<board> get_descendants(int depth) const;
@@ -222,6 +225,12 @@ inline bool board::has_children() const
   return moves.any();
 }
 
+inline int board::count_children() const
+{
+  std::bitset<64> moves;
+  get_valid_moves(&moves);
+  return moves.count();  
+}
 
 
 

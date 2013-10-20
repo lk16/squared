@@ -59,7 +59,7 @@ enum color{
 
 inline color opponent(color c){
   assert(c==WHITE || c==BLACK);
-  return ((c==BLACK) ? WHITE : BLACK);
+  return (color)(1-c);
 }
 
 template<class T>

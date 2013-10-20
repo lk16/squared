@@ -15,6 +15,7 @@ void testing_area(){
   
   b.show();
   
+  
   b.get_valid_moves(&moves);
   
   show_bitset(moves);  
@@ -28,15 +29,15 @@ void timing_area(){
 
   timeval start,end;
   
-  std::bitset<64> bla;
+  std::bitset<64> dummy;
   
   const int max = 1000000;
   gettimeofday(&start,NULL);
   for(int i=0;i<max;i++){
-    b.get_valid_moves(&bla);
+    b.do_move(&dummy);
   }
   
-  show_bitset(bla);
+  show_bitset(dummy);
   
   gettimeofday(&end,NULL);
   
