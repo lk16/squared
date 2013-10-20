@@ -3,11 +3,6 @@
 bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
   bot_base(_c,sd,wdl,pd)
 {
-  
-#if BOT_ALI_USE_HASHTABLE 
-  table.reserve(250000);
-#endif  
-
   name = "bot_ali";
   shell_output = true;
 }
@@ -36,13 +31,10 @@ const int bot_ali::location_value[10] = {
   -119, // 4
   - 35, // 5
   - 33, // 6
-  - 9, // 7
+  - 10, // 7
   - 7, // 8
   - 5 // 9
 };
-
-
-
 
 
 
