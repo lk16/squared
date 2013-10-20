@@ -143,13 +143,13 @@ board* board::get_children(board* out_begin) const
         cur_field_id += board::walk_diff[i][0]; 
         
         // current field = my color
-        if((discs[turn] & board::bit[cur_field_id]).any()){
+        if((me & board::bit[cur_field_id]).any()){
           to_flip |= tmp_mask;
           break;
         }
         
         // current field = opponent color
-        if((discs[opponent(turn)] & board::bit[cur_field_id]).any()){
+        if((opp & board::bit[cur_field_id]).any()){
           tmp_mask.set(cur_field_id);
           continue;
         }
@@ -162,8 +162,8 @@ board* board::get_children(board* out_begin) const
     
     if(out_end){
       *out_end = *this;
-      out_end->discs[turn] |= to_flip | board::bit[field_id];
-      out_end->discs[opponent(turn)] &= (~to_flip);
+      out_end->me |= to_flip | board::bit[field_id];
+      out_end->opp &= (~to_flip);
       out_end->switch_turn();
       ++out_end;
     }
@@ -178,8 +178,8 @@ void board::get_valid_moves(std::bitset<64>* out) const
 {
   out->reset();
   
-  const std::bitset<64>& opp = discs[opponent(turn)].to_ulong();
-  const std::bitset<64>& mine = discs[turn].to_ulong();
+  const std::bitset<64>& my_fields = this->me.to_ulong();
+  const std::bitset<64>& opp_fields = this->opp.to_ulong();
   
   for(int d=4;d<8;d++){
     
@@ -187,39 +187,39 @@ void board::get_valid_moves(std::bitset<64>* out) const
     
     *out |= 
     (
-      ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+      ((opp_fields >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
       & 
       (
-        ((mine >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+        ((my_fields >> board::walk_diff[d][1]) & board::walk_possible[d][1])
         |
         (
-          ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+          ((opp_fields >> board::walk_diff[d][1]) & board::walk_possible[d][1])
           &
           (
-            ((mine >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+            ((my_fields >> board::walk_diff[d][2]) & board::walk_possible[d][2])
             |
             (
-              ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+              ((opp_fields >> board::walk_diff[d][2]) & board::walk_possible[d][2])
               &
               (
-                ((mine >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+                ((my_fields >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                 |
                 (
-                  ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+                  ((opp_fields >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                   &
                   (
-                    ((mine >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+                    ((my_fields >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                     |
                     (
-                      ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+                      ((opp_fields >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                       &
                       (
-                        ((mine >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+                        ((my_fields >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                         |
                         (
-                          ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+                          ((opp_fields >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                           &
-                          ((mine >> board::walk_diff[d][6]) & board::walk_possible[d][6])
+                          ((my_fields >> board::walk_diff[d][6]) & board::walk_possible[d][6])
                         )
                       )
                     )
@@ -231,14 +231,66 @@ void board::get_valid_moves(std::bitset<64>* out) const
         )
       )
     );
-  }
   
+  *out |= 
+  (
+    ((opp_fields << board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+    & 
+    (
+      ((my_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+      |
+      (
+        ((opp_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+        &
+        (
+          ((my_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+          |
+          (
+            ((opp_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+            &
+            (
+              ((my_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+              |
+              (
+                ((opp_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+                &
+                (
+                  ((my_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                  |
+                  (
+                    ((opp_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                    &
+                    (
+                      ((my_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                      |
+                      (
+                        ((opp_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                        &
+                        ((my_fields << board::walk_diff[d][6]) & board::walk_possible[d][6])
+                      )
+                    )
+                  )
+                )  
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+  }
   *out &= get_empty_fields();
 }
 
 void board::show() const
 {
   int x,y;
+  
+  std::bitset<64> black,white;
+  black = (turn==-1 ? me : opp);
+  white = (turn== 1 ? me : opp);
+  
+  
   
   /* top line */
   std::cout << "+-----------------+\n";
@@ -247,10 +299,10 @@ void board::show() const
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      if(discs[BLACK].test(y*8+x)){
+      if(black.test(y*8+x)){
           std::cout << "\033[31;1m@\033[0m ";
       }
-      else if(discs[WHITE].test(y*8+x)){
+      else if(white.test(y*8+x)){
           std::cout << "\033[34;1m@\033[0m ";
       }
       else if(is_valid_move(y*8+x)){
@@ -271,14 +323,17 @@ int board::get_disc_diff() const
 {
   int count[2];
 
-  count[BLACK] = discs[BLACK].count();
-  count[WHITE] = discs[WHITE].count();
+ 
   
-  if(count[WHITE] > count[BLACK]){ /* WHITE wins */
-    return 64 - (2*count[BLACK]);
+  
+  count[0] = me.count();
+  count[1] = opp.count();
+  
+  if(count[0] > count[1]){ /* I win */
+    return 64 - (2*count[1]);
   }
-  else if(count[WHITE] < count[BLACK]){ /* BLACK wins */
-    return -64 + (2*count[WHITE]);
+  else if(count[1] < count[0]){ /* Opp wins */
+    return -64 + (2*count[0]);
   }
   else{ /* draw */
     return 0;
@@ -308,13 +363,13 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
       cur_field_id += board::walk_diff[i][0]; 
       
       // current field = my color
-      if((discs[turn] & board::bit[cur_field_id]).any()){
+      if((me & board::bit[cur_field_id]).any()){
         (*undo_data) |= tmp_mask;
         break;
       }
       
       // current field = opponent color
-      if((discs[opponent(turn)] & board::bit[cur_field_id]).any()){
+      if((opp & board::bit[cur_field_id]).any()){
         tmp_mask |= board::bit[cur_field_id];
         continue;
       }
@@ -325,77 +380,30 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
   }
   
   
-  assert((discs[turn] & (*undo_data)).none());
-  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
-  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
+  assert((me & (*undo_data)).none());
+  assert((opp & (*undo_data)) == (*undo_data));
+  assert(get_non_empty_fields().test(field_id) == false);
   
-  discs[turn] |= ((*undo_data) | board::bit[field_id]);
-  discs[opponent(turn)] &= ~(*undo_data);
+  me |= ((*undo_data) | board::bit[field_id]);
+  opp &= ~(*undo_data);
   
-  turn = opponent(turn);
+  passed = false;
+  
+  switch_turn();
 }
 
 void board::undo_move(int field_id, std::bitset<64>* undo_data)
 {
-  turn = opponent(turn); 
+  switch_turn();
   
-  discs[turn] &= ~((*undo_data));
-  discs[turn] &= ~(board::bit[field_id]);
-  discs[opponent(turn)] |= (*undo_data);  
-  
-  
-  assert((discs[turn] & (*undo_data)).none());
-  assert((discs[opponent(turn)] & (*undo_data)) == (*undo_data));
-  assert((discs[WHITE] | discs[BLACK]).test(field_id) == false);
-}
-
-std::set<board> board::get_descendants(int depth) const
-{
-  std::set<board> a,b;
-  board buff[32];
+  me &= ~((*undo_data));
+  me &= ~(board::bit[field_id]);
+  opp |= (*undo_data);  
   
   
-  a.insert(*this);
-  
-  if(depth == 0){
-    return a;
-  }
-  
-  std::set<board>::const_iterator it;
-  
-  for(int d=0;d<depth;d++){
-    b.clear();
-    for(it=a.begin();it!=a.end();it++){
-      const board* buff_end = it->get_children(buff);
-      for(const board* buff_it=buff;buff_it!=buff_end;buff_it++){
-        b.insert(*buff_it);
-      }
-    }
-    b.swap(a);
-    if(a.empty()){
-      break; // we cannot expand an empty depth level
-    }
-  }
-  
-  return b;
-}
-
-
-
-
-
-int board::get_stable_disc_count_diff(int max_depth) const
-{
-  board stable;
-  stable.set_all();
-  
-  std::set<board> desc = get_descendants(max_depth);
-  
-  for(std::set<board>::const_iterator it=desc.begin();it!=desc.end();it++){
-    stable &= *it;
-  }
-  
-  return stable.discs[WHITE].count() - stable.discs[BLACK].count();
+  assert((me & (*undo_data)).none());
+  assert((opp & (*undo_data)) == (*undo_data));
+  assert(get_non_empty_fields().test(field_id) == false);
 }
 
 

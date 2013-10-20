@@ -51,17 +51,6 @@
 /// lowest possible heuristic value
 #define MIN_HEURISTIC (-1 * MAX_HEURISTIC)
 
-enum color{
-  BLACK = 0,
-  WHITE = 1,
-  EMPTY = 2
-};
-
-inline color opponent(color c){
-  assert(c==WHITE || c==BLACK);
-  return (color)(1-c);
-}
-
 template<class T>
 inline T min(T x,T y){
   return ((x<y) ? x : y);

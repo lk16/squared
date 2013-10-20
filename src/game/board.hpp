@@ -43,8 +43,13 @@ struct board{
   // 0,1,2,3,3,2,1,0
   
   
-  std::bitset<64> discs[2];
-  color turn;
+  std::bitset<64> me,opp;
+  
+  // whose turn is it ?
+  char turn;
+  
+  // did anyone pass yet ?
+  bool passed;
   
   
   /// does NOTHING; call reset() to initialize
@@ -61,19 +66,12 @@ struct board{
   
   /// checks for ordering
   bool operator<(const board& b) const;
-  
-  /// applies binary and on both discs[BLACK] and discs[WHITE]
-  board& operator&=(const board& b);
-  
+ 
   /// resets the board to starting position
   void reset();
   
   /// initializes constants
   static void init_constants();
-  
-  
-  /// sets all bits in discs[BLACK] and discs[WHITE]
-  void set_all();
   
   /// switches the turn member
   void switch_turn();
@@ -100,9 +98,6 @@ struct board{
   /// returns the number of children, without calculating the actual children
   int count_children() const;
   
-  /// gets all descendants at a certain depth
-  std::set<board> get_descendants(int depth) const;
-  
   /// gets whatever name says
   std::bitset<64> get_empty_fields() const;
   std::bitset<64> get_non_empty_fields() const;
@@ -115,7 +110,7 @@ struct board{
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
   
-  /// returns disc count difference positive means white has more
+  /// returns disc count difference positive means this->turn has more
   int get_disc_diff() const;
   
   /// does a move
@@ -145,16 +140,18 @@ inline board::board()
 inline void board::reset(){
   
   /* wipe all discs of the board */
-  discs[BLACK].reset();
-  discs[WHITE].reset();
+  me.reset();
+  me.reset();
   
   /* put starting pieces on board */
-  discs[BLACK].set(28);
-  discs[BLACK].set(35);
-  discs[WHITE].set(27);
-  discs[WHITE].set(36);
+  me.set(28);
+  me.set(35);
+  opp.set(27);
+  opp.set(36);
   
-  turn = BLACK;
+  passed = false;
+  
+  turn = -1;
 }
 
 inline board::board(const board& b)
@@ -164,51 +161,46 @@ inline board::board(const board& b)
 
 inline board& board::operator=(const board& b)
 {
-  discs[BLACK] = b.discs[BLACK];
-  discs[WHITE] = b.discs[WHITE];
+  me = b.me;
+  opp = b.opp;
   turn = b.turn;
+  passed = b.passed;
   return *this;
 }
 
 inline bool board::operator==(const board& b) const
 {
-  return b.discs[BLACK]==discs[BLACK] && b.discs[WHITE]==discs[WHITE] && b.turn==turn;
+  return me==b.me && opp==b.opp && passed==b.passed && turn==b.turn;
 }
-
-inline board& board::operator&=(const board& b)
-{
-  discs[BLACK] &= b.discs[BLACK];
-  discs[WHITE] &= b.discs[WHITE];
-  return *this;
-}
-
 
 inline void board::switch_turn()
 {
-  turn = opponent(turn);
+  turn *= -1;
+  std::swap<std::bitset<64> >(me,opp);
 }
 
-inline void board::set_all()
-{
-  discs[BLACK].set();
-  discs[WHITE].set(); 
-}
 
 inline bool board::operator<(const board& b) const
 {
-  if(discs[BLACK] != b.discs[BLACK]){
-    return discs[BLACK].to_ulong() < b.discs[BLACK].to_ulong();
+  if(me != b.me){
+    return me.to_ulong() < b.me.to_ulong();
   }
-  if(discs[WHITE] != b.discs[WHITE]){
-    return discs[WHITE].to_ulong() < b.discs[WHITE].to_ulong();
+  if(opp != b.opp){
+    return opp.to_ulong() < b.opp.to_ulong();
   }
-  return (int)turn < (int)b.turn;
+  if(turn != b.turn){
+    return turn < b.turn;
+  }
+  if(passed != b.passed){
+    return passed;
+  }
+  return false;
 }
 
 
 inline long unsigned int board::hash() const
 {
-  return 3*discs[BLACK].to_ulong() + 5*discs[WHITE].to_ulong() + 7*turn;
+  return 3*me.to_ulong() + 5*opp.to_ulong() + 7*turn + 11*(passed ? 1 : 0);
 }
 
 inline std::bitset<64> board::get_empty_fields() const
@@ -218,7 +210,7 @@ inline std::bitset<64> board::get_empty_fields() const
 
 inline std::bitset<64> board::get_non_empty_fields() const
 {
-  return discs[WHITE] | discs[BLACK];
+  return me | opp;
 }
 
 inline bool board::has_children() const
@@ -234,7 +226,5 @@ inline int board::count_children() const
   get_valid_moves(&moves);
   return moves.count();  
 }
-
-
 
 #endif

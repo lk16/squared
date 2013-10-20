@@ -38,14 +38,14 @@ private:
   
 public:
 
-  bot_ali(color c, int _search_depth, int _wld_depth,int _perfect_depth);
+  bot_ali(int c, int _search_depth,int _perfect_depth);
   ~bot_ali();
   
   /// picks a move!
   virtual void do_move(const board* b,board* res);
   
   /// calculates the heuristic for this->inspected
-  /// positive is good for WHITE 
+  /// positive is good for this->turn 
   int heuristic();
   
   /// calculates the heuristic for this->inspected using negamax

@@ -1,7 +1,7 @@
 #include "bot_ali.hpp"
 
-bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
-  bot_base(_c,sd,wdl,pd)
+bot_ali::bot_ali(int _c, int sd, int pd):
+  bot_base(_c,sd,pd)
 {
   name = "bot_ali";
   shell_output = true;
@@ -65,8 +65,8 @@ void bot_ali::do_move(const board* b,board* res)
   }
 #endif
   
-  int empty_fields = 64 - (b->discs[BLACK] | b->discs[WHITE]).count();
-  eval_mode mode = (empty_fields > wdl_depth) ? NORMAL_MODE : PERFECT_MODE;
+  int empty_fields = inspected.get_empty_fields().count();
+  eval_mode mode = (empty_fields > perfect_depth) ? NORMAL_MODE : PERFECT_MODE;
 
   int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-64);
   
@@ -133,31 +133,21 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
   nodes++;
   
   if(depth_remaining==0){
-    int heur = heuristic();
-    if(inspected.turn==BLACK){
-      heur = -heur;
-    }
-    return heur;
+    return heuristic();
   }
   
   std::bitset<64> possible_moves;
   
   inspected.get_valid_moves(&possible_moves);
   if(possible_moves.none()){
-    inspected.switch_turn();
-    if(inspected.has_children()){
-      int heur = -negamax(-beta,-alpha,depth_remaining);
-      inspected.switch_turn();      
-      return heur;
-    
+    if(inspected.passed){
+      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      // at this point inspected.turn is switched
+      inspected.passed = true;
       inspected.switch_turn();
-      int heur = EXACT_SCORE_FACTOR * inspected.get_disc_diff();
-      if(inspected.turn==BLACK){
-        heur = -heur;
-      }
+      int heur = -negamax(-beta,-alpha,depth_remaining);
+      inspected.switch_turn();
       return heur;
     }
   }
@@ -199,20 +189,14 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   inspected.get_valid_moves(&possible_moves);
   if(possible_moves.none()){
-    inspected.switch_turn();
-    if(inspected.has_children()){
-      int heur = -negamax_exact(-beta,-alpha);
-      inspected.switch_turn();      
-      return heur;
-      
+    if(inspected.passed){
+      return inspected.get_disc_diff();    
     }
     else{
-      // at this point inspected.turn is switched
+      inspected.passed = true;
       inspected.switch_turn();
-      int heur = inspected.get_disc_diff();
-      if(inspected.turn==BLACK){
-        heur = -heur;
-      }
+      int heur = -negamax_exact(-beta,-alpha);
+      inspected.switch_turn();
       return heur;
     }
   }
@@ -267,8 +251,8 @@ int bot_ali::heuristic()
   
   for(int i=0;i<10;i++){
     res += bot_ali::location_value[i] * (
-       (inspected.discs[WHITE] & board::location[i]).count()
-       -(inspected.discs[BLACK] & board::location[i]).count()
+       (inspected.me & board::location[i]).count()
+       -(inspected.opp & board::location[i]).count()
     );
   }  
   return res;

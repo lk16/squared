@@ -109,29 +109,29 @@ void main_window::on_menu_settings_settings()
 {
   int input_level[2],output_level[2];
   
-  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
-  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
+  input_level[0] = control.bot[0] ? control.bot[0]->get_search_depth() : -1;
+  input_level[1] = control.bot[1] ? control.bot[1]->get_search_depth() : -1;
   
   
-  settings_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
+  settings_dialog sd(*this,input_level[0],input_level[1]);
   
   if(sd.run() == Gtk::RESPONSE_OK){
     
-    sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
+    sd.collect_data(&output_level[0],&output_level[1]);
     
-    if(output_level[BLACK]==-1){
-      control.remove_bot(BLACK);
+    if(output_level[0]==-1){
+      control.remove_bot(-1);
     }
     else{
-      int x = output_level[BLACK];
-      control.add_bot(BLACK,x,max(2*x+2,16),max(2*x+2,16));
+      int x = output_level[1];
+      control.add_bot(-1,x,max(2*x+2,16));
     }
-    if(output_level[WHITE]==-1){
-      control.remove_bot(WHITE);
+    if(output_level[1]==-1){
+      control.remove_bot(1);
     }
     else{
-      int x = output_level[WHITE];
-      control.add_bot(WHITE,x,max(2*x+2,16),max(2*x+2,16));
+      int x = output_level[1];
+      control.add_bot(1,x,max(2*x+2,16));
     }
   
   }
@@ -145,13 +145,19 @@ void main_window::update_fields()
   
   b = &control.current;
   
+  std::bitset<64> white,black;
+  
+  white = (b->turn== 1 ? b->me : b->opp);
+  black = (b->turn==-1 ? b->me : b->opp);
+  
+  
    
   for(y=0;y<8;y++){
     for(x=0;x<8;x++){
-      if(b->discs[WHITE].test(y*8+x)){
+      if(white.test(y*8+x)){
         imagefile = "white.png";
       }
-      else if(b->discs[BLACK].test(y*8+x)){
+      else if(black.test(y*8+x)){
         imagefile = "black.png";
       }
       else if(b->is_valid_move(y*8+x)){
