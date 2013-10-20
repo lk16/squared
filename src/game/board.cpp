@@ -13,8 +13,15 @@ const unsigned int board::border[64] = {
   0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
 };
 
-const int board::direction[8] = {
-  -9,-8,-7,-1,1,7,8,9
+const int board::walk_diff[8][7] = {
+  {- 9,-18,-27,-36,-45,-54,-63},
+  {- 8,-16,-24,-32,-40,-48,-56},
+  {- 7,-14,-21,-28,-35,-42,-49},
+  {- 1,- 2,- 3,- 4,- 5,- 6,- 7},
+  {  1,  2,  3,  4,  5,  6,  7},
+  {  7, 14, 21, 28, 35, 42, 49},
+  {  8, 16, 24, 32, 40, 48, 56},
+  {  9, 18, 27, 36, 45, 54, 63}
 };
 
 std::bitset<64> board::bit[64];
@@ -133,7 +140,7 @@ board* board::get_children(board* out_begin) const
         }
         
         // walk ahead        
-        cur_field_id += board::direction[i]; 
+        cur_field_id += board::walk_diff[i][0]; 
         
         // current field = my color
         if((discs[turn] & board::bit[cur_field_id]).any()){
@@ -174,99 +181,45 @@ void board::get_valid_moves(std::bitset<64>* out) const
   const std::bitset<64>& opp = discs[opponent(turn)].to_ulong();
   const std::bitset<64>& mine = discs[turn].to_ulong();
   
-  for(int d=0;d<4;d++){
-    
-    int diff = -board::direction[d];
-    assert(diff > 0);
-    
-    *out |= 
-    (
-      ((opp << (diff*1)) & board::walk_possible[d][0]) 
-      & 
-      (
-        ((mine << (diff*2)) & board::walk_possible[d][1])
-        |
-        (
-          ((opp << (diff*2)) & board::walk_possible[d][1])
-          &
-          (
-            ((mine << (diff*3)) & board::walk_possible[d][2])
-            |
-            (
-              ((opp << (diff*3)) & board::walk_possible[d][2])
-              &
-              (
-                ((mine << (diff*4)) & board::walk_possible[d][3])
-                |
-                (
-                  ((opp << (diff*4)) & board::walk_possible[d][3])
-                  &
-                  (
-                    ((mine << (diff*5)) & board::walk_possible[d][4])
-                    |
-                    (
-                      ((opp << (diff*5)) & board::walk_possible[d][4])
-                      &
-                      (
-                        ((mine << (diff*6)) & board::walk_possible[d][5])
-                        |
-                        (
-                          ((opp << (diff*6)) & board::walk_possible[d][5])
-                          &
-                          ((mine << (diff*7)) & board::walk_possible[d][6])
-                        )
-                      )
-                    )
-                  )  
-                )
-              )
-            )
-          )
-        )
-      )
-    );
-  }
-  
   for(int d=4;d<8;d++){
     
-    int diff = board::direction[d];
-    assert(diff > 0);
+    assert(board::walk_diff[d][0] > 0);
     
     *out |= 
     (
-      ((opp >> (diff*1)) & board::walk_possible[d][0]) 
+      ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
       & 
       (
-        ((mine >> (diff*2)) & board::walk_possible[d][1])
+        ((mine >> board::walk_diff[d][1]) & board::walk_possible[d][1])
         |
         (
-          ((opp >> (diff*2)) & board::walk_possible[d][1])
+          ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
           &
           (
-            ((mine >> (diff*3)) & board::walk_possible[d][2])
+            ((mine >> board::walk_diff[d][2]) & board::walk_possible[d][2])
             |
             (
-              ((opp >> (diff*3)) & board::walk_possible[d][2])
+              ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
               &
               (
-                ((mine >> (diff*4)) & board::walk_possible[d][3])
+                ((mine >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                 |
                 (
-                  ((opp >> (diff*4)) & board::walk_possible[d][3])
+                  ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                   &
                   (
-                    ((mine >> (diff*5)) & board::walk_possible[d][4])
+                    ((mine >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                     |
                     (
-                      ((opp >> (diff*5)) & board::walk_possible[d][4])
+                      ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                       &
                       (
-                        ((mine >> (diff*6)) & board::walk_possible[d][5])
+                        ((mine >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                         |
                         (
-                          ((opp >> (diff*6)) & board::walk_possible[d][5])
+                          ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                           &
-                          ((mine >> (diff*7)) & board::walk_possible[d][6])
+                          ((mine >> board::walk_diff[d][6]) & board::walk_possible[d][6])
                         )
                       )
                     )
@@ -352,7 +305,7 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
       }
       
       // walk ahead        
-      cur_field_id += board::direction[i]; 
+      cur_field_id += board::walk_diff[i][0]; 
       
       // current field = my color
       if((discs[turn] & board::bit[cur_field_id]).any()){
