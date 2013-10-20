@@ -141,7 +141,7 @@ inline void board::reset(){
   
   /* wipe all discs of the board */
   me.reset();
-  me.reset();
+  opp.reset();
   
   /* put starting pieces on board */
   me.set(28);

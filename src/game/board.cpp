@@ -231,54 +231,59 @@ void board::get_valid_moves(std::bitset<64>* out) const
         )
       )
     );
+  }
   
-  *out |= 
-  (
-    ((opp_fields << board::walk_diff[d][0]) & board::walk_possible[d][0]) 
-    & 
+  for(int d=0;d<4;d++){
+    assert(board::walk_diff[d][0] < 0);
+    
+    *out |= 
     (
-      ((my_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
-      |
+      ((opp_fields << board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+      & 
       (
-        ((opp_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
-        &
+        ((my_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+        |
         (
-          ((my_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
-          |
+          ((opp_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+          &
           (
-            ((opp_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
-            &
+            ((my_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+            |
             (
-              ((my_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
-              |
+              ((opp_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+              &
               (
-                ((opp_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
-                &
+                ((my_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+                |
                 (
-                  ((my_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
-                  |
+                  ((opp_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+                  &
                   (
-                    ((opp_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
-                    &
+                    ((my_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                    |
                     (
-                      ((my_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
-                      |
+                      ((opp_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                      &
                       (
-                        ((opp_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
-                        &
-                        ((my_fields << board::walk_diff[d][6]) & board::walk_possible[d][6])
+                        ((my_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                        |
+                        (
+                          ((opp_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                          &
+                          ((my_fields << board::walk_diff[d][6]) & board::walk_possible[d][6])
+                        )
                       )
                     )
-                  )
-                )  
+                  )  
+                )
               )
             )
           )
         )
       )
-    )
-  );
+    );
   }
+  
   *out &= get_empty_fields();
 }
 

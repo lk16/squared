@@ -8,16 +8,16 @@
 
 void testing_area(){
   
+  std::cout << (1ul >> (-2)) << '\n';
+  
   board b;
   std::bitset<64> moves;
   
-  b.reset();
-  
+  b.turn = -1;
+  b.me =  0x0000000800000000;
+  b.opp = 0x00001c141c000000;
   b.show();
-  
-  
   b.get_valid_moves(&moves);
-  
   show_bitset(moves);  
   
 }
