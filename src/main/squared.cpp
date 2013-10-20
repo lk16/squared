@@ -34,7 +34,8 @@ void timing_area(){
   const int max = 1000000;
   gettimeofday(&start,NULL);
   for(int i=0;i<max;i++){
-    b.do_move(&dummy);
+    b.do_move(20,&dummy);
+    b.undo_move(20,&dummy);
   }
   
   show_bitset(dummy);
