@@ -24,9 +24,6 @@ const int board::walk_diff[8][7] = {
   {  9, 18, 27, 36, 45, 54, 63}
 };
 
-std::bitset<64> board::bit[64];
-std::bitset<64> board::location[10];
-
 const std::bitset<64> board::walk_possible[8][7] = {
   { // up left
     std::bitset<64>(0xFEFEFEFEFEFEFEFE),
@@ -101,6 +98,46 @@ const std::bitset<64> board::walk_possible[8][7] = {
   std::bitset<64>(0x0101010101010101)
   }
 };
+
+const std::bitset<64> board::bit[64] = {
+  (1ul <<  0),(1ul <<  1),(1ul <<  2),(1ul <<  3),(1ul <<  4),
+  (1ul <<  5),(1ul <<  6),(1ul <<  7),(1ul <<  8),(1ul <<  9),
+  (1ul << 10),(1ul << 11),(1ul << 12),(1ul << 13),(1ul << 14),
+  (1ul << 15),(1ul << 16),(1ul << 17),(1ul << 18),(1ul << 19),
+  (1ul << 20),(1ul << 21),(1ul << 22),(1ul << 23),(1ul << 24),
+  (1ul << 25),(1ul << 26),(1ul << 27),(1ul << 28),(1ul << 29),
+  (1ul << 30),(1ul << 31),(1ul << 32),(1ul << 33),(1ul << 34),
+  (1ul << 35),(1ul << 36),(1ul << 37),(1ul << 38),(1ul << 39),
+  (1ul << 40),(1ul << 41),(1ul << 42),(1ul << 43),(1ul << 44),
+  (1ul << 45),(1ul << 46),(1ul << 47),(1ul << 48),(1ul << 49),
+  (1ul << 50),(1ul << 51),(1ul << 52),(1ul << 53),(1ul << 54),
+  (1ul << 55),(1ul << 56),(1ul << 57),(1ul << 58),(1ul << 59),
+  (1ul << 60),(1ul << 61),(1ul << 62),(1ul << 63)
+};
+
+// 0,1,2,3,3,2,1,0,
+// 1,4,5,6,6,5,4,1,
+// 2,5,7,8,8,7,5,2,
+// 3,6,8,9,9,8,6,3,
+// 3,6,8,9,9,8,6,3,
+// 2,5,7,8,8,7,5,2,
+// 1,4,5,6,6,5,4,1,
+// 0,1,2,3,3,2,1,0
+
+const std::bitset<64> board::location[10] = {
+  /* 0 */ bit[0] | bit[7] | bit[56] | bit[63],
+  /* 1 */ bit[1] | bit[6] | bit[8] | bit[15] | bit[48] | bit[55] | bit[57] | bit[62],
+  /* 2 */ bit[2] | bit[5] | bit[16] | bit[23] | bit[40] | bit[47] | bit[58] | bit[61],
+  /* 3 */ bit[3] | bit[4] | bit[24] | bit[31] | bit[32] | bit[39] | bit[59] | bit[60],
+  /* 4 */ bit[9] | bit[14] | bit[49] | bit[54],
+  /* 5 */ bit[10] | bit[13] | bit[17] | bit[22] | bit[41] | bit[46] | bit[50] | bit[53],
+  /* 6 */ bit[11] | bit[12] | bit[25] | bit[30] | bit[33] | bit[38] | bit[51] | bit[52],
+  /* 7 */ bit[18] | bit[21] | bit[42] | bit[45],
+  /* 8 */ bit[19] | bit[20] | bit[26] | bit[29] | bit[34] | bit[37] | bit[43] | bit[44],
+  /* 9 */ bit[27] | bit[28] | bit[35] | bit[36]
+};
+  
+  
 
 
 bool board::is_valid_move(int field_id) const
@@ -178,48 +215,45 @@ void board::get_valid_moves(std::bitset<64>* out) const
 {
   out->reset();
   
-  const std::bitset<64>& my_fields = this->me.to_ulong();
-  const std::bitset<64>& opp_fields = this->opp.to_ulong();
-  
   for(int d=4;d<8;d++){
     
     assert(board::walk_diff[d][0] > 0);
     
     *out |= 
     (
-      ((opp_fields >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+      ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
       & 
       (
-        ((my_fields >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+        ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
         |
         (
-          ((opp_fields >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+          ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
           &
           (
-            ((my_fields >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+            ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
             |
             (
-              ((opp_fields >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+              ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
               &
               (
-                ((my_fields >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+                ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                 |
                 (
-                  ((opp_fields >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+                  ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
                   &
                   (
-                    ((my_fields >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+                    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                     |
                     (
-                      ((opp_fields >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+                      ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
                       &
                       (
-                        ((my_fields >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+                        ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                         |
                         (
-                          ((opp_fields >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+                          ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
                           &
-                          ((my_fields >> board::walk_diff[d][6]) & board::walk_possible[d][6])
+                          ((me >> board::walk_diff[d][6]) & board::walk_possible[d][6])
                         )
                       )
                     )
@@ -231,46 +265,42 @@ void board::get_valid_moves(std::bitset<64>* out) const
         )
       )
     );
-  }
-  
-  for(int d=0;d<4;d++){
-    assert(board::walk_diff[d][0] < 0);
     
     *out |= 
     (
-      ((opp_fields << board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+      ((opp << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
       & 
       (
-        ((my_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+        ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
         |
         (
-          ((opp_fields << board::walk_diff[d][1]) & board::walk_possible[d][1])
+          ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
           &
           (
-            ((my_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+            ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
             |
             (
-              ((opp_fields << board::walk_diff[d][2]) & board::walk_possible[d][2])
+              ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
               &
               (
-                ((my_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+                ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
                 |
                 (
-                  ((opp_fields << board::walk_diff[d][3]) & board::walk_possible[d][3])
+                  ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
                   &
                   (
-                    ((my_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
                     |
                     (
-                      ((opp_fields << board::walk_diff[d][4]) & board::walk_possible[d][4])
+                      ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
                       &
                       (
-                        ((my_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                        ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
                         |
                         (
-                          ((opp_fields << board::walk_diff[d][5]) & board::walk_possible[d][5])
+                          ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
                           &
-                          ((my_fields << board::walk_diff[d][6]) & board::walk_possible[d][6])
+                          ((me << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
                         )
                       )
                     )
@@ -409,29 +439,4 @@ void board::undo_move(int field_id, std::bitset<64>* undo_data)
   assert((me & (*undo_data)).none());
   assert((opp & (*undo_data)) == (*undo_data));
   assert(get_non_empty_fields().test(field_id) == false);
-}
-
-
-void board::init_constants()
-{
-  for(int i=0;i<64;i++){
-    board::bit[i].reset();
-    board::bit[i].set(i);
-  }
-  
-  int locations_table[64] =
-  {
-    0,1,2,3,3,2,1,0,
-    1,4,5,6,6,5,4,1,
-    2,5,7,8,8,7,5,2,
-    3,6,8,9,9,8,6,3,
-    3,6,8,9,9,8,6,3,
-    2,5,7,8,8,7,5,2,
-    1,4,5,6,6,5,4,1,
-    0,1,2,3,3,2,1,0
-  };
-  
-  for(int i=0;i<64;i++){
-    board::location[locations_table[i]].set(i);
-  }
 }

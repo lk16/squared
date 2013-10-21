@@ -8,18 +8,18 @@
 
 void testing_area(){
   
-  std::cout << (1ul >> (-2)) << '\n';
-  
   board b;
   std::bitset<64> moves;
   
   b.turn = -1;
-  b.me =  0x0000000800000000;
-  b.opp = 0x00001c141c000000;
-  b.show();
-  b.get_valid_moves(&moves);
-  show_bitset(moves);  
+  b.me = (1ul << 46);
+  b.opp = (1ul << 54);
   
+  b.get_valid_moves(&moves);
+  b.show();
+  show_bitset(moves);
+  
+
 }
 
 void timing_area(){
@@ -33,9 +33,10 @@ void timing_area(){
   
   const int max = 1000000;
   gettimeofday(&start,NULL);
+  
   for(int i=0;i<max;i++){
-    b.do_move(20,&dummy);
-    b.undo_move(20,&dummy);
+    b.do_move(19,&dummy);
+    b.reset();
   }
   
   show_bitset(dummy);
@@ -56,9 +57,6 @@ void timing_area(){
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   main_window window;
-  
-  // has to be done
-  board::init_constants();
   
   
   if(argc>=2){

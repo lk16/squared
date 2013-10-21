@@ -20,9 +20,9 @@ struct board{
   
   // static constants
   static const unsigned int border[64]; // border flags
-  static std::bitset<64> bit[64];       // (1 << x) for x in [0,63]
-  static std::bitset<64> location[10];  // location on board as shown below
   
+  // (1 << x) for x in [0,63]
+  static const std::bitset<64> bit[64];       
   
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
@@ -32,15 +32,8 @@ struct board{
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
   
-  
-  // 0,1,2,3,3,2,1,0,
-  // 1,4,5,6,6,5,4,1,
-  // 2,5,7,8,8,7,5,2,
-  // 3,6,8,9,9,8,6,3,
-  // 3,6,8,9,9,8,6,3,
-  // 2,5,7,8,8,7,5,2,
-  // 1,4,5,6,6,5,4,1,
-  // 0,1,2,3,3,2,1,0
+  // location on board, for table see source file 
+  static const std::bitset<64> location[10];    
   
   
   std::bitset<64> me,opp;
@@ -69,9 +62,6 @@ struct board{
  
   /// resets the board to starting position
   void reset();
-  
-  /// initializes constants
-  static void init_constants();
   
   /// switches the turn member
   void switch_turn();
