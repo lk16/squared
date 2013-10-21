@@ -169,10 +169,11 @@ bool game_control::timeout_handler()
 
 void game_control::add_bot(int _c, int d,int pd)
 {
-  if(bot[_c]){
-    delete bot[_c];
+  int index = (_c == -1 ? 0 : 1);
+  if(bot[index]){
+    delete bot[index];
   }
-  bot[_c] = new bot_ali(_c,d,pd);
+  bot[index] = new bot_ali(_c,d,pd);
 }
 
 void game_control::remove_bot(int col)

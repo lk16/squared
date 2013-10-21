@@ -123,7 +123,7 @@ void main_window::on_menu_settings_settings()
       control.remove_bot(-1);
     }
     else{
-      int x = output_level[1];
+      int x = output_level[0];
       control.add_bot(-1,x,max(2*x+2,16));
     }
     if(output_level[1]==-1){
