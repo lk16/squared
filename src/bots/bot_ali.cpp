@@ -65,7 +65,7 @@ void bot_ali::do_move(const board* b,board* res)
   }
 #endif
   
-  int empty_fields = inspected.get_empty_fields().count();
+  int empty_fields = b->get_empty_fields().count();
   eval_mode mode = (empty_fields > perfect_depth) ? NORMAL_MODE : PERFECT_MODE;
 
   int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-64);
@@ -148,6 +148,7 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
       inspected.switch_turn();
       int heur = -negamax(-beta,-alpha,depth_remaining);
       inspected.switch_turn();
+      inspected.passed = false;
       return heur;
     }
   }
@@ -197,6 +198,7 @@ int bot_ali::negamax_exact(int alpha, int beta)
       inspected.switch_turn();
       int heur = -negamax_exact(-beta,-alpha);
       inspected.switch_turn();
+      inspected.passed = false;
       return heur;
     }
   }

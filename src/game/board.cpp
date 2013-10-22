@@ -367,7 +367,7 @@ int board::get_disc_diff() const
   if(count[0] > count[1]){ /* I win */
     return 64 - (2*count[1]);
   }
-  else if(count[1] < count[0]){ /* Opp wins */
+  else if(count[1] > count[0]){ /* Opp wins */
     return -64 + (2*count[0]);
   }
   else{ /* draw */
