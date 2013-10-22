@@ -3,12 +3,12 @@
 
 #include <bitset>
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <list>
 #include <sstream>
-#include <cstring>
 #include <set>
-#include <unordered_map>
 
 #include "game/util.hpp"
 
@@ -31,6 +31,13 @@ struct board{
   // contains index differences when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
+  
+  // contains bitsets of captured discs
+  // in direction (1st index) for number of steps (2nd index)
+  // considering move in capture_start
+  static const std::bitset<64> capture[8][6];
+  static const int capture_start[8][6];
+  
   
   // location on board, for table see source file 
   static const std::bitset<64> location[10];    
@@ -66,7 +73,10 @@ struct board{
   /// switches the turn member
   void switch_turn();
   
-  
+  /// generate random board 
+  /// WARNING: no guarantees on number of moves or 
+  /// reachability from reset() board can be given
+  void randomize();
   
   /// checks whether for *this and this->turn, field_id is a valid move
   bool is_valid_move(int field_id) const;
@@ -105,23 +115,12 @@ struct board{
   
   /// does a move
   void do_move(int field_id,std::bitset<64>* undo_data);
+  void do_move_experimental(int field_id,std::bitset<64>* undo_data);
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
-  
-  /// estimate number of stable discs, without going deeper than max_depth
-  int get_stable_disc_count_diff(int max_depth) const;
 };
 
-
-namespace std{
-  template<>
-  struct hash<board>{
-    size_t operator()(board b) const{
-      return b.hash();
-    }
-  };
-}
 
 inline board::board()
 {
@@ -216,5 +215,19 @@ inline int board::count_children() const
   get_valid_moves(&moves);
   return moves.count();  
 }
+
+inline void board::randomize()
+{
+  
+  me =  rand_64();
+  opp = rand_64();
+  turn = -1 + 2*(rand() % 2);
+  passed = false;
+  
+  me &= (~opp);
+  opp &= (~me);
+}
+
+
 
 #endif

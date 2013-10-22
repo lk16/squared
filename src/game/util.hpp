@@ -105,7 +105,7 @@ inline void show_bitset(const std::bitset<64>& bs){
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      std::cout << (bs.test(y*8+x) ? "@ " : "  ");
+      std::cout << (bs.test(y*8+x) ? "@ " : ". ");
     }
     std::cout << "|\n";
   }
@@ -123,6 +123,10 @@ inline int find_first_set_64(unsigned long ul){
     return 31 + res;
   }
   return -1;
+}
+
+inline unsigned long rand_64(){
+  return ((unsigned long) rand() << 32) | (unsigned long) rand();
 }
 
 
