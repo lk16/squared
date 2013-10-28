@@ -513,194 +513,179 @@ void board::do_move_experimental(int move_id, std::bitset<64>* undo_data)
   
   const std::bitset<64> move_bit(1ul << move_id);
   
-  for(int d=4;d<8;d++){
+   
+  for(int dir=4;dir<8;dir++){
     
-    std::bitset<64> shifted_opp[8];
-    for(int i=0;i<4;i++){
-      shifted_opp[i] = (opp << walk_diff[d][i]);
-      shifted_opp[4+i] = (opp >> walk_diff[d][i]);
+    const int opp_dir = 7-dir;
+    
+    std::bitset<64> shifted_me[12];
+    std::bitset<64> move_bit_dir[6];
+    std::bitset<64> move_bit_opp_dir[6];
+    std::bitset<64> shifted_opp_streak[10];
+    
+    const int* walk_diff_dir = walk_diff[dir];
+    
+    
+    for(int i=0;i<6;i++){
+      shifted_me[i] = (me << walk_diff_dir[i]);
+      shifted_me[6+i] = (me >> walk_diff_dir[i]);
     }
     
+    for(int i=0;i<6;i++){
+      move_bit_dir[i] = (move_bit & walk_possible[dir][i+1]);
+      move_bit_opp_dir[i] = (move_bit & walk_possible[opp_dir][i+1]);
+    }
     
-    const int oppd = 7-d;
+    shifted_opp_streak[0] = (opp << walk_diff_dir[0]);
+    shifted_opp_streak[5] = (opp >> walk_diff_dir[0]);
+    
+    for(int i=1;i<5;i++){
+      shifted_opp_streak[i] = 
+        shifted_opp_streak[i-1] 
+        & (opp << walk_diff_dir[i]);
+      
+      shifted_opp_streak[5+i] = 
+        shifted_opp_streak[5+i-1] 
+        & (opp >> walk_diff_dir[i]);
+    }
+    
     
     *undo_data |=
       opp
       &
       (
         ( // stepsize 1, 1st disc
-          ((move_bit & walk_possible[oppd][1]) >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[0] >> walk_diff[dir][0])
+          & shifted_me[0]
         )
         |
         ( // stepsize 2, 1st disc
-          ((move_bit & walk_possible[oppd][2]) >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (me << walk_diff[d][1])
+          (move_bit_opp_dir[1] >> walk_diff[dir][0])
+          & shifted_opp_streak[0]
+          & shifted_me[1]
         )
         |
         ( // stepsize 2, 2nd disc
-          ((move_bit & walk_possible[oppd][2]) >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[1] >> walk_diff[dir][1])
+          & shifted_opp_streak[5]
+          & shifted_me[0]
         )
         |
         ( // stepsize 3, 1st disc
-          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (me << walk_diff[d][2])
+          (move_bit_opp_dir[2] >> walk_diff[dir][0])
+          & shifted_opp_streak[0]
+          & shifted_me[2]
         )
         |
         ( // stepsize 3, 2nd disc
-          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (me << walk_diff[d][1])
+          (move_bit_opp_dir[2] >> walk_diff[dir][1])
+          & shifted_opp_streak[5]
+          & shifted_opp_streak[0]
+          & shifted_me[1]
         )
         |
         ( // stepsize 3, 3rd disc
-          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[2] >> walk_diff[dir][2])
+           & shifted_opp_streak[5]
+          & shifted_me[0]
         )
         |
         ( // stepsize 4, 1st disc
-          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (me << walk_diff[d][3])
+          (move_bit_opp_dir[3] >> walk_diff[dir][0])
+          & shifted_opp_streak[2]
+          & shifted_me[3]
         )
         |
         ( // stepsize 4, 2nd disc
-          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (me << walk_diff[d][2])
+          (move_bit_opp_dir[3] >> walk_diff[dir][1])
+          & shifted_opp_streak[5]
+          & shifted_opp_streak[1]
+          & shifted_me[2]
         )
         |
         ( // stepsize 4, 3rd disc
-          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (me << walk_diff[d][1])
+          (move_bit_opp_dir[3] >> walk_diff[dir][2])
+          & shifted_opp_streak[6]
+          & shifted_opp_streak[0]
+          & shifted_me[1]
         )
         |
         ( // stepsize 4, 4th disc
-          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[3] >> walk_diff[dir][3])
+          & shifted_opp_streak[7]
+          & shifted_me[0]
         )
         |
         ( // stepsize 5, 1st disc
-          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][3])
-          & (me << walk_diff[d][4])
+          (move_bit_opp_dir[4] >> walk_diff[dir][0])
+          & shifted_opp_streak[3]
+          & shifted_me[4]
         )
         |
         ( // stepsize 5, 2nd disc
-          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (me << walk_diff[d][3])
+          (move_bit_opp_dir[4] >> walk_diff[dir][1])
+          & shifted_opp_streak[5]
+          & shifted_opp_streak[2]
+          & shifted_me[3]
         )
         |
         ( // stepsize 5, 3rd disc
-          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (me << walk_diff[d][2])
+          (move_bit_opp_dir[4] >> walk_diff[dir][2])
+          & shifted_opp_streak[6]
+          & shifted_opp_streak[1]
+          & shifted_me[2]
         )
         |
         ( // stepsize 5, 4th disc
-          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (me << walk_diff[d][1])
+          (move_bit_opp_dir[4] >> walk_diff[dir][3])
+          & shifted_opp_streak[7]
+          & shifted_opp_streak[0]
+          & shifted_me[1]
         )
         |
         ( // stepsize 5, 5th disc
-          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][4])
-          & (opp >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[4] >> walk_diff[dir][4])
+          & shifted_opp_streak[8]
+          & shifted_me[0]
         )
         |
         ( // stepsize 6, 1st disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][3])
-          & (opp << walk_diff[d][4])
-          & (me << walk_diff[d][5])
+          (move_bit_opp_dir[5] >> walk_diff[dir][0])
+          & shifted_opp_streak[4]
+          & shifted_me[5]
         )
         |
         ( // stepsize 6, 2nd disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][3])
-          & (me << walk_diff[d][4])
+          (move_bit_opp_dir[5] >> walk_diff[dir][1])
+          & shifted_opp_streak[5]
+          & shifted_opp_streak[3]
+          & shifted_me[4]
         )
         |
         ( // stepsize 6, 3rd disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][2])
-          & (me << walk_diff[d][3])
+          (move_bit_opp_dir[5] >> walk_diff[dir][2])
+          & shifted_opp_streak[6]
+          & shifted_opp_streak[2]
+          & shifted_me[3]
         )
         |
         ( // stepsize 6, 4th disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (opp << walk_diff[d][1])
-          & (me << walk_diff[d][2])
+          (move_bit_opp_dir[5] >> walk_diff[dir][3])
+          & shifted_opp_streak[7]
+          & shifted_opp_streak[1]
+          & shifted_me[2]
         )
         |
         ( // stepsize 6, 5th disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][4])
-          & (opp >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (opp << walk_diff[d][0])
-          & (me << walk_diff[d][1])
+          (move_bit_opp_dir[5] >> walk_diff[dir][4])
+          & shifted_opp_streak[8]
+          & shifted_me[1]
         )
         |
         ( // stepsize 6, 6th disc
-          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][5])
-          & (opp >> walk_diff[d][4])
-          & (opp >> walk_diff[d][3])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][0])
-          & (me << walk_diff[d][0])
+          (move_bit_opp_dir[5] >> walk_diff[dir][5])
+          & shifted_opp_streak[9]
+          & shifted_me[0]
         )
       );
       
@@ -709,185 +694,145 @@ void board::do_move_experimental(int move_id, std::bitset<64>* undo_data)
       &
       (
         ( // stepsize 1, 1st disc
-          ((move_bit & walk_possible[d][1]) << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[0] << walk_diff[dir][0])
+          & shifted_me[6]
         )
         |
         ( // stepsize 2, 1st disc
-          ((move_bit & walk_possible[d][2]) << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (me >> walk_diff[d][1])
+          (move_bit_dir[1] << walk_diff[dir][0])
+          & shifted_opp_streak[5]
+          & shifted_me[7]
         )
         |
         ( // stepsize 2, 2nd disc
-          ((move_bit & walk_possible[d][2]) << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[1] << walk_diff[dir][1])
+          & shifted_opp_streak[0]
+          & shifted_me[6]
         )
         |
         ( // stepsize 3, 1st disc
-          ((move_bit & walk_possible[d][3]) << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (me >> walk_diff[d][2])
+          (move_bit_dir[2] << walk_diff[dir][0])
+         & shifted_opp_streak[6]
+          & shifted_me[8]
         )
         |
         ( // stepsize 3, 2nd disc
-          ((move_bit & walk_possible[d][3]) << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (me >> walk_diff[d][1])
+          (move_bit_dir[2] << walk_diff[dir][1])
+          & shifted_opp_streak[0]
+          & shifted_opp_streak[5]
+          & shifted_me[7]
         )
         |
         ( // stepsize 3, 3rd disc
-          ((move_bit & walk_possible[d][3]) << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[2] << walk_diff[dir][2])
+          & shifted_opp_streak[1]
+          & shifted_me[6]
         )
         |
         ( // stepsize 4, 1st disc
-          ((move_bit & walk_possible[d][4]) << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (me >> walk_diff[d][3])
+          (move_bit_dir[3] << walk_diff[dir][0])
+          & shifted_opp_streak[7]
+          & shifted_me[9]
         )
         |
         ( // stepsize 4, 2nd disc
-          ((move_bit & walk_possible[d][4]) << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (me >> walk_diff[d][2])
+          (move_bit_dir[3] << walk_diff[dir][1])
+          & shifted_opp_streak[0]
+         & shifted_opp_streak[6]
+          & shifted_me[8]
         )
         |
         ( // stepsize 4, 3rd disc
-          ((move_bit & walk_possible[d][4]) << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (me >> walk_diff[d][1])
+          (move_bit_dir[3] << walk_diff[dir][2])
+          & shifted_opp_streak[1]
+          & shifted_opp_streak[5]
+          & shifted_me[7]
         )
         |
         ( // stepsize 4, 4th disc
-          ((move_bit & walk_possible[d][4]) << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[3] << walk_diff[dir][3])
+          & shifted_opp_streak[2]
+          & shifted_me[6]
         )
         |
         ( // stepsize 5, 1st disc
-          ((move_bit & walk_possible[d][5]) << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][3])
-          & (me >> walk_diff[d][4])
+          (move_bit_dir[4] << walk_diff[dir][0])
+          & shifted_opp_streak[8]
+          & shifted_me[10]
         )
         |
         ( // stepsize 5, 2nd disc
-          ((move_bit & walk_possible[d][5]) << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (me >> walk_diff[d][3])
+          (move_bit_dir[4] << walk_diff[dir][1])
+          & shifted_opp_streak[0]
+          & shifted_opp_streak[7]
+          & shifted_me[9]
         )
         |
         ( // stepsize 5, 3rd disc
-          ((move_bit & walk_possible[d][5]) << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (me >> walk_diff[d][2])
+          (move_bit_dir[4] << walk_diff[dir][2])
+          & shifted_opp_streak[1]
+          & shifted_opp_streak[6]
+          & shifted_me[8]
         )
         |
         ( // stepsize 5, 4th disc
-          ((move_bit & walk_possible[d][5]) << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (me >> walk_diff[d][1])
+          (move_bit_dir[4] << walk_diff[dir][3])
+          & shifted_opp_streak[2]
+          & shifted_opp_streak[5]
+          & shifted_me[7]
         )
         |
         ( // stepsize 5, 5th disc
-          ((move_bit & walk_possible[d][5]) << walk_diff[d][4])
-          & (opp << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[4] << walk_diff[dir][4])
+          & shifted_opp_streak[3]
+          & shifted_me[6]
         )
         |
         ( // stepsize 6, 1st disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][3])
-          & (opp >> walk_diff[d][4])
-          & (me >> walk_diff[d][5])
+          (move_bit_dir[5] << walk_diff[dir][0])
+          & shifted_opp_streak[9]
+          & shifted_me[11]
         )
         |
         ( // stepsize 6, 2nd disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (opp >> walk_diff[d][3])
-          & (me >> walk_diff[d][4])
+          (move_bit_dir[5] << walk_diff[dir][1])
+          & shifted_opp_streak[0]
+          & shifted_opp_streak[8]
+          & shifted_me[10]
         )
         |
         ( // stepsize 6, 3rd disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (opp >> walk_diff[d][2])
-          & (me >> walk_diff[d][3])
+          (move_bit_dir[5] << walk_diff[dir][2])
+          & shifted_opp_streak[1]
+          & shifted_opp_streak[7]
+          & shifted_me[9]
         )
         |
         ( // stepsize 6, 4th disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (opp >> walk_diff[d][1])
-          & (me >> walk_diff[d][2])
+          (move_bit_dir[5] << walk_diff[dir][3])
+          & shifted_opp_streak[2]
+          & shifted_opp_streak[6]
+          & shifted_me[8]
         )
         |
         ( // stepsize 6, 5th disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][4])
-          & (opp << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (opp >> walk_diff[d][0])
-          & (me >> walk_diff[d][1])
+          (move_bit_dir[5] << walk_diff[dir][4])
+          & shifted_opp_streak[3]
+          & shifted_opp_streak[5]
+          & shifted_me[7]
         )
         |
         ( // stepsize 6, 6th disc
-          ((move_bit & walk_possible[d][6]) << walk_diff[d][5])
-          & (opp << walk_diff[d][4])
-          & (opp << walk_diff[d][3])
-          & (opp << walk_diff[d][2])
-          & (opp << walk_diff[d][1])
-          & (opp << walk_diff[d][0])
-          & (me >> walk_diff[d][0])
+          (move_bit_dir[5] << walk_diff[dir][5])
+          & shifted_opp_streak[4]
+          & shifted_me[6]
         )
       );
   }
 
   assert((me & (*undo_data)).none());
   assert((opp & (*undo_data)) == (*undo_data));
-  assert((get_non_empty_fields() & move_bit).none());
+  assert((get_non_empty_fields() & bit[move_id]).none());
   
   me |= ((*undo_data) | bit[move_id]);
   opp &= ~(*undo_data);

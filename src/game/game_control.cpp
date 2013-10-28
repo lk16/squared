@@ -60,9 +60,7 @@ void game_control::on_bot_do_move()
 }
 
 void game_control::on_any_move()
-{
-  current.check_do_move_experimental();
-  
+{  
   while(!redo_stack.empty()){
     redo_stack.pop();
   }
@@ -180,9 +178,11 @@ void game_control::add_bot(int _c, int d,int pd)
 
 void game_control::remove_bot(int col)
 {
-  if(bot[col]){
-    delete bot[col];
-    bot[col] = NULL;
+  int index = (col == -1 ? 0 : 1);
+  
+  if(bot[index]){
+    delete bot[index];
+    bot[index] = NULL;
   }
 }
 
