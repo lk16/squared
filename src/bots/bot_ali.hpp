@@ -5,8 +5,6 @@
 #include <cassert>
 #include <string.h>
 #include <functional>
-#include <unordered_map>
-#include <vector>
 
 #include "game/util.hpp"
 #include "bots/bot_base.hpp"

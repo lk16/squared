@@ -1,80 +1,26 @@
 #include <gtkmm.h>
 
-#include <vector>
-#include <set>
-
 #include "gui/main_window.hpp"
-
 
 void testing_area(){
 
-  for(int i=0;i<8;i++){
-    for(int j=0;j<6;j++){
-      show_bitset(board::capture[i][j] | std::bitset<64>(1ul << board::capture_start[i][j]));
-    }
-  }
-  return;
+  board b;
   
-  board b,copy;
-  std::bitset<64> undo,undo_exp,moves;
-  int move;
-  
-  int wrong = 0;
   
   srand(time(NULL));
   
-  for(int i=0;i<100;i++){
-    
-    b.randomize();
-    assert((b.me & b.opp).none());
-    
-    b.get_valid_moves(&moves);
-    
-    copy = b;
-    
-    while(true){
-      move = find_first_set_64(moves.to_ulong());
-      if(move == -1){
-        break;
-      }
-      
-      b.do_move(move,&undo);
-      b = copy;
-      b.do_move_experimental(move,&undo_exp);
-      b = copy;
-      
-      
-      if(undo != undo_exp){
-        std::cout << "test failed:\n";
-        wrong++;
-      
-    
-        b.show();
-        std::cout << "move:\n";
-        show_bitset(std::bitset<64>(1ul << move));
-        
-        std::cout << "working:\n";
-        show_bitset(undo);
-        std::cout << "experimental:\n";
-        show_bitset(undo_exp);
-        
-        return;
-      }
-      
-      
-      moves.reset(move);
-    }
-    
-    if(wrong==0){
-      std::cout << "yay!\n";
-    }
-    else{
-      std::cout << "boo!\n";
-    }
-    
-  }
+  b.reset();
+  b.check_do_move_experimental();
+  
+  
+  
+
   
 }
+
+
+
+
 
 void timing_area(){
   

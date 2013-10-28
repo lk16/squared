@@ -61,6 +61,8 @@ void game_control::on_bot_do_move()
 
 void game_control::on_any_move()
 {
+  current.check_do_move_experimental();
+  
   while(!redo_stack.empty()){
     redo_stack.pop();
   }

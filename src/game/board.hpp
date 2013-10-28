@@ -6,14 +6,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <list>
 #include <sstream>
-#include <set>
 
 #include "game/util.hpp"
-
-
-
 
 
 struct board{
@@ -43,12 +38,17 @@ struct board{
   static const std::bitset<64> location[10];    
   
   
-  std::bitset<64> me,opp;
-  
-  // whose turn is it ?
+  // represents which player is to move:
+  // -1 means black, 1 means white
   char turn;
+
+  // discs of player to move
+  std::bitset<64> me;
   
-  // did anyone pass yet ?
+  // discs of opponent of player to move
+  std::bitset<64> opp;
+  
+  // did any player pass yet?
   bool passed;
   
   
@@ -82,9 +82,11 @@ struct board{
   bool is_valid_move(int field_id) const;
   
   
-  /// out will represent a bitset of which each set bit represents a square
-  /// that IS a valid move
+  /// out will represent a bitset in which each set bit represents a valid move
   void get_valid_moves(std::bitset<64> *out) const;
+  
+  /// out will represent a bitset in which each set bit represents a valid direction
+  void get_valid_directions(std::bitset<8>* out) const;
   
   
   
@@ -116,9 +118,14 @@ struct board{
   /// does a move
   void do_move(int field_id,std::bitset<64>* undo_data);
   void do_move_experimental(int field_id,std::bitset<64>* undo_data);
+ 
+  /// debug method
+  void check_do_move_experimental() const;
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
+  
+  
 };
 
 

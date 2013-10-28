@@ -1,6 +1,4 @@
 #include "board.hpp"
-#include <vector>
-
 
 const unsigned int board::border[64] = {
   0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
@@ -26,13 +24,13 @@ const int board::walk_diff[8][7] = {
 
 const std::bitset<64> board::walk_possible[8][7] = {
   { // up left
-    std::bitset<64>(0xFEFEFEFEFEFEFEFE),
-    std::bitset<64>(0xFCFCFCFCFCFCFCFC),
-    std::bitset<64>(0xF8F8F8F8F8F8F8F8),
-    std::bitset<64>(0xF0F0F0F0F0F0F0F0),
-    std::bitset<64>(0xE0E0E0E0E0E0E0E0),
-    std::bitset<64>(0xC0C0C0C0C0C0C0C0),
-    std::bitset<64>(0x8080808080808080)
+    std::bitset<64>(0xFEFEFEFEFEFEFE00),
+    std::bitset<64>(0xFCFCFCFCFCFC0000),
+    std::bitset<64>(0xF8F8F8F8F8000000),
+    std::bitset<64>(0xF0F0F0F000000000),
+    std::bitset<64>(0xE0E0E00000000000),
+    std::bitset<64>(0xC0C0000000000000),
+    std::bitset<64>(0x8000000000000000)
   },
   { // up
     std::bitset<64>(0xFFFFFFFFFFFFFF00),
@@ -44,13 +42,13 @@ const std::bitset<64> board::walk_possible[8][7] = {
     std::bitset<64>(0xFF00000000000000)
   },
   { // up right
-    std::bitset<64>(0x7F7F7F7F7F7F7F7F),
-    std::bitset<64>(0x3F3F3F3F3F3F3F3F),
-    std::bitset<64>(0x1F1F1F1F1F1F1F1F),
-    std::bitset<64>(0x0F0F0F0F0F0F0F0F),
-    std::bitset<64>(0x0707070707070707),
-    std::bitset<64>(0x0303030303030303),
-    std::bitset<64>(0x0101010101010101)
+    std::bitset<64>(0x7F7F7F7F7F7F7F00),
+    std::bitset<64>(0x3F3F3F3F3F3F0000),
+    std::bitset<64>(0x1F1F1F1F1F000000),
+    std::bitset<64>(0x0F0F0F0F00000000),
+    std::bitset<64>(0x0707070000000000),
+    std::bitset<64>(0x0303000000000000),
+    std::bitset<64>(0x0100000000000000)
   },
   { // left
     std::bitset<64>(0xFEFEFEFEFEFEFEFE),
@@ -71,13 +69,13 @@ const std::bitset<64> board::walk_possible[8][7] = {
     std::bitset<64>(0x0101010101010101)
   },
   { // down left
-  std::bitset<64>(0xFEFEFEFEFEFEFEFE),
-  std::bitset<64>(0xFCFCFCFCFCFCFCFC),
-  std::bitset<64>(0xF8F8F8F8F8F8F8F8),
-  std::bitset<64>(0xF0F0F0F0F0F0F0F0),
-  std::bitset<64>(0xE0E0E0E0E0E0E0E0),
-  std::bitset<64>(0xC0C0C0C0C0C0C0C0),
-  std::bitset<64>(0x8080808080808080)
+  std::bitset<64>(0x00FEFEFEFEFEFEFE),
+  std::bitset<64>(0x0000FCFCFCFCFCFC),
+  std::bitset<64>(0x000000F8F8F8F8F8),
+  std::bitset<64>(0x00000000F0F0F0F0),
+  std::bitset<64>(0x0000000000E0E0E0),
+  std::bitset<64>(0x000000000000C0C0),
+  std::bitset<64>(0x0000000000000080)
   },
   { // down
     std::bitset<64>(0x00FFFFFFFFFFFFFF),
@@ -89,13 +87,13 @@ const std::bitset<64> board::walk_possible[8][7] = {
     std::bitset<64>(0x00000000000000FF)
   },
   { // down right
-  std::bitset<64>(0x7F7F7F7F7F7F7F7F),
-  std::bitset<64>(0x3F3F3F3F3F3F3F3F),
-  std::bitset<64>(0x1F1F1F1F1F1F1F1F),
-  std::bitset<64>(0x0F0F0F0F0F0F0F0F),
-  std::bitset<64>(0x0707070707070707),
-  std::bitset<64>(0x0303030303030303),
-  std::bitset<64>(0x0101010101010101)
+  std::bitset<64>(0x007F7F7F7F7F7F7F),
+  std::bitset<64>(0x00003F3F3F3F3F3F),
+  std::bitset<64>(0x0000001F1F1F1F1F),
+  std::bitset<64>(0x000000000F0F0F0F),
+  std::bitset<64>(0x0000000000070707),
+  std::bitset<64>(0x0000000000000303),
+  std::bitset<64>(0x0000000000000001)
   }
 };
 
@@ -507,270 +505,113 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
   switch_turn();
 }
 
-void board::do_move_experimental(int field_id, std::bitset<64>* undo_data)
+void board::do_move_experimental(int move_id, std::bitset<64>* undo_data)
 {
-  assert(is_valid_move(field_id));
+  assert(is_valid_move(move_id));
   
-  
+  // set all bits in undo_data to 0
   undo_data->reset();
   
-  for(int d=4;d<8;++d)
-  {     
-    *undo_data |= 
-    (
-      (opp) 
-      &
-      (
-        ( 
-          (me << walk_diff[d][0]) 
-          &
-          ((walk_possible[7-d][1] & bit[field_id]) >> walk_diff[d][0])
-        )
-        |
-        ( 
-          (
-            (me << walk_diff[d][0])
-            |
-            (me << walk_diff[d][1])
-          )
-          &
-          (
-            ((walk_possible[7-d][2] & bit[field_id]) >> walk_diff[d][0])
-            |
-            ((walk_possible[7-d][2] & bit[field_id]) >> walk_diff[d][1])
-          )
-        )
-        |
-        (
-          (
-            (me << walk_diff[d][0])
-            |
-            (me << walk_diff[d][1])
-            |
-            (me << walk_diff[d][2])
-          )
-          &
-          (
-            ((walk_possible[7-d][3] & bit[field_id]) >> walk_diff[d][0])
-            |
-            ((walk_possible[7-d][3] & bit[field_id]) >> walk_diff[d][1])
-            |
-            ((walk_possible[7-d][3] & bit[field_id]) >> walk_diff[d][2])
-          )
-        )
-        |
-        (
-          (
-            (me << walk_diff[d][0])
-            |
-            (me << walk_diff[d][1])
-            |
-            (me << walk_diff[d][2])
-            |
-            (me << walk_diff[d][3])
-          )
-          &
-          (
-            ((walk_possible[7-d][4] & bit[field_id]) >> walk_diff[d][0])
-            |
-            ((walk_possible[7-d][4] & bit[field_id]) >> walk_diff[d][1])
-            |
-            ((walk_possible[7-d][4] & bit[field_id]) >> walk_diff[d][2])
-            |
-            ((walk_possible[7-d][4] & bit[field_id]) >> walk_diff[d][3])
-          )
-        )
-        |
-        (
-          (
-            (me << walk_diff[d][0])
-            |
-            (me << walk_diff[d][1])
-            |
-            (me << walk_diff[d][2])
-            |
-            (me << walk_diff[d][3])
-            |
-            (me << walk_diff[d][4])
-          )
-          &
-          (
-            ((walk_possible[d][5] & bit[field_id]) >> walk_diff[d][0])
-            |
-            ((walk_possible[d][5] & bit[field_id]) >> walk_diff[d][1])
-            |
-            ((walk_possible[d][5] & bit[field_id]) >> walk_diff[d][2])
-            |
-            ((walk_possible[d][5] & bit[field_id]) >> walk_diff[d][3])
-            |
-            ((walk_possible[d][5] & bit[field_id]) >> walk_diff[d][4])
-          )
-        )
-        |
-        (
-          (
-            (me << walk_diff[d][0])
-            |
-            (me << walk_diff[d][1])
-            |
-            (me << walk_diff[d][2])
-            |
-            (me << walk_diff[d][3])
-            |
-            (me << walk_diff[d][4])
-            |
-            (me << walk_diff[d][5])
-          )
-          &
-          (
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][0])
-            |
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][1])
-            |
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][2])
-            |
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][3])
-            |
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][4])
-            |
-            ((walk_possible[d][6] & bit[field_id]) >> walk_diff[d][5])
-          )
-        )
-      )
-    );
-
-  *undo_data |= 
-    (
-      (opp) 
-      &
-      (
-        ( 
-          (me >> walk_diff[d][0]) 
-          &
-          ((walk_possible[d][1] & bit[field_id]) << walk_diff[d][0])
-        )
-        |
-        ( 
-          (
-            (me >> walk_diff[d][0])
-            |
-            (me >> walk_diff[d][1])
-          )
-          &
-          (
-            ((walk_possible[d][2] & bit[field_id]) << walk_diff[d][0])
-            |
-            ((walk_possible[d][2] & bit[field_id]) << walk_diff[d][1])
-          )
-        )
-        |
-        (
-          (
-            (me >> walk_diff[d][0])
-            |
-            (me >> walk_diff[d][1])
-            |
-            (me >> walk_diff[d][2])
-          )
-          &
-          (
-            ((walk_possible[d][3] & bit[field_id]) << walk_diff[d][0])
-            |
-            ((walk_possible[d][3] & bit[field_id]) << walk_diff[d][1])
-            |
-            ((walk_possible[d][3] & bit[field_id]) << walk_diff[d][2])
-          )
-        )
-        |
-        (
-          (
-            (me >> walk_diff[d][0])
-            |
-            (me >> walk_diff[d][1])
-            |
-            (me >> walk_diff[d][2])
-            |
-            (me >> walk_diff[d][3])
-          )
-          &
-          (
-            ((walk_possible[d][4] & bit[field_id]) << walk_diff[d][0])
-            |
-            ((walk_possible[d][4] & bit[field_id]) << walk_diff[d][1])
-            |
-            ((walk_possible[d][4] & bit[field_id]) << walk_diff[d][2])
-            |
-            ((walk_possible[d][4] & bit[field_id]) << walk_diff[d][3])
-          )
-        )
-        |
-        (
-          (
-            (me >> walk_diff[d][0])
-            |
-            (me >> walk_diff[d][1])
-            |
-            (me >> walk_diff[d][2])
-            |
-            (me >> walk_diff[d][3])
-            |
-            (me >> walk_diff[d][4])
-          )
-          &
-          (
-            ((walk_possible[d][5] & bit[field_id]) << walk_diff[d][0])
-            |
-            ((walk_possible[d][5] & bit[field_id]) << walk_diff[d][1])
-            |
-            ((walk_possible[d][5] & bit[field_id]) << walk_diff[d][2])
-            |
-            ((walk_possible[d][5] & bit[field_id]) << walk_diff[d][3])
-            |
-            ((walk_possible[d][5] & bit[field_id]) << walk_diff[d][4])
-          )
-        )
-        |
-        (
-          (
-            (me >> walk_diff[d][0])
-            |
-            (me >> walk_diff[d][1])
-            |
-            (me >> walk_diff[d][2])
-            |
-            (me >> walk_diff[d][3])
-            |
-            (me >> walk_diff[d][4])
-            |
-            (me >> walk_diff[d][5])
-          )
-          &
-          (
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][0])
-            |
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][1])
-            |
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][2])
-            |
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][3])
-            |
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][4])
-            |
-            ((walk_possible[d][6] & bit[field_id]) << walk_diff[d][5])
-          )
-        )
-      )
-    );
+  
+  // for every direction with positive index difference
+  for(int d=4;d<8;d++){
+    
+    // valid_move[i] contains at most one bit which:
+    // - is if set at (1ul << move_id)
+    // - implies i can walk (i+1) steps from move_id in direction d
+    // - implies i have a disc of my own color at (i+1) steps in direction d
+    std::bitset<64> valid_move_bit[6];
+    for(int i=0;i<6;i++){
+      valid_move_bit[i] = 
+        bit[move_id] 
+        & walk_possible[d][i+1]
+        & (me << walk_diff[d][i+1]);
+      for(int j=0;j<i+1;j++){
+        valid_move_bit[i] &= (opp << walk_diff[d][j]);
+      }
+    }
     
     
+    
+    std::bitset<64> tmp =
+      opp 
+      &
+      (
+        (
+          valid_move_bit[0] >> walk_diff[d][0]
+        )
+        |
+        (
+          valid_move_bit[1] >> walk_diff[d][0]
+          |
+          valid_move_bit[1] >> walk_diff[d][1]
+        )
+        |
+        (
+          valid_move_bit[2] >> walk_diff[d][0]
+          |
+          valid_move_bit[2] >> walk_diff[d][1]
+          |
+          valid_move_bit[2] >> walk_diff[d][2]
+        )
+      );
+      
+    *undo_data |= tmp;
     
   }
+
+// for every direction with negative index difference
+for(int d=0;d<4;d++){
   
+  // valid_move[i] contains at most one bit which:
+  // - is if set at (1ul << move_id)
+  // - implies i can walk (i+1) steps from move_id in direction d
+  // - implies i have a disc of my own color at (i+1) steps in direction d
+  std::bitset<64> valid_move_bit[6];
+  for(int i=0;i<6;i++){
+    valid_move_bit[i] = 
+    bit[move_id] 
+    & walk_possible[d][i+1]
+    & (me >> walk_diff[7-d][i+1]);
+    for(int j=0;j<i+1;j++){
+      valid_move_bit[i] &= (opp >> walk_diff[7-d][j]);
+    }
+  }
+  
+  
+  
+  std::bitset<64> tmp =
+  opp 
+  &
+  (
+    (
+      valid_move_bit[0] << walk_diff[7-d][0]
+    )
+    |
+    (
+      valid_move_bit[1] << walk_diff[7-d][0]
+      |
+      valid_move_bit[1] << walk_diff[7-d][1]
+    )
+    |
+    (
+      valid_move_bit[2] << walk_diff[7-d][0]
+      |
+      valid_move_bit[2] << walk_diff[7-d][1]
+      |
+      valid_move_bit[2] << walk_diff[7-d][2]
+    )
+  );
+  
+  *undo_data |= tmp;
+  
+}
+
   //assert((me & (*undo_data)).none());
   //assert((opp & (*undo_data)) == (*undo_data));
   //assert(get_non_empty_fields().test(field_id) == false);
   
-  me |= ((*undo_data) | board::bit[field_id]);
+  me |= ((*undo_data) | bit[move_id]);
   opp &= ~(*undo_data);
   
   passed = false;
@@ -791,4 +632,43 @@ void board::undo_move(int field_id, std::bitset<64>* undo_data)
   assert((me & (*undo_data)).none());
   assert((opp & (*undo_data)) == (*undo_data));
   assert(get_non_empty_fields().test(field_id) == false);
+}
+
+void board::check_do_move_experimental() const{
+  assert((me & opp).none());
+  
+  std::bitset<64> moves,undo,undo_exp;
+  
+  get_valid_moves(&moves);
+  board copy = *this;
+  
+  while(true){
+    int move = find_first_set_64(moves.to_ulong());
+    if(move == -1){
+      break;
+    }
+    
+    copy.do_move(move,&undo);
+    copy = *this;
+    copy.do_move_experimental(move,&undo_exp);
+    copy = *this;
+    
+    
+    if(undo != undo_exp){
+      std::cout << "test failed:\n";
+      show();
+      std::cout << "move:\n";
+      show_bitset(std::bitset<64>(1ul << move));
+      
+      std::cout << "working:\n";
+      show_bitset(undo);
+      std::cout << "experimental:\n";
+      show_bitset(undo_exp);
+    }
+    else{
+      std::cout << "test succeeded\n";
+    }
+    
+    moves.reset(move);
+  }
 }

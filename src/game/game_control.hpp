@@ -2,7 +2,6 @@
 #define SQUARED_GAMECONTROL_HPP
 
 #include <stack>
-#include <thread>
 
 #include <glibmm/main.h>
 
