@@ -24,8 +24,6 @@ void testing_area(){
 
 void timing_area(){
   
-  board b;
-  b.reset();
 
   timeval start,end;
   
@@ -35,18 +33,34 @@ void timing_area(){
   gettimeofday(&start,NULL);
   
   for(int i=0;i<max;i++){
+    board b;
     b.do_move(19,&dummy);
-    b.reset();
   }
   
-  show_bitset(dummy);
   
   gettimeofday(&end,NULL);
   
   double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
   (start.tv_sec + (start.tv_usec / 1000000.0));
   
-  std::cout << max << " / " << time_diff << " = " << (max/time_diff) << '\n'; 
+  std::cout << "Working:\t" << max << " / " << time_diff;
+  std::cout << " = " << big_number(max/time_diff) << " per sec avg\n"; 
+  
+  gettimeofday(&start,NULL);
+  
+  for(int i=0;i<max;i++){
+    board b;
+    b.do_move_experimental(19,&dummy);
+  }
+  
+  
+  gettimeofday(&end,NULL);
+  
+  time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
+  (start.tv_sec + (start.tv_usec / 1000000.0));
+  
+  std::cout << "Experimental:\t" << max << " / " << time_diff;
+  std::cout << " = " << big_number(max/time_diff) << " per sec avg\n"; 
   
 }
 

@@ -171,10 +171,10 @@ const std::bitset<64> board::capture[8][6] = {
   {
     0x0000000000000002,
     0x0000000000000006,
-    0x000000000000000e,
-    0x000000000000001e,
-    0x000000000000003e,
-    0x000000000000007e
+    0x000000000000000E,
+    0x000000000000001E,
+    0x000000000000003E,
+    0x000000000000007E
   },
   {
     0x0000000000000200,
@@ -509,107 +509,385 @@ void board::do_move_experimental(int move_id, std::bitset<64>* undo_data)
 {
   assert(is_valid_move(move_id));
   
-  // set all bits in undo_data to 0
   undo_data->reset();
   
+  const std::bitset<64> move_bit(1ul << move_id);
   
-  // for every direction with positive index difference
   for(int d=4;d<8;d++){
     
-    // valid_move[i] contains at most one bit which:
-    // - is if set at (1ul << move_id)
-    // - implies i can walk (i+1) steps from move_id in direction d
-    // - implies i have a disc of my own color at (i+1) steps in direction d
-    std::bitset<64> valid_move_bit[6];
-    for(int i=0;i<6;i++){
-      valid_move_bit[i] = 
-        bit[move_id] 
-        & walk_possible[d][i+1]
-        & (me << walk_diff[d][i+1]);
-      for(int j=0;j<i+1;j++){
-        valid_move_bit[i] &= (opp << walk_diff[d][j]);
-      }
+    std::bitset<64> shifted_opp[8];
+    for(int i=0;i<4;i++){
+      shifted_opp[i] = (opp << walk_diff[d][i]);
+      shifted_opp[4+i] = (opp >> walk_diff[d][i]);
     }
     
     
+    const int oppd = 7-d;
     
-    std::bitset<64> tmp =
-      opp 
+    *undo_data |=
+      opp
       &
       (
-        (
-          valid_move_bit[0] >> walk_diff[d][0]
+        ( // stepsize 1, 1st disc
+          ((move_bit & walk_possible[oppd][1]) >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
         )
         |
-        (
-          valid_move_bit[1] >> walk_diff[d][0]
-          |
-          valid_move_bit[1] >> walk_diff[d][1]
+        ( // stepsize 2, 1st disc
+          ((move_bit & walk_possible[oppd][2]) >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (me << walk_diff[d][1])
         )
         |
-        (
-          valid_move_bit[2] >> walk_diff[d][0]
-          |
-          valid_move_bit[2] >> walk_diff[d][1]
-          |
-          valid_move_bit[2] >> walk_diff[d][2]
+        ( // stepsize 2, 2nd disc
+          ((move_bit & walk_possible[oppd][2]) >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
+        )
+        |
+        ( // stepsize 3, 1st disc
+          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (me << walk_diff[d][2])
+        )
+        |
+        ( // stepsize 3, 2nd disc
+          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (me << walk_diff[d][1])
+        )
+        |
+        ( // stepsize 3, 3rd disc
+          ((move_bit & walk_possible[oppd][3]) >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
+        )
+        |
+        ( // stepsize 4, 1st disc
+          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (me << walk_diff[d][3])
+        )
+        |
+        ( // stepsize 4, 2nd disc
+          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (me << walk_diff[d][2])
+        )
+        |
+        ( // stepsize 4, 3rd disc
+          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (me << walk_diff[d][1])
+        )
+        |
+        ( // stepsize 4, 4th disc
+          ((move_bit & walk_possible[oppd][4]) >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
+        )
+        |
+        ( // stepsize 5, 1st disc
+          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][3])
+          & (me << walk_diff[d][4])
+        )
+        |
+        ( // stepsize 5, 2nd disc
+          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (me << walk_diff[d][3])
+        )
+        |
+        ( // stepsize 5, 3rd disc
+          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (me << walk_diff[d][2])
+        )
+        |
+        ( // stepsize 5, 4th disc
+          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (me << walk_diff[d][1])
+        )
+        |
+        ( // stepsize 5, 5th disc
+          ((move_bit & walk_possible[oppd][5]) >> walk_diff[d][4])
+          & (opp >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
+        )
+        |
+        ( // stepsize 6, 1st disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][3])
+          & (opp << walk_diff[d][4])
+          & (me << walk_diff[d][5])
+        )
+        |
+        ( // stepsize 6, 2nd disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][3])
+          & (me << walk_diff[d][4])
+        )
+        |
+        ( // stepsize 6, 3rd disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][2])
+          & (me << walk_diff[d][3])
+        )
+        |
+        ( // stepsize 6, 4th disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (opp << walk_diff[d][1])
+          & (me << walk_diff[d][2])
+        )
+        |
+        ( // stepsize 6, 5th disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][4])
+          & (opp >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (opp << walk_diff[d][0])
+          & (me << walk_diff[d][1])
+        )
+        |
+        ( // stepsize 6, 6th disc
+          ((move_bit & walk_possible[oppd][6]) >> walk_diff[d][5])
+          & (opp >> walk_diff[d][4])
+          & (opp >> walk_diff[d][3])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][0])
+          & (me << walk_diff[d][0])
         )
       );
       
-    *undo_data |= tmp;
-    
+    *undo_data |=
+      opp
+      &
+      (
+        ( // stepsize 1, 1st disc
+          ((move_bit & walk_possible[d][1]) << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+        |
+        ( // stepsize 2, 1st disc
+          ((move_bit & walk_possible[d][2]) << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (me >> walk_diff[d][1])
+        )
+        |
+        ( // stepsize 2, 2nd disc
+          ((move_bit & walk_possible[d][2]) << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+        |
+        ( // stepsize 3, 1st disc
+          ((move_bit & walk_possible[d][3]) << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (me >> walk_diff[d][2])
+        )
+        |
+        ( // stepsize 3, 2nd disc
+          ((move_bit & walk_possible[d][3]) << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (me >> walk_diff[d][1])
+        )
+        |
+        ( // stepsize 3, 3rd disc
+          ((move_bit & walk_possible[d][3]) << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+        |
+        ( // stepsize 4, 1st disc
+          ((move_bit & walk_possible[d][4]) << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (me >> walk_diff[d][3])
+        )
+        |
+        ( // stepsize 4, 2nd disc
+          ((move_bit & walk_possible[d][4]) << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (me >> walk_diff[d][2])
+        )
+        |
+        ( // stepsize 4, 3rd disc
+          ((move_bit & walk_possible[d][4]) << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (me >> walk_diff[d][1])
+        )
+        |
+        ( // stepsize 4, 4th disc
+          ((move_bit & walk_possible[d][4]) << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+        |
+        ( // stepsize 5, 1st disc
+          ((move_bit & walk_possible[d][5]) << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][3])
+          & (me >> walk_diff[d][4])
+        )
+        |
+        ( // stepsize 5, 2nd disc
+          ((move_bit & walk_possible[d][5]) << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (me >> walk_diff[d][3])
+        )
+        |
+        ( // stepsize 5, 3rd disc
+          ((move_bit & walk_possible[d][5]) << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (me >> walk_diff[d][2])
+        )
+        |
+        ( // stepsize 5, 4th disc
+          ((move_bit & walk_possible[d][5]) << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (me >> walk_diff[d][1])
+        )
+        |
+        ( // stepsize 5, 5th disc
+          ((move_bit & walk_possible[d][5]) << walk_diff[d][4])
+          & (opp << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+        |
+        ( // stepsize 6, 1st disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][3])
+          & (opp >> walk_diff[d][4])
+          & (me >> walk_diff[d][5])
+        )
+        |
+        ( // stepsize 6, 2nd disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (opp >> walk_diff[d][3])
+          & (me >> walk_diff[d][4])
+        )
+        |
+        ( // stepsize 6, 3rd disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (opp >> walk_diff[d][2])
+          & (me >> walk_diff[d][3])
+        )
+        |
+        ( // stepsize 6, 4th disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (opp >> walk_diff[d][1])
+          & (me >> walk_diff[d][2])
+        )
+        |
+        ( // stepsize 6, 5th disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][4])
+          & (opp << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (opp >> walk_diff[d][0])
+          & (me >> walk_diff[d][1])
+        )
+        |
+        ( // stepsize 6, 6th disc
+          ((move_bit & walk_possible[d][6]) << walk_diff[d][5])
+          & (opp << walk_diff[d][4])
+          & (opp << walk_diff[d][3])
+          & (opp << walk_diff[d][2])
+          & (opp << walk_diff[d][1])
+          & (opp << walk_diff[d][0])
+          & (me >> walk_diff[d][0])
+        )
+      );
   }
 
-// for every direction with negative index difference
-for(int d=0;d<4;d++){
-  
-  // valid_move[i] contains at most one bit which:
-  // - is if set at (1ul << move_id)
-  // - implies i can walk (i+1) steps from move_id in direction d
-  // - implies i have a disc of my own color at (i+1) steps in direction d
-  std::bitset<64> valid_move_bit[6];
-  for(int i=0;i<6;i++){
-    valid_move_bit[i] = 
-    bit[move_id] 
-    & walk_possible[d][i+1]
-    & (me >> walk_diff[7-d][i+1]);
-    for(int j=0;j<i+1;j++){
-      valid_move_bit[i] &= (opp >> walk_diff[7-d][j]);
-    }
-  }
-  
-  
-  
-  std::bitset<64> tmp =
-  opp 
-  &
-  (
-    (
-      valid_move_bit[0] << walk_diff[7-d][0]
-    )
-    |
-    (
-      valid_move_bit[1] << walk_diff[7-d][0]
-      |
-      valid_move_bit[1] << walk_diff[7-d][1]
-    )
-    |
-    (
-      valid_move_bit[2] << walk_diff[7-d][0]
-      |
-      valid_move_bit[2] << walk_diff[7-d][1]
-      |
-      valid_move_bit[2] << walk_diff[7-d][2]
-    )
-  );
-  
-  *undo_data |= tmp;
-  
-}
-
-  //assert((me & (*undo_data)).none());
-  //assert((opp & (*undo_data)) == (*undo_data));
-  //assert(get_non_empty_fields().test(field_id) == false);
+  assert((me & (*undo_data)).none());
+  assert((opp & (*undo_data)) == (*undo_data));
+  assert((get_non_empty_fields() & move_bit).none());
   
   me |= ((*undo_data) | bit[move_id]);
   opp &= ~(*undo_data);
