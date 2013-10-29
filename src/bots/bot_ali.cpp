@@ -79,24 +79,29 @@ void bot_ali::do_move(const board* b,board* res)
   }
 
 
+  // is used for small negamax search, to sort moves before big search
+  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth - 4;
+
 
   
   if(search_depth>BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC,search_depth-4);
+      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     sort_boards(children,heurs,child_count);
   }
 
+  // is used for big negamax search
+  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth;
 
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     int cur_heur;
     switch(mode){
       case NORMAL_MODE:
-        cur_heur = -negamax(MIN_HEURISTIC,-best_heur,search_depth);
+        cur_heur = -negamax(MIN_HEURISTIC,-best_heur);
         break;
       case PERFECT_MODE:
         cur_heur = -negamax_exact(-64,-best_heur);
@@ -127,12 +132,12 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
-int bot_ali::negamax(int alpha, int beta, int depth_remaining)
+int bot_ali::negamax(int alpha, int beta)
 {
  
   nodes++;
   
-  if(depth_remaining==0){
+  if(negamax_max_non_empty_fields == (int)inspected.get_non_empty_fields().count()){
     return heuristic();
   }
   
@@ -146,7 +151,7 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
     else{
       inspected.passed = true;
       inspected.switch_turn();
-      int heur = -negamax(-beta,-alpha,depth_remaining);
+      int heur = -negamax(-beta,-alpha);
       inspected.switch_turn();
       inspected.passed = false;
       return heur;
@@ -163,7 +168,7 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
     }
     
     inspected.do_move(move,&undo_data);
-    int value = -negamax(-beta,-alpha,depth_remaining-1);
+    int value = -negamax(-beta,-alpha);
     inspected.undo_move(move,&undo_data);
     
     if(value >= beta){

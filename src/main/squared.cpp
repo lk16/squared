@@ -70,7 +70,6 @@ void timing_area(){
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
-  main_window window;
   
   
   if(argc>=2){
@@ -82,10 +81,16 @@ int main(int argc,char **argv){
       timing_area();
     }
     else{
-      std::cout << "Invalid parameter: " << argv1 << '\n';
+      std::cout << "Invalid argument: " << argv1 << '\n' << 
+      "Try one of these:\n"
+      "testing   | run the testing_area()\n"
+      "timing    | run the timing_area()\n"
+      "<no args> | run the windowed game\n";
+      
     }
   }
   else{
+    main_window window;
     Gtk::Main::run(window);
   }
   return 0;

@@ -28,10 +28,11 @@ struct bot_ali:
   
 private:
   
-  // this board will be used by negamax(), negamax_exact(), heuristic(), and do_move()
-  // it represents the currently inspected move
+  /// this board will be used by negamax(), negamax_exact(), heuristic(), and do_move()
+  /// it represents the currently inspected move
   board inspected;
   
+  int negamax_max_non_empty_fields;
   
   
 public:
@@ -48,7 +49,7 @@ public:
   
   /// calculates the heuristic for this->inspected using negamax
   /// positive result is good for white
-  int negamax(int alpha, int beta,int depth_remaining);
+  int negamax(int alpha, int beta);
   
   /// calculates the result for perfect play of this->inspected, 
   /// positive result is good for white
