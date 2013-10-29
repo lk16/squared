@@ -36,6 +36,8 @@ SET(objects
   gui/main_window.cpp
   gui/settings_dialog.cpp
   main/squared.cpp
+  misc/testing.cpp
+  misc/timing.cpp
 )
 
 
