@@ -1,2 +1,6 @@
 RESOLVE: SOURCE=/home/luuk/program_lol/squared/src/ BUILD=
 /home/luuk/program_lol/squared/src/
+/home/luuk/program_lol/squared/src/
+/usr/include/c++/4.4/tr1_impl/
+/usr/include/gtkmm-2.4/
+/usr/include/glibmm-2.4/

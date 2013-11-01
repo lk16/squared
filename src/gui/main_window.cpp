@@ -1,15 +1,14 @@
 #include "main_window.hpp"
 
 main_window::main_window():
-  table(8,8),
   control(this),
+  table(8,8),
   aspect_frame("",0.5,0.5,1),
-  fields(8,std::vector<clickable_image*>(8)),
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
   control.on_new_game();
-  show_all_children();
+  show_all_children(); // TODO << doesnt work properly
 }
 
 
@@ -64,7 +63,7 @@ void main_window::init_ui(){
     std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what();
   }
   
-  add(vbox);
+  this->add(vbox);
   
   Gtk::Widget* menubar = ui_manager->get_widget("/MenuBar");
   if(menubar){
@@ -73,10 +72,11 @@ void main_window::init_ui(){
   
   for(int y=0;y<8;y++){ 
     for(int x=0;x<8;x++){
-      fields[x][y]=new clickable_image(this,y*8+x,IMAGE_PATH + "empty.png");
-      table.attach(*fields[x][y],x,x+1,y,y+1);
+      fields[x][y].init(this,y*8+x,IMAGE_PATH + "empty.png");
+      table.attach(fields[x][y],x,x+1,y,y+1);
     }
   }
+  
   
   vbox.pack_start(aspect_frame,Gtk::PACK_EXPAND_WIDGET);
   aspect_frame.set_shadow_type(Gtk::SHADOW_NONE);
@@ -85,8 +85,6 @@ void main_window::init_ui(){
   vbox.pack_start(status_bar,Gtk::PACK_SHRINK);
   
   this->set_resizable(false);
-  
-  show_all_children();
 }
 
 void main_window::on_menu_game_quit()
@@ -102,15 +100,6 @@ void main_window::on_menu_game_quit()
   }
 }
 
-main_window::~main_window()
-{
-  for(int y=0;y<8;y++){
-    for(int x=0;x<8;x++){
-      delete fields[x][y];
-    }
-  }
-}
-
 void main_window::on_menu_settings_fullscreen()
 {
   std::cout << "Toggle full screen\n";
@@ -120,29 +109,29 @@ void main_window::on_menu_settings_settings()
 {
   int input_level[2],output_level[2];
   
-  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
-  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
+  input_level[0] = control.bot[0] ? control.bot[0]->get_search_depth() : -1;
+  input_level[1] = control.bot[1] ? control.bot[1]->get_search_depth() : -1;
   
   
-  settings_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
+  settings_dialog sd(*this,input_level[0],input_level[1]);
   
   if(sd.run() == Gtk::RESPONSE_OK){
     
-    sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
+    sd.collect_data(&output_level[0],&output_level[1]);
     
-    if(output_level[BLACK]==-1){
-      control.remove_bot(BLACK);
+    if(output_level[0]==-1){
+      control.remove_bot(-1);
     }
     else{
-      int x = output_level[BLACK];
-      control.add_bot(BLACK,x,max(2*x+2,16),max(2*x+2,16));
+      int x = output_level[0];
+      control.add_bot(-1,x,max(2*x+2,16));
     }
-    if(output_level[WHITE]==-1){
-      control.remove_bot(WHITE);
+    if(output_level[1]==-1){
+      control.remove_bot(1);
     }
     else{
-      int x = output_level[WHITE];
-      control.add_bot(WHITE,x,max(2*x+2,16),max(2*x+2,16));
+      int x = output_level[1];
+      control.add_bot(1,x,max(2*x+2,16));
     }
   
   }
@@ -156,13 +145,19 @@ void main_window::update_fields()
   
   b = &control.current;
   
+  std::bitset<64> white,black;
+  
+  white = (b->turn== 1 ? b->me : b->opp);
+  black = (b->turn==-1 ? b->me : b->opp);
+  
+  
    
   for(y=0;y<8;y++){
     for(x=0;x<8;x++){
-      if(b->discs[WHITE].test(y*8+x)){
+      if(white.test(y*8+x)){
         imagefile = "white.png";
       }
-      else if(b->discs[BLACK].test(y*8+x)){
+      else if(black.test(y*8+x)){
         imagefile = "black.png";
       }
       else if(b->is_valid_move(y*8+x)){
@@ -171,17 +166,12 @@ void main_window::update_fields()
       else{
         imagefile = "empty.png";
       }
-      table.remove(*fields[x][y]);
-      delete fields[x][y];
-      fields[x][y] = new clickable_image(this,y*8+x,IMAGE_PATH + imagefile);
-      table.attach(*fields[x][y],x,x+1,y,y+1);
-      table.show_all_children();
+      fields[x][y].set_image(IMAGE_PATH + imagefile);
     }
   }
 }
 
 void main_window::update_status_bar(const std::string& text)
 {
-  status_bar.pop();
   status_bar.push(text);
 }

@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <ctime>
-#include <list>
 #include <string>
 #include <sys/time.h>
 
@@ -14,35 +13,56 @@ class bot_base{
 
 protected:
   std::string name;
-  int search_depth,wdl_depth,perfect_depth;
-  color c;
+  int search_depth,perfect_depth;
+  int my_color;
   long long nodes;
   double prev_move_time;
  
 public:
-  
   /// constructor
-  bot_base(color _c, int sd, int wdl, int pd):
-    name("bot_base"),
-    search_depth(sd),
-    wdl_depth(wdl),
-    perfect_depth(pd),
-    c(_c),
-    prev_move_time(std::time(NULL))
-  {}
+  bot_base(int _c, int sd,int pd);
   
   /// calculate best move of b and put it in res
-  virtual void do_move(const board* b,board* res){
-    // prevent compiler complaints
-    b = NULL;
-    res = NULL;
-    CRASH;
-  }
+  virtual void do_move(const board* b,board* res);
   
-  int get_search_depth() const{ return search_depth; }
-  int get_nodes()        const{ return nodes; }
-  int get_color()        const{ return c; }
+  int get_search_depth() const;
+  int get_nodes() const;
+  int get_color() const;
   
 };
+
+
+
+inline bot_base::bot_base(int _c, int sd,int pd):
+  name("bot_base"),
+  search_depth(sd),
+  perfect_depth(pd),
+  my_color(_c),
+  prev_move_time(std::time(NULL))
+{
+  assert(my_color==1 || my_color==-1);
+}
+
+inline int bot_base::get_search_depth() const
+{
+  return search_depth; 
+}
+
+inline int bot_base::get_nodes() const
+{
+  return nodes; 
+}
+
+inline int bot_base::get_color() const
+{
+  return my_color;
+}
+
+inline void bot_base::do_move(const board* b,board* res){
+  // prevent compiler complaints
+  (void) b;
+  (void) res;
+  CRASH;
+}
 
 #endif

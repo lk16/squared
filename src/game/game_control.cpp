@@ -4,123 +4,113 @@
 game_control::game_control(main_window* _mw):
   mw(_mw)
 {
-  bot[WHITE] = bot[BLACK] = NULL;
+  bot[0] = bot[1] = NULL;
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
 }
 
 game_control::~game_control()
 {
-  while(!redo_stack.empty()){
-    redo_stack.pop();
-  } 
-  while(!undo_stack.empty()){
-    undo_stack.pop();
-  } 
-  
-  if(bot[BLACK]){
-    delete bot[BLACK];
-  }
-  if(bot[WHITE]){
-    delete bot[WHITE];
-  }
-  
+  remove_bot(-1);
+  remove_bot(1);
 }
 
 
-color game_control::turn() const
+int game_control::turn() const
 {
   return current.turn;
 }
 
+int game_control::turn_to_index() const
+{
+ return (turn()==-1 ? 0 : 1); 
+}
+
+
 
 void game_control::on_human_do_move(int field_id)
 {
-  if(bot[turn()]){
+  if(get_bot_to_move()){
     return;
   }
 
  
  if(current.is_valid_move(field_id)){
     undo_stack.push(current);
-    current.do_move(field_id,&current);
+    std::bitset<64> dummy;
+    current.do_move(field_id,&dummy);
     on_any_move();
   }
 }
 
 void game_control::on_bot_do_move()
 {
-  if(bot[BLACK] && bot[WHITE]){
+  if(is_bot(-1) && is_bot(1)){
     current.show();
   }
 
-  int move_count;
-  current.get_children(NULL,&move_count);
-  if(move_count==0){
+  if(!current.has_children()){
     return;
   }
   
   board old = current;
   
-  bot[turn()]->do_move(&old,&current);
+  bot[turn_to_index()]->do_move(&old,&current);
   undo_stack.push(old);
   on_any_move(); 
 }
 
 void game_control::on_any_move()
-{
+{  
   while(!redo_stack.empty()){
     redo_stack.pop();
   }
   
-  mw->update_fields();
-  
-  int move_count;
-  current.get_children(NULL,&move_count);
-  if(move_count==0){
-    board copy(current);
-    copy.turn = opponent(copy.turn);
-    copy.get_children(NULL,&move_count);
-    if(move_count!=0){
-      current.turn = opponent(turn());
-      mw->update_fields();
-    }
-    else{
+  if(!current.has_children()){
+    current.switch_turn();
+    if(!current.has_children()){
       on_game_ended();
     }
   }
+  mw->update_fields();
 }
 
 
 
 void game_control::on_undo()
 {
-  if(undo_stack.empty()){
-    return;
-  }
-  while(bot[undo_stack.top().turn]){
+  while(!undo_stack.empty() && is_bot(undo_stack.top().turn)){
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
-  }  
-  redo_stack.push(current);
-  current = undo_stack.top();
-  undo_stack.pop();
+  } 
+  
+  if(undo_stack.empty()){
+    mw->update_status_bar("Cannot undo");
+  }
+  else{
+    redo_stack.push(current);
+    current = undo_stack.top();
+    undo_stack.pop();
+  }
   mw->update_fields();
 }
 
 void game_control::on_redo()
 { 
-  if(redo_stack.empty()){
-    return;
+  while(!redo_stack.empty() && is_bot(redo_stack.top().turn)){
+    undo_stack.push(current);
+    current = redo_stack.top();
+    redo_stack.pop();
   } 
-  while(bot[undo_stack.top().turn]){
-    redo_stack.push(current);
-    current = undo_stack.top();
-    undo_stack.pop();
+  
+  if(redo_stack.empty()){
+    mw->update_status_bar("Cannot redo");
   }
-  undo_stack.push(current);
-  current = redo_stack.top();
-  redo_stack.pop();
+  else{
+    undo_stack.push(current);
+    current = redo_stack.top();
+    redo_stack.pop();
+  }
   mw->update_fields();
 }
 
@@ -142,8 +132,16 @@ void game_control::on_game_ended()
 {
   std::string text;
   
-  text += "Game has ended. White (" + tostr<int>(current.discs[WHITE].count()) + ") - Black (";
-  text += tostr<int>(current.discs[BLACK].count())+ ")";
+  int b_count = current.opp.count();
+  int w_count = current.me.count();
+  
+  if(current.turn == -1){
+    std::swap(b_count,w_count);
+  }
+  
+  
+  text += "Game has ended. White (" + tostr<int>(w_count) + ") - Black (";
+  text += tostr<int>(b_count)+ ")";
   
   std::cout << text << std::endl;
   mw->update_status_bar(text);
@@ -151,37 +149,52 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  int child_count;
-  current.get_children(NULL,&child_count);
-  if(child_count==0){
-    board copy(current);
-    copy.get_children(NULL,&child_count);
-    if(child_count==0){
+  if(!current.has_children()){
+    current.switch_turn();
+    if(!current.has_children()){
+      current.switch_turn();
       return true;
     }
+    current.switch_turn();
   }
-  if(bot[turn()]){
-    mw->update_status_bar("I'm thinking...");
+  if(bot[turn_to_index()]){
+    //mw->update_status_bar("I'm thinking...");
     on_bot_do_move();  
   }
   else{
-    mw->update_status_bar("It is your turn.");
+    //mw->update_status_bar("It is your turn.");
   }
   return true;
 }
 
-void game_control::add_bot(color _c, int d,int wld,int pd)
+void game_control::add_bot(int _c, int d,int pd)
 {
-  if(bot[_c]){
-    delete bot[_c];
+  int index = (_c == -1 ? 0 : 1);
+  if(bot[index]){
+    delete bot[index];
   }
-  bot[_c] = new bot_ali(_c,d,wld,pd);
+  bot[index] = new bot_ali(_c,d,pd);
 }
 
-void game_control::remove_bot(color col)
+void game_control::remove_bot(int col)
 {
-  if(bot[col]){
-    delete bot[col];
-    bot[col] = NULL;
+  int index = (col == -1 ? 0 : 1);
+  
+  if(bot[index]){
+    delete bot[index];
+    bot[index] = NULL;
   }
 }
+
+bot_base* game_control::get_bot_to_move()
+{
+  return bot[current.turn==-1 ? 0 : 1];
+}
+
+bool game_control::is_bot(int color)
+{
+  assert(color==1 || color==-1);
+  int index = (color==-1 ? 0 : 1);
+  return bot[index] != NULL;
+}
+

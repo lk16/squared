@@ -1,24 +1,8 @@
 #include "bot_ali.hpp"
 
-bot_ali::bot_ali(color _c, int sd, int wdl, int pd):
-  bot_base(_c,sd,wdl,pd)
+bot_ali::bot_ali(int _c, int sd, int pd):
+  bot_base(_c,sd,pd)
 {
-  int loc[64] =
-  {
-    0,1,2,3,3,2,1,0,
-    1,4,5,6,6,5,4,1,
-    2,5,7,8,8,7,5,2,
-    3,6,8,9,9,8,6,3,
-    3,6,8,9,9,8,6,3,
-    2,5,7,8,8,7,5,2,
-    1,4,5,6,6,5,4,1,
-    0,1,2,3,3,2,1,0
-  };
-  
-  for(int i=0;i<64;i++){
-    location_bitsets[loc[i]].set(i);
-  }
-  
   name = "bot_ali";
   shell_output = true;
 }
@@ -28,21 +12,50 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
+/*
+0,1,2,3,3,2,1,0,
+1,4,5,6,6,5,4,1,
+2,5,7,8,8,7,5,2
+3,6,8,9,9,8,6,3,
+3,6,8,9,9,8,6,3,
+2,5,7,8,8,7,5,2
+1,4,5,6,6,5,4,1,
+0,1,2,3,3,2,1,0
+*/
+
+const int bot_ali::location_value[10] = {
+   347, // 0
+  - 39, // 1
+  - 23, // 2
+  - 40, // 3
+  -119, // 4
+  - 35, // 5
+  - 33, // 6
+  - 10, // 7
+  - 7, // 8
+  - 5 // 9
+};
+
+
 
 void bot_ali::do_move(const board* b,board* res)
 {
   
   struct timeval start;
   
+  
   if(shell_output){
     nodes = 0;
     gettimeofday(&start,NULL);
   }
+  
   int child_count;
   board children[32];
-  b->get_children(children,&child_count);
-  assert(child_count>0);
   
+  
+  child_count = b->get_children(children) - children;
+  
+  assert(child_count != 0);
   
 
 #if !BOT_ALI_ALWAYS_SHOW_HEUR
@@ -52,8 +65,8 @@ void bot_ali::do_move(const board* b,board* res)
   }
 #endif
   
-  int empty_fields = 64 - (b->discs[BLACK] | b->discs[WHITE]).count();
-  eval_mode mode = (empty_fields > wdl_depth) ? NORMAL_MODE : PERFECT_MODE;
+  int empty_fields = b->get_empty_fields().count();
+  eval_mode mode = (empty_fields > perfect_depth) ? NORMAL_MODE : PERFECT_MODE;
 
   int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-64);
   
@@ -64,23 +77,31 @@ void bot_ali::do_move(const board* b,board* res)
     std::cout << name << " searching at depth ";
     std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
   }
+
+
+  // is used for small negamax search, to sort moves before big search
+  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth - 4;
+
+
   
   if(search_depth>BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC,search_depth-4);
+      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     sort_boards(children,heurs,child_count);
   }
-  
-    
+
+  // is used for big negamax search
+  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth;
+
   for(int id=0;id<child_count;++id){
-    int cur_heur;
     inspected = children[id];
+    int cur_heur;
     switch(mode){
       case NORMAL_MODE:
-        cur_heur = -negamax(MIN_HEURISTIC,-best_heur,search_depth);
+        cur_heur = -negamax(MIN_HEURISTIC,-best_heur);
         break;
       case PERFECT_MODE:
         cur_heur = -negamax_exact(-64,-best_heur);
@@ -98,7 +119,7 @@ void bot_ali::do_move(const board* b,board* res)
   }
   
   *res = children[best_id];
-  
+
   
   if(shell_output){
     struct timeval end;
@@ -111,24 +132,33 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
-int bot_ali::negamax(int alpha, int beta, int depth_remaining)
+int bot_ali::negamax(int alpha, int beta)
 {
  
   nodes++;
   
-  if(depth_remaining==0){
-    int heur = heuristic();
-    if(inspected.turn==BLACK){
-      heur = -heur;
-    }
-    return heur;
+  if(negamax_max_non_empty_fields == (int)inspected.get_non_empty_fields().count()){
+    return heuristic();
   }
   
-  int move_count=0;
-  std::bitset<64> undo_data,possible_moves;
+  std::bitset<64> possible_moves;
   
-  inspected.get_possible_moves(&possible_moves);
+  inspected.get_valid_moves(&possible_moves);
+  if(possible_moves.none()){
+    if(inspected.passed){
+      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      inspected.passed = true;
+      inspected.switch_turn();
+      int heur = -negamax(-beta,-alpha);
+      inspected.switch_turn();
+      inspected.passed = false;
+      return heur;
+    }
+  }
   
+  std::bitset<64> undo_data;
   
   while(true){
     int move = find_first_set_64(possible_moves.to_ulong())-1;
@@ -160,17 +190,13 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
       inspected.switch_turn();
       return heur;
     }
-    else{
-      // at this point inspected.turn is switched
-      inspected.switch_turn();
-      heur = EXACT_SCORE_FACTOR * inspected.get_disc_diff();
-      if(inspected.turn==BLACK){
-        heur = -heur;
-      }
-      return heur;
+    if(value >= alpha){
+      alpha = value;
     }
+    
+    possible_moves.reset(move);
   }
-  
+  return alpha;
 }
 
 
@@ -181,49 +207,44 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   nodes++;
   
-  int move_count=0;
   std::bitset<64> undo_data,possible_moves;
   
-  inspected.get_possible_moves(&possible_moves);
+  inspected.get_valid_moves(&possible_moves);
+  if(possible_moves.none()){
+    if(inspected.passed){
+      return inspected.get_disc_diff();    
+    }
+    else{
+      inspected.passed = true;
+      inspected.switch_turn();
+      int heur = -negamax_exact(-beta,-alpha);
+      inspected.switch_turn();
+      inspected.passed = false;
+      return heur;
+    }
+  }
+  
+  
   
   while(true){
     int move = find_first_set_64(possible_moves.to_ulong());
-    if(move==0){
+    if(move == -1){
       break;
     }
-    move--;
-    if(inspected.try_move(move,&undo_data)){
-      int value = -negamax_exact(-beta,-alpha);
-      inspected.undo_move(move,&undo_data);
-      if(value >= beta){
-        return beta;
-      }
-      if(value >= alpha){
-        alpha = value;
-      }
-      move_count++;
+    inspected.do_move(move,&undo_data);
+    int value = -negamax_exact(-beta,-alpha);
+    inspected.undo_move(move,&undo_data);
+    if(value >= beta){
+      return beta;
+    }
+    if(value >= alpha){
+      alpha = value;
     }
     possible_moves.reset(move);
   }
-  if(move_count!=0){
-    return alpha;
-  }
-  else{
-    if((inspected.discs[BLACK] | inspected.discs[WHITE]).count()!=64){
-      inspected.switch_turn();
-      inspected.get_children(NULL,&move_count);
-      int heur;
-      if(move_count!=0){
-        heur = -negamax_exact(-beta,-alpha);
-        inspected.switch_turn();
-        return heur;
-      }
-      inspected.switch_turn();
-    }
-    return (inspected.turn==WHITE ? inspected.get_disc_diff() :
-      -inspected.get_disc_diff());
-  }
+  return alpha;
 }
+
 
 
 void bot_ali::sort_boards(board *boards,int* heurs, int count)
@@ -242,42 +263,21 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
 }
 
 
+
+
+
+
 int bot_ali::heuristic()
 {
-
-  /*
-0,1,2,3,3,2,1,0,
-1,4,5,6,6,5,4,1,
-2,5,7,8,8,7,5,2
-3,6,8,9,9,8,6,3,
-3,6,8,9,9,8,6,3,
-2,5,7,8,8,7,5,2
-1,4,5,6,6,5,4,1,
-0,1,2,3,3,2,1,0
-*/
-
-  static int open_loc_val[10] = {
-      320, // 0
-     - 70, // 1
-     - 40, // 2
-     - 40, // 3
-     -150, // 4
-     - 35, // 5
-     - 30, // 6
-     - 15, // 7
-     - 10, // 8
-     - 5 // 9
-  };
 
   int res = 0;
   
   for(int i=0;i<10;i++){
-    res += open_loc_val[i] * (
-       (inspected.discs[WHITE] & location_bitsets[i]).count()
-       -(inspected.discs[BLACK] & location_bitsets[i]).count()
+    res += bot_ali::location_value[i] * (
+       (inspected.me & board::location[i]).count()
+       -(inspected.opp & board::location[i]).count()
     );
-  }
-  
+  }  
   return res;
 }
 

@@ -2,7 +2,6 @@
 #define SQUARED_GAMECONTROL_HPP
 
 #include <stack>
-#include <thread>
 
 #include <glibmm/main.h>
 
@@ -14,11 +13,21 @@ class main_window;
 
 struct game_control{
   
+  /// NULL pointer means human player 
+  bot_base* bot[2]; 
+  
+  main_window* mw;
+  board current;
+  
+  std::stack<board> undo_stack,redo_stack;
+  
   game_control(main_window* mw);
   ~game_control();
   
-  void add_bot(color _c, int _depth,int _wdl_depth, int _perfect_depth);
-  void remove_bot(color col);
+  void add_bot(int color, int _depth, int _perfect_depth);
+  void remove_bot(int color);
+  bot_base* get_bot_to_move();
+  bool is_bot(int color); // color should be -1 or 1
   
   void on_new_game();
   void on_game_ended();
@@ -32,15 +41,8 @@ struct game_control{
   
   bool timeout_handler();
   
-  color turn() const;
-  
-  /// NULL pointer means human player 
-  bot_base* bot[2]; 
-  
-  main_window* mw;
-  board current;
-  
-  std::stack<board> undo_stack,redo_stack;
+  int turn_to_index() const;
+  int turn() const;
   
 };
 

@@ -2,61 +2,66 @@
 
 #include "gui/main_window.hpp"
 
-void run_no_gui(){
-#if 0 
-  board *b;
-  bot_base* bots[2];
-  std::string instring;
-  int inint;
+void testing_area(){
 
- 
-  instring = "";
-  inint = -1;
-  bots[0] = bots[1] = NULL;
-  b = new board();
-  b->reset();
+  board b;
   
   
-  while(true){
-    std::cout << "Is the black player a human? ";
-    std::cin >> instring;
-    switch((char)instring.substr(0,1)){
-      case 'y':
-      case 'Y':
-        std::cout << '\n';
-        break;
-      case 'n':
-      case 'N':
-        std::cout << "Enter searchdepth of black player. "; 
-        std::cin >> inint;
-        bots[BLACK] = new bot_ali(BLACK,inint,2*inint);
-      default:
-        continue;
-    }
-  }
-  while(true){
-    std::cout << "Is the white player a human? ";
-    std::cin >> instring;
-    switch((char)instring.substr(0,1)){
-      case 'y':
-      case 'Y':
-        std::cout << '\n';
-        break;
-      case 'n':
-      case 'N':
-        std::cout << "Enter searchdepth of white player. "; 
-        std::cin >> inint;
-        bots[WHITE] = new bot_ali(WHITE,inint,2*inint);
-      default:
-        continue;
-    }
-  }
-#endif
+  srand(time(NULL));
+  
+  b.reset();
+  b.check_do_move_experimental();
+  
+  
+  
+
+  
 }
 
-void run_debug(){
-  board b;
-  std::cout << b.get_stable_disc_count_diff(3) << std::endl;
+
+
+
+
+void timing_area(){
+  
+
+  timeval start,end;
+  
+  std::bitset<64> dummy;
+  
+  const int max = 1000000;
+  gettimeofday(&start,NULL);
+  
+  for(int i=0;i<max;i++){
+    board b;
+    b.do_move(19,&dummy);
+  }
+  
+  
+  gettimeofday(&end,NULL);
+  
+  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
+  (start.tv_sec + (start.tv_usec / 1000000.0));
+  
+  std::cout << "Working:\t" << max << " / " << time_diff;
+  std::cout << " = " << big_number(max/time_diff) << " per sec avg\n"; 
+  
+  gettimeofday(&start,NULL);
+  
+  for(int i=0;i<max;i++){
+    board b;
+    b.do_move_experimental(19,&dummy);
+  }
+  
+  
+  gettimeofday(&end,NULL);
+  
+  time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
+  (start.tv_sec + (start.tv_usec / 1000000.0));
+  
+  std::cout << "Experimental:\t" << max << " / " << time_diff;
+  std::cout << " = " << big_number(max/time_diff) << " per sec avg\n"; 
+  
 }
 
 
@@ -65,21 +70,27 @@ void run_debug(){
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
-  main_window window;
+  
   
   if(argc>=2){
     std::string argv1(argv[1]);
-    if(argv1=="no-gui"){
-      run_no_gui();
+    if(argv1=="testing"){
+      testing_area();
     }
-    else if(argv1=="debug"){
-      run_debug();
+    else if(argv1=="timing"){
+      timing_area();
     }
     else{
-      std::cout << "Invalid parameter: " << argv1 << '\n';
+      std::cout << "Invalid argument: " << argv1 << '\n' << 
+      "Try one of these:\n"
+      "testing   | run the testing_area()\n"
+      "timing    | run the timing_area()\n"
+      "<no args> | run the windowed game\n";
+      
     }
   }
   else{
+    main_window window;
     Gtk::Main::run(window);
   }
   return 0;
