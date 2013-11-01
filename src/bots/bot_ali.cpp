@@ -131,11 +131,10 @@ int bot_ali::negamax(int alpha, int beta, int depth_remaining)
   
   
   while(true){
-    int move = find_first_set_64(possible_moves.to_ulong());
-    if(move==0){
+    int move = find_first_set_64(possible_moves.to_ulong())-1;
+    if(move == -1){
       break;
     }
-    move--;
     if(inspected.try_move(move,&undo_data)){
       int value = -negamax(-beta,-alpha,depth_remaining-1);
       inspected.undo_move(move,&undo_data);
@@ -258,7 +257,7 @@ int bot_ali::heuristic()
 */
 
   static int open_loc_val[10] = {
-      400, // 0
+      320, // 0
      - 70, // 1
      - 40, // 2
      - 40, // 3
