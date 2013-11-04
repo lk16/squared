@@ -34,7 +34,7 @@ SET(objects
   game/game_control.cpp
   gui/clickable_image.cpp
   gui/main_window.cpp
-  gui/settings_dialog.cpp
+  gui/preferences_dialog.cpp
   main/squared.cpp
   misc/testing.cpp
   misc/timing.cpp

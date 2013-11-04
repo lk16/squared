@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <vector>
 
 #include <gtkmm.h>
 #include <gtkmm/stock.h>
@@ -13,7 +12,7 @@
 #include "game/util.hpp"
 #include "game/board.hpp"
 #include "gui/clickable_image.hpp"
-#include "gui/settings_dialog.hpp"
+#include "gui/preferences_dialog.hpp"
 
 class board;
 
@@ -40,7 +39,7 @@ protected:
   /* Signal handlers: */
   void on_menu_game_quit();
   void on_menu_settings_fullscreen();
-  void on_menu_settings_settings();
+  void on_menu_settings_preferences();
   
   /* Member widgets: */
   Gtk::Table table;

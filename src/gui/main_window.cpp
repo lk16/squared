@@ -47,8 +47,8 @@ void main_window::init_ui(){
     sigc::mem_fun(*this,&main_window::on_menu_settings_fullscreen)
   );
   action_group->add(
-    Gtk::Action::create("SettingsSettings","_Settings"),
-    sigc::mem_fun(*this,&main_window::on_menu_settings_settings)
+  Gtk::Action::create("SettingsPreferences","_Preferences"),
+    sigc::mem_fun(*this,&main_window::on_menu_settings_preferences)
   );
   
   
@@ -89,15 +89,7 @@ void main_window::init_ui(){
 
 void main_window::on_menu_game_quit()
 {
-  Gtk::Dialog dialog("Quit?",*this);
-  Gtk::Label label("Are you sure you want to quit?",0.5,0.5,false);
-  dialog.get_vbox()->add(label);
-  dialog.show_all_children();
-  dialog.add_button(Gtk::Stock::NO,Gtk::RESPONSE_NO);
-  dialog.add_button(Gtk::Stock::YES,Gtk::RESPONSE_YES);
-  if(dialog.run() == Gtk::RESPONSE_YES){
-    hide();
-  }
+  hide();
 }
 
 void main_window::on_menu_settings_fullscreen()
@@ -105,7 +97,7 @@ void main_window::on_menu_settings_fullscreen()
   std::cout << "Toggle full screen\n";
 }
 
-void main_window::on_menu_settings_settings()
+void main_window::on_menu_settings_preferences()
 {
   int input_level[2],output_level[2];
   
@@ -113,7 +105,7 @@ void main_window::on_menu_settings_settings()
   input_level[1] = control.bot[1] ? control.bot[1]->get_search_depth() : -1;
   
   
-  settings_dialog sd(*this,input_level[0],input_level[1]);
+  preferences_dialog sd(*this,input_level[0],input_level[1]);
   
   if(sd.run() == Gtk::RESPONSE_OK){
     
@@ -140,7 +132,6 @@ void main_window::on_menu_settings_settings()
 void main_window::update_fields()
 {
   const board *b;
-  int x,y;
   std::string imagefile;
   
   b = &control.current;
@@ -151,23 +142,21 @@ void main_window::update_fields()
   black = (b->turn==-1 ? b->me : b->opp);
   
   
-   
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
-      if(white.test(y*8+x)){
-        imagefile = "white.png";
-      }
-      else if(black.test(y*8+x)){
-        imagefile = "black.png";
-      }
-      else if(b->is_valid_move(y*8+x)){
-        imagefile = "move.png";
-      }
-      else{
-        imagefile = "empty.png";
-      }
-      fields[x][y].set_image(IMAGE_PATH + imagefile);
+  
+  for(int i=0;i<64;i++){
+    if(white.test(i)){
+      imagefile = "white.png";
     }
+    else if(black.test(i)){
+      imagefile = "black.png";
+    }
+    else if(b->is_valid_move(i)){
+      imagefile = "move.png";
+    }
+    else{
+      imagefile = "empty.png";
+    }
+    fields[i%8][i/8].set_image(IMAGE_PATH + imagefile);
   }
 }
 

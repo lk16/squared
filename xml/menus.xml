@@ -11,7 +11,7 @@
     <menu action='SettingsMenu'>
       <menuitem action='SettingsFullscreen'/>
       <separator />
-      <menuitem action='SettingsSettings' />
+      <menuitem action='SettingsPreferences' />
     </menu>
   </menubar>
 </ui>
