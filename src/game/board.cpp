@@ -227,63 +227,27 @@ bool board::is_valid_move(int field_id) const
 
 board* board::get_children(board* out_begin) const
 {
+  assert(out_begin);
+  
   board* out_end = out_begin;
-  std::bitset<64> valid_moves;
-  std::bitset<64> to_flip,tmp_mask;
+  std::bitset<64> valid_moves,dummy;
+  
   
   
   get_valid_moves(&valid_moves);
   
   while(true){
-    int field_id = find_first_set_64(valid_moves.to_ulong());
-    if(field_id == -1){
+    
+    int move_id = find_first_set_64(valid_moves.to_ulong());
+    if(move_id == -1){
       break;
-    }  
+    } 
     
-    to_flip.reset();
-  
-    for(int i=0;i<8;++i){     
-      
-      tmp_mask.reset();
-      int cur_field_id = field_id;
-      
-      while(true){
-        
-        // will i walk off the board next step?
-        if((std::bitset<64>(board::border[cur_field_id]) & board::bit[i]).any()){
-          break;
-        }
-        
-        // walk ahead        
-        cur_field_id += board::walk_diff[i][0]; 
-        
-        // current field = my color
-        if((me & board::bit[cur_field_id]).any()){
-          to_flip |= tmp_mask;
-          break;
-        }
-        
-        // current field = opponent color
-        if((opp & board::bit[cur_field_id]).any()){
-          tmp_mask.set(cur_field_id);
-          continue;
-        }
-        
-        // current fiend = empty
-        break;
-      }
-      
-    }
+    *out_end = *this;
+    out_end->do_move(move_id,&dummy);
+    out_end++;
     
-    if(out_end){
-      *out_end = *this;
-      out_end->me |= to_flip | board::bit[field_id];
-      out_end->opp &= (~to_flip);
-      out_end->switch_turn();
-      ++out_end;
-    }
-    
-    valid_moves.reset(field_id);
+    valid_moves.reset(move_id);
     
   }
   return out_end;
@@ -453,37 +417,75 @@ int board::get_disc_diff() const
   }
 }
 
-void board::do_move(int field_id, std::bitset<64>* undo_data)
+void board::do_move(int move_id, std::bitset<64>* undo_data)
 {
-  assert(is_valid_move(field_id));
+  assert(is_valid_move(move_id));
   
   
   undo_data->reset();
   
-  for(int i=0;i<8;++i){     
+  std::bitset<64> tmp_mask,cur_bit;
   
-    std::bitset<64> tmp_mask;
-    int cur_field_id = field_id;
+  const std::bitset<64> move_bit = board::bit[move_id];
+  
+  for(int i=0;i<4;++i){
+    
+    tmp_mask.reset();
+    cur_bit = move_bit;
+    
     
     while(true){
+      assert(cur_bit.any());
       
       // will i walk off the board next step?
-      if((std::bitset<64>(board::border[cur_field_id]) & board::bit[i]).any()){
+      if(!(walk_possible[i][0] & cur_bit).any()){
         break;
       }
       
-      // walk ahead        
-      cur_field_id += board::walk_diff[i][0]; 
+      
+      cur_bit >>= board::walk_diff[7-i][0];
       
       // current field = my color
-      if((me & board::bit[cur_field_id]).any()){
+      if((me & cur_bit).any()){
         (*undo_data) |= tmp_mask;
         break;
       }
       
       // current field = opponent color
-      if((opp & board::bit[cur_field_id]).any()){
-        tmp_mask |= board::bit[cur_field_id];
+      if((opp & cur_bit).any()){
+        tmp_mask |= cur_bit;
+        continue;
+      }
+      
+      // current fiend = empty
+      break;
+    }
+  }
+  for(int i=4;i<8;++i){
+    
+    tmp_mask.reset();
+    cur_bit = move_bit;
+    
+    
+    while(true){
+      assert(cur_bit.any());
+      
+      // will i walk off the board next step?
+      if(!(walk_possible[i][0] & cur_bit).any()){
+        break;
+      }
+      
+      cur_bit <<= board::walk_diff[i][0];
+      
+      // current field = my color
+      if((me & cur_bit).any()){
+        (*undo_data) |= tmp_mask;
+        break;
+      }
+      
+      // current field = opponent color
+      if((opp & cur_bit).any()){
+        tmp_mask |= cur_bit;
         continue;
       }
       
@@ -492,356 +494,17 @@ void board::do_move(int field_id, std::bitset<64>* undo_data)
     }
   }
   
-  
   assert((me & (*undo_data)).none());
   assert((opp & (*undo_data)) == (*undo_data));
-  assert(get_non_empty_fields().test(field_id) == false);
+  assert((get_non_empty_fields() & board::bit[move_id]).none());
   
-  me |= ((*undo_data) | board::bit[field_id]);
+  me |= ((*undo_data) | board::bit[move_id]);
   opp &= ~(*undo_data);
   
   passed = false;
   
   switch_turn();
 }
-
-void board::do_move_experimental(int move_id, std::bitset<64>* undo_data)
-{
-  assert(is_valid_move(move_id));
-  
-  undo_data->reset();
-  
-  const std::bitset<64> move_bit(1ul << move_id);
-  
-   
-  for(int dir=4;dir<8;dir++){
-    
-    const int opp_dir = 7-dir;
-    
-    std::bitset<64> shifted_me[12];
-    std::bitset<64> move_bit_dir[6];
-    std::bitset<64> move_bit_opp_dir[6];
-    std::bitset<64> shifted_opp_streak[10];
-    
-    const int* walk_diff_dir = walk_diff[dir];
-    
-    
-    for(int i=0;i<6;i++){
-      shifted_me[i] = (me << walk_diff_dir[i]);
-      shifted_me[6+i] = (me >> walk_diff_dir[i]);
-    }
-    
-    for(int i=0;i<6;i++){
-      move_bit_dir[i] = (move_bit & walk_possible[dir][i+1]);
-      move_bit_opp_dir[i] = (move_bit & walk_possible[opp_dir][i+1]);
-    }
-    
-    shifted_opp_streak[0] = (opp << walk_diff_dir[0]);
-    shifted_opp_streak[5] = (opp >> walk_diff_dir[0]);
-    
-    for(int i=1;i<5;i++){
-      shifted_opp_streak[i] = 
-        shifted_opp_streak[i-1] 
-        & (opp << walk_diff_dir[i]);
-      
-      shifted_opp_streak[5+i] = 
-        shifted_opp_streak[5+i-1] 
-        & (opp >> walk_diff_dir[i]);
-    }
-    
-    
-    *undo_data |=
-      opp
-      &
-      (
-        ( // stepsize 1, 1st disc
-          (move_bit_opp_dir[0] >> walk_diff[dir][0])
-          & shifted_me[0]
-        )
-        |
-        ( // stepsize 2, 1st disc
-          (move_bit_opp_dir[1] >> walk_diff[dir][0])
-          & shifted_opp_streak[0]
-          & shifted_me[1]
-        )
-        |
-        ( // stepsize 2, 2nd disc
-          (move_bit_opp_dir[1] >> walk_diff[dir][1])
-          & shifted_opp_streak[5]
-          & shifted_me[0]
-        )
-        |
-        ( // stepsize 3, 1st disc
-          (move_bit_opp_dir[2] >> walk_diff[dir][0])
-          & shifted_opp_streak[0]
-          & shifted_me[2]
-        )
-        |
-        ( // stepsize 3, 2nd disc
-          (move_bit_opp_dir[2] >> walk_diff[dir][1])
-          & shifted_opp_streak[5]
-          & shifted_opp_streak[0]
-          & shifted_me[1]
-        )
-        |
-        ( // stepsize 3, 3rd disc
-          (move_bit_opp_dir[2] >> walk_diff[dir][2])
-           & shifted_opp_streak[5]
-          & shifted_me[0]
-        )
-        |
-        ( // stepsize 4, 1st disc
-          (move_bit_opp_dir[3] >> walk_diff[dir][0])
-          & shifted_opp_streak[2]
-          & shifted_me[3]
-        )
-        |
-        ( // stepsize 4, 2nd disc
-          (move_bit_opp_dir[3] >> walk_diff[dir][1])
-          & shifted_opp_streak[5]
-          & shifted_opp_streak[1]
-          & shifted_me[2]
-        )
-        |
-        ( // stepsize 4, 3rd disc
-          (move_bit_opp_dir[3] >> walk_diff[dir][2])
-          & shifted_opp_streak[6]
-          & shifted_opp_streak[0]
-          & shifted_me[1]
-        )
-        |
-        ( // stepsize 4, 4th disc
-          (move_bit_opp_dir[3] >> walk_diff[dir][3])
-          & shifted_opp_streak[7]
-          & shifted_me[0]
-        )
-        |
-        ( // stepsize 5, 1st disc
-          (move_bit_opp_dir[4] >> walk_diff[dir][0])
-          & shifted_opp_streak[3]
-          & shifted_me[4]
-        )
-        |
-        ( // stepsize 5, 2nd disc
-          (move_bit_opp_dir[4] >> walk_diff[dir][1])
-          & shifted_opp_streak[5]
-          & shifted_opp_streak[2]
-          & shifted_me[3]
-        )
-        |
-        ( // stepsize 5, 3rd disc
-          (move_bit_opp_dir[4] >> walk_diff[dir][2])
-          & shifted_opp_streak[6]
-          & shifted_opp_streak[1]
-          & shifted_me[2]
-        )
-        |
-        ( // stepsize 5, 4th disc
-          (move_bit_opp_dir[4] >> walk_diff[dir][3])
-          & shifted_opp_streak[7]
-          & shifted_opp_streak[0]
-          & shifted_me[1]
-        )
-        |
-        ( // stepsize 5, 5th disc
-          (move_bit_opp_dir[4] >> walk_diff[dir][4])
-          & shifted_opp_streak[8]
-          & shifted_me[0]
-        )
-        |
-        ( // stepsize 6, 1st disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][0])
-          & shifted_opp_streak[4]
-          & shifted_me[5]
-        )
-        |
-        ( // stepsize 6, 2nd disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][1])
-          & shifted_opp_streak[5]
-          & shifted_opp_streak[3]
-          & shifted_me[4]
-        )
-        |
-        ( // stepsize 6, 3rd disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][2])
-          & shifted_opp_streak[6]
-          & shifted_opp_streak[2]
-          & shifted_me[3]
-        )
-        |
-        ( // stepsize 6, 4th disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][3])
-          & shifted_opp_streak[7]
-          & shifted_opp_streak[1]
-          & shifted_me[2]
-        )
-        |
-        ( // stepsize 6, 5th disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][4])
-          & shifted_opp_streak[8]
-          & shifted_me[1]
-        )
-        |
-        ( // stepsize 6, 6th disc
-          (move_bit_opp_dir[5] >> walk_diff[dir][5])
-          & shifted_opp_streak[9]
-          & shifted_me[0]
-        )
-      );
-      
-    *undo_data |=
-      opp
-      &
-      (
-        ( // stepsize 1, 1st disc
-          (move_bit_dir[0] << walk_diff[dir][0])
-          & shifted_me[6]
-        )
-        |
-        ( // stepsize 2, 1st disc
-          (move_bit_dir[1] << walk_diff[dir][0])
-          & shifted_opp_streak[5]
-          & shifted_me[7]
-        )
-        |
-        ( // stepsize 2, 2nd disc
-          (move_bit_dir[1] << walk_diff[dir][1])
-          & shifted_opp_streak[0]
-          & shifted_me[6]
-        )
-        |
-        ( // stepsize 3, 1st disc
-          (move_bit_dir[2] << walk_diff[dir][0])
-         & shifted_opp_streak[6]
-          & shifted_me[8]
-        )
-        |
-        ( // stepsize 3, 2nd disc
-          (move_bit_dir[2] << walk_diff[dir][1])
-          & shifted_opp_streak[0]
-          & shifted_opp_streak[5]
-          & shifted_me[7]
-        )
-        |
-        ( // stepsize 3, 3rd disc
-          (move_bit_dir[2] << walk_diff[dir][2])
-          & shifted_opp_streak[1]
-          & shifted_me[6]
-        )
-        |
-        ( // stepsize 4, 1st disc
-          (move_bit_dir[3] << walk_diff[dir][0])
-          & shifted_opp_streak[7]
-          & shifted_me[9]
-        )
-        |
-        ( // stepsize 4, 2nd disc
-          (move_bit_dir[3] << walk_diff[dir][1])
-          & shifted_opp_streak[0]
-         & shifted_opp_streak[6]
-          & shifted_me[8]
-        )
-        |
-        ( // stepsize 4, 3rd disc
-          (move_bit_dir[3] << walk_diff[dir][2])
-          & shifted_opp_streak[1]
-          & shifted_opp_streak[5]
-          & shifted_me[7]
-        )
-        |
-        ( // stepsize 4, 4th disc
-          (move_bit_dir[3] << walk_diff[dir][3])
-          & shifted_opp_streak[2]
-          & shifted_me[6]
-        )
-        |
-        ( // stepsize 5, 1st disc
-          (move_bit_dir[4] << walk_diff[dir][0])
-          & shifted_opp_streak[8]
-          & shifted_me[10]
-        )
-        |
-        ( // stepsize 5, 2nd disc
-          (move_bit_dir[4] << walk_diff[dir][1])
-          & shifted_opp_streak[0]
-          & shifted_opp_streak[7]
-          & shifted_me[9]
-        )
-        |
-        ( // stepsize 5, 3rd disc
-          (move_bit_dir[4] << walk_diff[dir][2])
-          & shifted_opp_streak[1]
-          & shifted_opp_streak[6]
-          & shifted_me[8]
-        )
-        |
-        ( // stepsize 5, 4th disc
-          (move_bit_dir[4] << walk_diff[dir][3])
-          & shifted_opp_streak[2]
-          & shifted_opp_streak[5]
-          & shifted_me[7]
-        )
-        |
-        ( // stepsize 5, 5th disc
-          (move_bit_dir[4] << walk_diff[dir][4])
-          & shifted_opp_streak[3]
-          & shifted_me[6]
-        )
-        |
-        ( // stepsize 6, 1st disc
-          (move_bit_dir[5] << walk_diff[dir][0])
-          & shifted_opp_streak[9]
-          & shifted_me[11]
-        )
-        |
-        ( // stepsize 6, 2nd disc
-          (move_bit_dir[5] << walk_diff[dir][1])
-          & shifted_opp_streak[0]
-          & shifted_opp_streak[8]
-          & shifted_me[10]
-        )
-        |
-        ( // stepsize 6, 3rd disc
-          (move_bit_dir[5] << walk_diff[dir][2])
-          & shifted_opp_streak[1]
-          & shifted_opp_streak[7]
-          & shifted_me[9]
-        )
-        |
-        ( // stepsize 6, 4th disc
-          (move_bit_dir[5] << walk_diff[dir][3])
-          & shifted_opp_streak[2]
-          & shifted_opp_streak[6]
-          & shifted_me[8]
-        )
-        |
-        ( // stepsize 6, 5th disc
-          (move_bit_dir[5] << walk_diff[dir][4])
-          & shifted_opp_streak[3]
-          & shifted_opp_streak[5]
-          & shifted_me[7]
-        )
-        |
-        ( // stepsize 6, 6th disc
-          (move_bit_dir[5] << walk_diff[dir][5])
-          & shifted_opp_streak[4]
-          & shifted_me[6]
-        )
-      );
-  }
-
-  assert((me & (*undo_data)).none());
-  assert((opp & (*undo_data)) == (*undo_data));
-  assert((get_non_empty_fields() & bit[move_id]).none());
-  
-  me |= ((*undo_data) | bit[move_id]);
-  opp &= ~(*undo_data);
-  
-  passed = false;
-  
-  switch_turn();
-}
-
 
 void board::undo_move(int field_id, std::bitset<64>* undo_data)
 {
@@ -854,44 +517,5 @@ void board::undo_move(int field_id, std::bitset<64>* undo_data)
   
   assert((me & (*undo_data)).none());
   assert((opp & (*undo_data)) == (*undo_data));
-  assert(get_non_empty_fields().test(field_id) == false);
-}
-
-void board::check_do_move_experimental() const{
-  assert((me & opp).none());
-  
-  std::bitset<64> moves,undo,undo_exp;
-  
-  get_valid_moves(&moves);
-  board copy = *this;
-  
-  while(true){
-    int move = find_first_set_64(moves.to_ulong());
-    if(move == -1){
-      break;
-    }
-    
-    copy.do_move(move,&undo);
-    copy = *this;
-    copy.do_move_experimental(move,&undo_exp);
-    copy = *this;
-    
-    
-    if(undo != undo_exp){
-      std::cout << "test failed:\n";
-      show();
-      std::cout << "move:\n";
-      show_bitset(std::bitset<64>(1ul << move));
-      
-      std::cout << "working:\n";
-      show_bitset(undo);
-      std::cout << "experimental:\n";
-      show_bitset(undo_exp);
-    }
-    else{
-      std::cout << "test succeeded\n";
-    }
-    
-    moves.reset(move);
-  }
+  assert((get_non_empty_fields() & board::bit[field_id]).none());
 }
