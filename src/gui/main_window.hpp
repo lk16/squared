@@ -38,7 +38,6 @@ protected:
   
   /* Signal handlers: */
   void on_menu_game_quit();
-  void on_menu_settings_fullscreen();
   void on_menu_settings_preferences();
   
   /* Member widgets: */

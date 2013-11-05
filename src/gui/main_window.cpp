@@ -8,7 +8,7 @@ main_window::main_window():
 {
   init_ui();
   control.on_new_game();
-  show_all_children(); // TODO << doesnt work properly
+  show_all_children(); 
 }
 
 
@@ -41,11 +41,6 @@ void main_window::init_ui(){
     sigc::mem_fun(*this,&main_window::on_menu_game_quit)
   );
   
-  /* Settings menu */
-  action_group->add(
-    Gtk::Action::create("SettingsFullscreen","_Full Screen"),
-    sigc::mem_fun(*this,&main_window::on_menu_settings_fullscreen)
-  );
   action_group->add(
   Gtk::Action::create("SettingsPreferences","_Preferences"),
     sigc::mem_fun(*this,&main_window::on_menu_settings_preferences)
@@ -90,11 +85,6 @@ void main_window::init_ui(){
 void main_window::on_menu_game_quit()
 {
   hide();
-}
-
-void main_window::on_menu_settings_fullscreen()
-{
-  std::cout << "Toggle full screen\n";
 }
 
 void main_window::on_menu_settings_preferences()
