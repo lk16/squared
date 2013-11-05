@@ -35,16 +35,59 @@ void timing_area(){
   gettimeofday(&end,NULL); 
   print_diff(start,end,runs,"board::get_valid_moves()");
   
-  runs = 100;
-  gettimeofday(&start,NULL); 
-  bot_ali ali(-1,8,16);
-  ali.disable_shell_output();
-  board ignore;
-  for(int i=0;i<runs;i++){ 
-    b.reset();
-    ali.do_move(&b,&ignore); 
-  } 
-  gettimeofday(&end,NULL); 
-  print_diff(start,end,runs,"bot_ali::do_move() at level 8");
+  do{
+    runs = 500;
+    gettimeofday(&start,NULL); 
+    bot_ali ali(-1,7,14);
+    ali.disable_shell_output();
+    board ignore;
+    for(int i=0;i<runs;i++){ 
+      b.reset();
+      ali.do_move(&b,&ignore); 
+    } 
+    gettimeofday(&end,NULL); 
+    print_diff(start,end,runs,"bot_ali::do_move() at level 7");
+  }while(false);
   
+  do{
+    runs = 100;
+    gettimeofday(&start,NULL); 
+    bot_ali ali(-1,8,16);
+    ali.disable_shell_output();
+    board ignore;
+    for(int i=0;i<runs;i++){ 
+      b.reset();
+      ali.do_move(&b,&ignore); 
+    } 
+    gettimeofday(&end,NULL); 
+    print_diff(start,end,runs,"bot_ali::do_move() at level 8");
+  }while(false);
+  
+  do{
+    runs = 30;
+    gettimeofday(&start,NULL); 
+    bot_ali ali(-1,9,18);
+    ali.disable_shell_output();
+    board ignore;
+    for(int i=0;i<runs;i++){ 
+      b.reset();
+      ali.do_move(&b,&ignore); 
+    } 
+    gettimeofday(&end,NULL); 
+    print_diff(start,end,runs,"bot_ali::do_move() at level 9");
+  }while(false);
+  
+  do{
+    runs = 6;
+    gettimeofday(&start,NULL); 
+    bot_ali ali(-1,10,20);
+    ali.disable_shell_output();
+    board ignore;
+    for(int i=0;i<runs;i++){ 
+      b.reset();
+      ali.do_move(&b,&ignore); 
+    } 
+    gettimeofday(&end,NULL); 
+    print_diff(start,end,runs,"bot_ali::do_move() at level 10");
+  }while(false);
 }

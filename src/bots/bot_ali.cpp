@@ -255,12 +255,13 @@ int bot_ali::heuristic()
 
   int res = 0;
   
-  for(int i=0;i<10;i++){
+  for(int i=9;i>=0;--i){
     res += bot_ali::location_value[i] * (
        (inspected.me & board::location[i]).count()
        -(inspected.opp & board::location[i]).count()
     );
   }  
+  
   return res;
 }
 

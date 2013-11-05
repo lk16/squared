@@ -499,7 +499,7 @@ void board::do_move(int move_id, std::bitset<64>* undo_data)
   assert((get_non_empty_fields() & board::bit[move_id]).none());
   
   me |= ((*undo_data) | board::bit[move_id]);
-  opp &= ~(*undo_data);
+  opp &= ~me;
   
   passed = false;
   
