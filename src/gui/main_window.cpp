@@ -26,15 +26,15 @@ void main_window::init_ui(){
   /* Game menu */
   action_group->add(
     Gtk::Action::create("GameNew",Gtk::Stock::NEW,"_New","Start a new game"),
-    sigc::mem_fun(control,&game_control::on_new_game)
+    sigc::mem_fun(*this,&main_window::on_new_game)
   );
   action_group->add(
     Gtk::Action::create("GameUndo",Gtk::Stock::UNDO,"_Undo","Undo move"),
-    sigc::mem_fun(control,&game_control::on_undo)
+    sigc::mem_fun(*this,&main_window::on_undo)
   );
   action_group->add(
     Gtk::Action::create("GameRedo",Gtk::Stock::REDO,"_Redo","Redo move"),
-    sigc::mem_fun(control,&game_control::on_redo)
+    sigc::mem_fun(*this,&main_window::on_redo)
   );
   action_group->add(
     Gtk::Action::create("GameQuit",Gtk::Stock::QUIT,"_Quit","Quit game"),
@@ -56,6 +56,7 @@ void main_window::init_ui(){
   }
   catch(const Glib::Error& ex){
     std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what();
+    std::exit(1);
   }
   
   this->add(vbox);
@@ -91,29 +92,29 @@ void main_window::on_menu_settings_preferences()
 {
   int input_level[2],output_level[2];
   
-  input_level[0] = control.bot[0] ? control.bot[0]->get_search_depth() : -1;
-  input_level[1] = control.bot[1] ? control.bot[1]->get_search_depth() : -1;
+  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
+  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
   
   
-  preferences_dialog sd(*this,input_level[0],input_level[1]);
+  preferences_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
   
   if(sd.run() == Gtk::RESPONSE_OK){
     
-    sd.collect_data(&output_level[0],&output_level[1]);
+    sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
     
-    if(output_level[0]==-1){
-      control.remove_bot(-1);
+    if(output_level[BLACK]==-1){
+      control.remove_bot(BLACK);
     }
     else{
-      int x = output_level[0];
-      control.add_bot(-1,x,max(2*x+2,16));
+      int x = output_level[BLACK];
+      control.add_bot(BLACK,x,max(2*x+2,16));
     }
-    if(output_level[1]==-1){
-      control.remove_bot(1);
+    if(output_level[WHITE]==-1){
+      control.remove_bot(WHITE);
     }
     else{
-      int x = output_level[1];
-      control.add_bot(1,x,max(2*x+2,16));
+      int x = output_level[WHITE];
+      control.add_bot(WHITE,x,max(2*x+2,16));
     }
   
   }
@@ -128,8 +129,8 @@ void main_window::update_fields()
   
   std::bitset<64> white,black;
   
-  white = (b->turn== 1 ? b->me : b->opp);
-  black = (b->turn==-1 ? b->me : b->opp);
+  white = (b->turn ? b->me : b->opp);
+  black = (b->turn ? b->opp : b->me);
   
   
   
@@ -154,3 +155,19 @@ void main_window::update_status_bar(const std::string& text)
 {
   status_bar.push(text);
 }
+
+void main_window::on_new_game()
+{
+  control.on_new_game();
+}
+
+void main_window::on_redo()
+{
+  control.on_redo();
+}
+
+void main_window::on_undo()
+{
+  control.on_undo();
+}
+

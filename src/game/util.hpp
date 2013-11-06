@@ -51,6 +51,10 @@
 /// lowest possible heuristic value
 #define MIN_HEURISTIC (-1 * MAX_HEURISTIC)
 
+/// player colors
+#define BLACK (0)
+#define WHITE (1)
+
 template<class T>
 inline T min(T x,T y){
   return ((x<y) ? x : y);

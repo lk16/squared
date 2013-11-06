@@ -27,7 +27,6 @@ struct game_control{
   void add_bot(int color, int _depth, int _perfect_depth);
   void remove_bot(int color);
   bot_base* get_bot_to_move();
-  bool is_bot(int color); // color should be -1 or 1
   
   void on_new_game();
   void on_game_ended();
@@ -41,7 +40,6 @@ struct game_control{
   
   bool timeout_handler();
   
-  int turn_to_index() const;
   int turn() const;
   
 };

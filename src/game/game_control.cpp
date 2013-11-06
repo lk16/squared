@@ -10,19 +10,14 @@ game_control::game_control(main_window* _mw):
 
 game_control::~game_control()
 {
-  remove_bot(-1);
-  remove_bot(1);
+  remove_bot(BLACK);
+  remove_bot(WHITE);
 }
 
 
 int game_control::turn() const
 {
-  return current.turn;
-}
-
-int game_control::turn_to_index() const
-{
- return (turn()==-1 ? 0 : 1); 
+  return (current.turn == 1 ? WHITE : BLACK);
 }
 
 
@@ -44,7 +39,7 @@ void game_control::on_human_do_move(int field_id)
 
 void game_control::on_bot_do_move()
 {
-  if(is_bot(-1) && is_bot(1)){
+  if(bot[BLACK] && bot[WHITE]){
     current.show();
   }
 
@@ -54,7 +49,7 @@ void game_control::on_bot_do_move()
   
   board old = current;
   
-  bot[turn_to_index()]->do_move(&old,&current);
+  bot[turn()]->do_move(&old,&current);
   undo_stack.push(old);
   on_any_move(); 
 }
@@ -78,7 +73,7 @@ void game_control::on_any_move()
 
 void game_control::on_undo()
 {
-  while(!undo_stack.empty() && is_bot(undo_stack.top().turn)){
+  while(!undo_stack.empty() && bot[(int)(undo_stack.top().turn)]){
     redo_stack.push(current);
     current = undo_stack.top();
     undo_stack.pop();
@@ -97,7 +92,7 @@ void game_control::on_undo()
 
 void game_control::on_redo()
 { 
-  while(!redo_stack.empty() && is_bot(redo_stack.top().turn)){
+  while(!redo_stack.empty() && bot[(int)(redo_stack.top().turn)]){
     undo_stack.push(current);
     current = redo_stack.top();
     redo_stack.pop();
@@ -135,7 +130,7 @@ void game_control::on_game_ended()
   int b_count = current.opp.count();
   int w_count = current.me.count();
   
-  if(current.turn == -1){
+  if(current.turn == BLACK){
     std::swap(b_count,w_count);
   }
   
@@ -157,44 +152,34 @@ bool game_control::timeout_handler()
     }
     current.switch_turn();
   }
-  if(bot[turn_to_index()]){
-    //mw->update_status_bar("I'm thinking...");
+  if(bot[turn()]){
     on_bot_do_move();  
-  }
-  else{
-    //mw->update_status_bar("It is your turn.");
   }
   return true;
 }
 
-void game_control::add_bot(int _c, int d,int pd)
+void game_control::add_bot(int c, int d,int pd)
 {
-  int index = (_c == -1 ? 0 : 1);
-  if(bot[index]){
-    delete bot[index];
+  assert(c==0 || c==1);
+  
+  if(bot[c]){
+    delete bot[c];
   }
-  bot[index] = new bot_ali(_c,d,pd);
+  bot[c] = new bot_ali(c,d,pd);
 }
 
-void game_control::remove_bot(int col)
+void game_control::remove_bot(int c)
 {
-  int index = (col == -1 ? 0 : 1);
+  assert(c==0 || c==1);
   
-  if(bot[index]){
-    delete bot[index];
-    bot[index] = NULL;
+  if(bot[c]){
+    delete bot[c];
+    bot[c] = NULL;
   }
 }
 
 bot_base* game_control::get_bot_to_move()
 {
-  return bot[current.turn==-1 ? 0 : 1];
-}
-
-bool game_control::is_bot(int color)
-{
-  assert(color==1 || color==-1);
-  int index = (color==-1 ? 0 : 1);
-  return bot[index] != NULL;
+  return bot[turn()];
 }
 
