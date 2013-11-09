@@ -1,5 +1,8 @@
 #include "bot_ali.hpp"
 
+const int bot_ali::location_values[10] =
+{347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+
 bot_ali::bot_ali(int _c, int sd, int pd):
   bot_base(_c,sd,pd)
 {
@@ -17,12 +20,7 @@ bot_ali::bot_ali(int _c, int sd, int pd):
   0,1,2,3,3,2,1,0
   */
   
-  int default_loc_values[10] = 
-  {347,-39,-23,-40,-119,-35,-33,-10,-7,-5}; // working properly
   
-  for(int i=0;i<10;i++){
-    location_value[i] = default_loc_values[i];
-  }
   
 }
 
@@ -31,11 +29,6 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
-void bot_ali::set_loc_values(int* new_values){
-  for(int i=0;i<10;i++){
-    location_value[i] = new_values[i];
-  }
-}
 
 void bot_ali::do_move(const board* b,board* res)
 {
@@ -256,7 +249,7 @@ int bot_ali::heuristic()
   int res = 0;
   
   for(int i=9;i>=0;--i){
-    res += bot_ali::location_value[i] * (
+    res += bot_ali::location_values[i] * (
        (inspected.me & board::location[i]).count()
        -(inspected.opp & board::location[i]).count()
     );
@@ -267,7 +260,4 @@ int bot_ali::heuristic()
 
 bot_ali::~bot_ali(){}
 
-const int* bot_ali::get_loc_values() const
-{
-  return location_value;
-}
+

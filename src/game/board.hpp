@@ -30,10 +30,7 @@ struct board{
   // location on board, for table see source file 
   static const std::bitset<64> location[10];    
   
-  
-  // represents which player is to move:
-  // false means black, true means white
-  bool turn;
+
 
   // discs of player to move
   std::bitset<64> me;
@@ -41,9 +38,12 @@ struct board{
   // discs of opponent of player to move
   std::bitset<64> opp;
   
-  // did any player pass yet?
-  bool passed;
+  // represents which player is to move:
+  // false means black, true means white
+  bool turn;
   
+  // did any player pass yet?
+  bool passed;  
   
   /// does NOTHING; call reset() to initialize
   board();
