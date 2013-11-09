@@ -339,6 +339,93 @@ int board::get_disc_diff() const
   }
 }
 
+void board::do_move(int move_id){
+  assert(is_valid_move(move_id));
+  
+  
+  
+  std::bitset<64> tmp_mask,cur_bit,mask;
+  
+  const std::bitset<64> move_bit = board::bit[move_id];
+  
+  for(int i=0;i<4;++i){
+    
+    tmp_mask.reset();
+    cur_bit = move_bit;
+    
+    
+    while(true){
+      assert(cur_bit.any());
+      
+      // will i walk off the board next step?
+      if(!(walk_possible[i][0] & cur_bit).any()){
+        break;
+      }
+      
+      
+      cur_bit >>= board::walk_diff[7-i][0];
+      
+      // current field = my color
+      if((me & cur_bit).any()){
+        mask |= tmp_mask;
+        break;
+      }
+      
+      // current field = opponent color
+      if((opp & cur_bit).any()){
+        tmp_mask |= cur_bit;
+        continue;
+      }
+      
+      // current fiend = empty
+      break;
+    }
+  }
+  for(int i=4;i<8;++i){
+    
+    tmp_mask.reset();
+    cur_bit = move_bit;
+    
+    
+    while(true){
+      assert(cur_bit.any());
+      
+      // will i walk off the board next step?
+      if(!(walk_possible[i][0] & cur_bit).any()){
+        break;
+      }
+      
+      cur_bit <<= board::walk_diff[i][0];
+      
+      // current field = my color
+      if((me & cur_bit).any()){
+        mask |= tmp_mask;
+        break;
+      }
+      
+      // current field = opponent color
+      if((opp & cur_bit).any()){
+        tmp_mask |= cur_bit;
+        continue;
+      }
+      
+      // current fiend = empty
+      break;
+    }
+  }
+  
+  assert((me & mask).none());
+  assert((opp & mask) == mask);
+  assert((get_non_empty_fields() & board::bit[move_id]).none());
+  
+  me |= (mask | board::bit[move_id]);
+  opp &= ~me;
+  
+  passed = false;
+  
+  switch_turn();
+}
+
 void board::do_move(int move_id, std::bitset<64>* undo_data)
 {
   assert(is_valid_move(move_id));

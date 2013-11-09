@@ -109,6 +109,7 @@ struct board{
   int get_disc_diff() const;
   
   /// does a move
+  void do_move(int field_id);
   void do_move(int field_id,std::bitset<64>* undo_data);
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
