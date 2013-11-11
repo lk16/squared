@@ -133,9 +133,8 @@ int bot_ali::negamax(int alpha, int beta)
     return heuristic();
   }
   
-  std::bitset<64> valid_moves;
+  std::bitset<64> valid_moves = inspected.get_valid_moves();
   
-  inspected.get_valid_moves(&valid_moves);
   if(valid_moves.none()){
     if(inspected.passed){
       return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
@@ -183,9 +182,8 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   nodes++;
   
-  std::bitset<64> valid_moves;
+  std::bitset<64> valid_moves = inspected.get_valid_moves();
   
-  inspected.get_valid_moves(&valid_moves);
   if(valid_moves.none()){
     if(inspected.passed){
       return inspected.get_disc_diff();    

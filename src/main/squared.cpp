@@ -22,10 +22,10 @@ int play_game(bot_base* b_player,bot_base* w_player){
   
   while(true){
     
-    if(!b.has_children()){
+    if(!b.has_valid_moves()){
       b.switch_turn();
       turn = (turn==b_player ? w_player : b_player);
-      if(!b.has_children()){
+      if(!b.has_valid_moves()){
         return b.get_disc_diff();
       }
     }

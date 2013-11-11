@@ -30,7 +30,7 @@ void timing_area(){
   gettimeofday(&start,NULL); 
   for(int i=0;i<runs;i++){ 
     b.reset();
-    b.get_valid_moves(&dummy); 
+    dummy = b.get_valid_moves(); 
   } 
   gettimeofday(&end,NULL); 
   print_diff(start,end,runs,"board::get_valid_moves()");

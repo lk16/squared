@@ -146,11 +146,7 @@ board* board::get_children(board* out_begin) const
   assert(out_begin);
   
   board* out_end = out_begin;
-  std::bitset<64> valid_moves,dummy;
-  
-  
-  
-  get_valid_moves(&valid_moves);
+  std::bitset<64> valid_moves = get_valid_moves();
   
   while(true){
     
@@ -160,7 +156,7 @@ board* board::get_children(board* out_begin) const
     } 
     
     *out_end = *this;
-    out_end->do_move(move_id,&dummy);
+    out_end->do_move(move_id);
     out_end++;
     
     valid_moves.reset(move_id);
@@ -169,111 +165,7 @@ board* board::get_children(board* out_begin) const
   return out_end;
 }
 
-void board::get_valid_moves(std::bitset<64>* out) const
-{
-  out->reset();
-  
-  for(int d=4;d<8;d++){
-    
-    assert(board::walk_diff[d][0] > 0);
-    
-    *out |= 
-    (
-      ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
-      & 
-      (
-        ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-        |
-        (
-          ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-          &
-          (
-            ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-            |
-            (
-              ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-              &
-              (
-                ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-                |
-                (
-                  ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-                  &
-                  (
-                    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-                    |
-                    (
-                      ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-                      &
-                      (
-                        ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-                        |
-                        (
-                          ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-                          &
-                          ((me >> board::walk_diff[d][6]) & board::walk_possible[d][6])
-                        )
-                      )
-                    )
-                  )  
-                )
-              )
-            )
-          )
-        )
-      )
-    );
-    
-    *out |= 
-    (
-      ((opp << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
-      & 
-      (
-        ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-        |
-        (
-          ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-          &
-          (
-            ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-            |
-            (
-              ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-              &
-              (
-                ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-                |
-                (
-                  ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-                  &
-                  (
-                    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-                    |
-                    (
-                      ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-                      &
-                      (
-                        ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-                        |
-                        (
-                          ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-                          &
-                          ((me << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
-                        )
-                      )
-                    )
-                  )  
-                )
-              )
-            )
-          )
-        )
-      )
-    );
-  }
-  
-  *out &= get_empty_fields();
-}
+
 
 void board::show() const
 {

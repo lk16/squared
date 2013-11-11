@@ -31,8 +31,7 @@ void game_control::on_human_do_move(int field_id)
  
  if(current.is_valid_move(field_id)){
     undo_stack.push(current);
-    std::bitset<64> dummy;
-    current.do_move(field_id,&dummy);
+    current.do_move(field_id);
     on_any_move();
   }
 }
@@ -43,7 +42,7 @@ void game_control::on_bot_do_move()
     current.show();
   }
 
-  if(!current.has_children()){
+  if(!current.has_valid_moves()){
     return;
   }
   
@@ -60,9 +59,9 @@ void game_control::on_any_move()
     redo_stack.pop();
   }
   
-  if(!current.has_children()){
+  if(!current.has_valid_moves()){
     current.switch_turn();
-    if(!current.has_children()){
+    if(!current.has_valid_moves()){
       on_game_ended();
     }
   }
@@ -144,9 +143,9 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  if(!current.has_children()){
+  if(!current.has_valid_moves()){
     current.switch_turn();
-    if(!current.has_children()){
+    if(!current.has_valid_moves()){
       current.switch_turn();
       return true;
     }
