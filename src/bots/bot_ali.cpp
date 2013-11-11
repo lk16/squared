@@ -149,7 +149,6 @@ int bot_ali::negamax(int alpha, int beta)
     }
   }
   
-  std::bitset<64> undo_data;
   
   while(valid_moves.any()){
   
@@ -158,7 +157,7 @@ int bot_ali::negamax(int alpha, int beta)
     //  break;
     //}
     
-    inspected.do_move(move,&undo_data);
+    std::bitset<64> undo_data = inspected.do_move(move);
     int value = -negamax(-beta,-alpha);
     inspected.undo_move(move,undo_data);
     

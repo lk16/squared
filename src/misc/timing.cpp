@@ -21,7 +21,7 @@ void timing_area(){
   gettimeofday(&start,NULL); 
   for(int i=0;i<runs;i++){ 
     b.reset();
-    b.do_move(19,&dummy); 
+    dummy = b.do_move(19); 
   } 
   gettimeofday(&end,NULL); 
   print_diff(start,end,runs,"board::do_move()\t");
