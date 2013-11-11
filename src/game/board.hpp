@@ -117,10 +117,6 @@ struct board{
   
   /// does a move
   void do_move(int field_id,std::bitset<64>* undo_data);
-  void do_move_experimental(int field_id,std::bitset<64>* undo_data);
- 
-  /// debug method
-  void check_do_move_experimental() const;
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 

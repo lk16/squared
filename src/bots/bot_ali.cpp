@@ -5,6 +5,25 @@ bot_ali::bot_ali(int _c, int sd, int pd):
 {
   name = "bot_ali";
   shell_output = true;
+  
+  /*
+  0,1,2,3,3,2,1,0,
+  1,4,5,6,6,5,4,1,
+  2,5,7,8,8,7,5,2
+  3,6,8,9,9,8,6,3,
+  3,6,8,9,9,8,6,3,
+  2,5,7,8,8,7,5,2
+  1,4,5,6,6,5,4,1,
+  0,1,2,3,3,2,1,0
+  */
+  
+  int default_loc_values[10] = 
+  {347,-39,-23,-40,-119,-35,-33,-10,-7,-5}; // working properly
+  
+  for(int i=0;i<10;i++){
+    location_value[i] = default_loc_values[i];
+  }
+  
 }
 
 void bot_ali::disable_shell_output()
@@ -12,31 +31,11 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
-/*
-0,1,2,3,3,2,1,0,
-1,4,5,6,6,5,4,1,
-2,5,7,8,8,7,5,2
-3,6,8,9,9,8,6,3,
-3,6,8,9,9,8,6,3,
-2,5,7,8,8,7,5,2
-1,4,5,6,6,5,4,1,
-0,1,2,3,3,2,1,0
-*/
-
-const int bot_ali::location_value[10] = {
-   347, // 0
-  - 39, // 1
-  - 23, // 2
-  - 40, // 3
-  -119, // 4
-  - 35, // 5
-  - 33, // 6
-  - 10, // 7
-  - 7, // 8
-  - 5 // 9
-};
-
-
+void bot_ali::set_loc_values(int* new_values){
+  for(int i=0;i<10;i++){
+    location_value[i] = new_values[i];
+  }
+}
 
 void bot_ali::do_move(const board* b,board* res)
 {

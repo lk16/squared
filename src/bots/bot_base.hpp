@@ -29,6 +29,10 @@ public:
   int get_nodes() const;
   int get_color() const;
   
+  
+  /// WARNING: this changes the color of this bot
+  void swap_color();
+  
 };
 
 
@@ -59,10 +63,14 @@ inline int bot_base::get_color() const
 }
 
 inline void bot_base::do_move(const board* b,board* res){
-  // prevent compiler complaints
   (void) b;
   (void) res;
   CRASH;
+}
+
+inline void bot_base::swap_color()
+{
+  my_color = (my_color == -1 ? 1 : -1);
 }
 
 #endif

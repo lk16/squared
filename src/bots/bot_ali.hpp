@@ -23,7 +23,7 @@ struct bot_ali:
   
   bool shell_output;
   
-  static const int location_value[10];
+  int location_value[10];
   
   
 private:
@@ -60,6 +60,13 @@ public:
   void sort_boards(board *boards,int* heurs, int count);
   
   void disable_shell_output();
+  
+  /// get/set custom location values
+  void set_loc_values(int* new_values);
+  const int* get_loc_values() const;
+  
+  
+  
 };
 
 
