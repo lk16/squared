@@ -232,8 +232,8 @@ inline void board::undo_move(int field_id, std::bitset<64> undo_data)
   opp |= (undo_data);  
   
   
-  assert((me & (*undo_data)).none());
-  assert((opp & (*undo_data)) == (*undo_data));
+  assert((me & undo_data).none());
+  assert((opp & undo_data) == undo_data);
   assert((get_non_empty_fields() & board::bit[field_id]).none());
 }
 

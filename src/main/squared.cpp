@@ -38,28 +38,51 @@ int play_game(bot_base* b_player,bot_base* w_player){
   }
 }
 
+void show_help(){
+  std::cout << 
+  "Invalid argument syntax, try one of these:  \n"
+  "--------------------o-----------------------\n"
+  "testing             | run the testing_area()\n"
+  "timing              | run the timing_area() \n"
+  "show                | show start position   \n"
+  "show <board string> | show board            \n"
+  "<no args>           | run the windowed game \n"
+  "--------------------o-----------------------\n";
+}
+
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   
+  std::string str[10];
+  for(int i=0;i < min<int>(10,argc);i++){
+    str[i]  = argv[i];
+  }
+  
   
   if(argc>=2){
-    std::string argv1(argv[1]);
-    if(argv1 == "testing"){
+    if(str[1] == "testing"){
       testing_area();
+      return 0;
     }
-    else if(argv1 == "timing"){
+    if(str[1] == "timing"){
       timing_area();
+      return 0;
     }
-    else{
-      std::cout << "Invalid argument: " << argv1 << '\n' << 
-      "Try one of these:\n"
-      "----------.-----------------------\n"
-      "testing   | run the testing_area()\n"
-      "timing    | run the timing_area()\n"
-      "<no args> | run the windowed game\n";
-      
+    if(str[1] == "show"){
+      if(argc>=3){
+        board(str[2]).show();
+      }
+      else{
+        board b;
+        b.reset();
+        b.show();
+      }
+      return 0;
     }
+    
+    show_help();
+    
   }
   else{
     main_window window;

@@ -38,10 +38,6 @@ void game_control::on_human_do_move(int field_id)
 
 void game_control::on_bot_do_move()
 {
-  if(bot[BLACK] && bot[WHITE]){
-    current.show();
-  }
-
   if(!current.has_valid_moves()){
     return;
   }
@@ -55,6 +51,9 @@ void game_control::on_bot_do_move()
 
 void game_control::on_any_move()
 {  
+  current.show();
+  std::cout << current.to_string() << std::endl;
+  
   while(!redo_stack.empty()){
     redo_stack.pop();
   }
@@ -124,17 +123,18 @@ void game_control::on_new_game()
 
 void game_control::on_game_ended()
 {
-  std::string text;
+  current.show();
+  std::cout << current.to_string() << std::endl;
   
   int b_count = current.opp.count();
   int w_count = current.me.count();
   
-  if(current.turn == BLACK){
-    std::swap(b_count,w_count);
+  if(!current.turn){ // it's blacks turn
+    std::swap<int>(b_count,w_count);
   }
   
   
-  text += "Game has ended. White (" + tostr<int>(w_count) + ") - Black (";
+  std::string text = "Game has ended. White (" + tostr<int>(w_count) + ") - Black (";
   text += tostr<int>(b_count)+ ")";
   
   std::cout << text << std::endl;

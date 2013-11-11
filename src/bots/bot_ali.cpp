@@ -204,10 +204,9 @@ int bot_ali::negamax_exact(int alpha, int beta)
     if(move == -1){
       break;
     }
-    board backup = inspected;
-    inspected.do_move(move);
+    std::bitset<64> undo_data = inspected.do_move(move);
     int value = -negamax_exact(-beta,-alpha);
-    inspected = backup;
+    inspected.undo_move(move,undo_data);
     if(value >= beta){
       return beta;
     }

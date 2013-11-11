@@ -26,6 +26,7 @@ public:
   virtual void do_move(const board* b,board* res);
   
   int get_search_depth() const;
+  int get_perfect_search_depth() const;
   int get_nodes() const;
   int get_color() const;
   
@@ -51,6 +52,12 @@ inline int bot_base::get_search_depth() const
 {
   return search_depth; 
 }
+
+inline int bot_base::get_perfect_search_depth() const
+{
+  return perfect_depth;
+}
+
 
 inline int bot_base::get_nodes() const
 {

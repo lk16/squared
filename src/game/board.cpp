@@ -328,7 +328,7 @@ std::string board::to_string() const {
       res += 'x';
     }
     else{
-      res += ' ';
+      res += '.';
     }
   }
   return res;
@@ -338,7 +338,8 @@ board::board(const std::string& in){
   turn = (in[0] == 'o');
   passed = (in[1] == 'o');
 
-  reset();
+  me.reset();
+  opp.reset();
   
   for(int i=2;i<66;i++){
     switch(in[i]){
@@ -348,11 +349,8 @@ board::board(const std::string& in){
       case 'x':
         opp.set(i-2);
         break;
-      case ' ':
-        // do nothing
-        break;
       default:
-        *(int*)(0) = 42;
+        break;
     }
   }
 }
