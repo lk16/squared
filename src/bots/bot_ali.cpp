@@ -160,7 +160,7 @@ int bot_ali::negamax(int alpha, int beta)
     
     inspected.do_move(move,&undo_data);
     int value = -negamax(-beta,-alpha);
-    inspected.undo_move(move,&undo_data);
+    inspected.undo_move(move,undo_data);
     
     if(value >= beta){
       return beta;

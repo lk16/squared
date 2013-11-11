@@ -113,7 +113,7 @@ struct board{
   void do_move(int field_id,std::bitset<64>* undo_data);
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
-  void undo_move(int field_id,std::bitset<64>* undo_data); 
+  void undo_move(int field_id,std::bitset<64> undo_data); 
   
   std::string to_string() const;
 };
@@ -225,12 +225,12 @@ inline bool board::is_valid_move(int field_id) const
   return (get_valid_moves() & board::bit[field_id]).any();
 }
 
-inline void board::undo_move(int field_id, std::bitset<64>* undo_data)
+inline void board::undo_move(int field_id, std::bitset<64> undo_data)
 {
   switch_turn();
   
-  me &= ~(*undo_data | board::bit[field_id]);
-  opp |= (*undo_data);  
+  me &= ~(undo_data | board::bit[field_id]);
+  opp |= (undo_data);  
   
   
   assert((me & (*undo_data)).none());
