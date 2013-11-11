@@ -140,12 +140,6 @@ const std::bitset<64> board::location[10] = {
 
 
 
-bool board::is_valid_move(int field_id) const
-{ 
-  std::bitset<64> moves;
-  get_valid_moves(&moves);
-  return (moves & board::bit[field_id]).any();
-}
 
 board* board::get_children(board* out_begin) const
 {
@@ -512,18 +506,7 @@ void board::do_move(int move_id, std::bitset<64>* undo_data)
   switch_turn();
 }
 
-void board::undo_move(int field_id, std::bitset<64>* undo_data)
-{
-  switch_turn();
-  
-  me &= ~(*undo_data | board::bit[field_id]);
-  opp |= (*undo_data);  
-  
-  
-  assert((me & (*undo_data)).none());
-  assert((opp & (*undo_data)) == (*undo_data));
-  assert((get_non_empty_fields() & board::bit[field_id]).none());
-}
+
 
 std::string board::to_string() const {
   std::string res;
