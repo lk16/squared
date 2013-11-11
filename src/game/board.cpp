@@ -344,7 +344,7 @@ void board::do_move(int move_id){
   
   
   
-  std::bitset<64> tmp_mask,cur_bit,mask;
+  std::bitset<64> tmp_mask,cur_bit;
   
   const std::bitset<64> move_bit = board::bit[move_id];
   
@@ -353,7 +353,7 @@ void board::do_move(int move_id){
     tmp_mask.reset();
     cur_bit = move_bit;
     
-    
+     
     while(true){
       assert(cur_bit.any());
       
@@ -367,7 +367,7 @@ void board::do_move(int move_id){
       
       // current field = my color
       if((me & cur_bit).any()){
-        mask |= tmp_mask;
+        me |= tmp_mask;
         break;
       }
       
@@ -399,7 +399,7 @@ void board::do_move(int move_id){
       
       // current field = my color
       if((me & cur_bit).any()){
-        mask |= tmp_mask;
+        me |= tmp_mask;
         break;
       }
       
@@ -414,11 +414,8 @@ void board::do_move(int move_id){
     }
   }
   
-  assert((me & mask).none());
-  assert((opp & mask) == mask);
-  assert((get_non_empty_fields() & board::bit[move_id]).none());
   
-  me |= (mask | board::bit[move_id]);
+  me |= board::bit[move_id];
   opp &= ~me;
   
   passed = false;
