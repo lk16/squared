@@ -32,7 +32,6 @@ SET(objects
   bots/bot_ali.cpp
   game/board.cpp
   game/game_control.cpp
-  gui/clickable_image.cpp
   gui/main_window.cpp
   gui/settings_dialog.cpp
   main/squared.cpp
