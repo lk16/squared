@@ -1,5 +1,8 @@
 #include "bot_ali.hpp"
 
+const int bot_ali::location_values[10] =
+{347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+
 bot_ali::bot_ali(int _c, int sd, int pd):
   bot_base(_c,sd,pd)
 {
@@ -17,12 +20,7 @@ bot_ali::bot_ali(int _c, int sd, int pd):
   0,1,2,3,3,2,1,0
   */
   
-  int default_loc_values[10] = 
-  {347,-39,-23,-40,-119,-35,-33,-10,-7,-5}; // working properly
   
-  for(int i=0;i<10;i++){
-    location_value[i] = default_loc_values[i];
-  }
   
 }
 
@@ -31,11 +29,6 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
-void bot_ali::set_loc_values(int* new_values){
-  for(int i=0;i<10;i++){
-    location_value[i] = new_values[i];
-  }
-}
 
 void bot_ali::do_move(const board* b,board* res)
 {
@@ -140,10 +133,10 @@ int bot_ali::negamax(int alpha, int beta)
     return heuristic();
   }
   
-  std::bitset<64> possible_moves;
+  std::bitset<64> valid_moves;
   
-  inspected.get_valid_moves(&possible_moves);
-  if(possible_moves.none()){
+  inspected.get_valid_moves(&valid_moves);
+  if(valid_moves.none()){
     if(inspected.passed){
       return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
@@ -159,41 +152,25 @@ int bot_ali::negamax(int alpha, int beta)
   
   std::bitset<64> undo_data;
   
-  while(true){
-    int move = find_first_set_64(possible_moves.to_ulong())-1;
-    if(move == -1){
-      break;
-    }
-    if(inspected.try_move(move,&undo_data)){
-      int value = -negamax(-beta,-alpha,depth_remaining-1);
-      inspected.undo_move(move,&undo_data);
-      if(value >= beta){
-        return beta;
-      }
-      if(value >= alpha){
-        alpha = value;
-      }
-      move_count++;
-    }
-    possible_moves.reset(move);
-  }
-  if(move_count!=0){
-    return alpha;
-  }
-  else{
-    inspected.switch_turn();
-    inspected.get_children(NULL,&move_count);
-    int heur;
-    if(move_count!=0){
-      heur = -negamax(-beta,-alpha,depth_remaining-1);
-      inspected.switch_turn();
-      return heur;
+  while(valid_moves.any()){
+  
+    int move = find_first_set_64(valid_moves.to_ulong());
+    //if(move == -1){
+    //  break;
+    //}
+    
+    inspected.do_move(move,&undo_data);
+    int value = -negamax(-beta,-alpha);
+    inspected.undo_move(move,&undo_data);
+    
+    if(value >= beta){
+      return beta;
     }
     if(value >= alpha){
       alpha = value;
     }
     
-    possible_moves.reset(move);
+    valid_moves.reset(move);
   }
   return alpha;
 }
@@ -206,10 +183,10 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   nodes++;
   
-  std::bitset<64> undo_data,possible_moves;
+  std::bitset<64> valid_moves;
   
-  inspected.get_valid_moves(&possible_moves);
-  if(possible_moves.none()){
+  inspected.get_valid_moves(&valid_moves);
+  if(valid_moves.none()){
     if(inspected.passed){
       return inspected.get_disc_diff();    
     }
@@ -226,20 +203,21 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   
   while(true){
-    int move = find_first_set_64(possible_moves.to_ulong());
+    int move = find_first_set_64(valid_moves.to_ulong());
     if(move == -1){
       break;
     }
-    inspected.do_move(move,&undo_data);
+    board backup = inspected;
+    inspected.do_move(move);
     int value = -negamax_exact(-beta,-alpha);
-    inspected.undo_move(move,&undo_data);
+    inspected = backup;
     if(value >= beta){
       return beta;
     }
     if(value >= alpha){
       alpha = value;
     }
-    possible_moves.reset(move);
+    valid_moves.reset(move);
   }
   return alpha;
 }
@@ -271,12 +249,13 @@ int bot_ali::heuristic()
 
   int res = 0;
   
-  for(int i=0;i<10;i++){
-    res += bot_ali::location_value[i] * (
+  for(int i=9;i>=0;--i){
+    res += bot_ali::location_values[i] * (
        (inspected.me & board::location[i]).count()
        -(inspected.opp & board::location[i]).count()
     );
   }  
+  
   return res;
 }
 

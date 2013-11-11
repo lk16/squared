@@ -27,20 +27,10 @@ struct board{
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
   
-  // contains bitsets of captured discs
-  // in direction (1st index) for number of steps (2nd index)
-  // considering move in capture_start
-  static const std::bitset<64> capture[8][6];
-  static const int capture_start[8][6];
-  
-  
   // location on board, for table see source file 
   static const std::bitset<64> location[10];    
   
-  
-  // represents which player is to move:
-  // -1 means black, 1 means white
-  char turn;
+
 
   // discs of player to move
   std::bitset<64> me;
@@ -48,15 +38,22 @@ struct board{
   // discs of opponent of player to move
   std::bitset<64> opp;
   
-  // did any player pass yet?
-  bool passed;
+  // represents which player is to move:
+  // false means black, true means white
+  bool turn;
   
+  // did any player pass yet?
+  bool passed;  
   
   /// does NOTHING; call reset() to initialize
   board();
   
   /// copies a board
   board(const board& b);
+
+  /// can be used to create board object from string of board::to_string()
+  board(const std::string& in);
+
   
   /// assigns a board from b
   board& operator=(const board& b);
@@ -116,12 +113,13 @@ struct board{
   int get_disc_diff() const;
   
   /// does a move
+  void do_move(int field_id);
   void do_move(int field_id,std::bitset<64>* undo_data);
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64>* undo_data); 
   
-  
+  std::string to_string() const;
 };
 
 
@@ -142,8 +140,7 @@ inline void board::reset(){
   opp.set(36);
   
   passed = false;
-  
-  turn = -1;
+  turn = false;
 }
 
 inline board::board(const board& b)
@@ -167,7 +164,7 @@ inline bool board::operator==(const board& b) const
 
 inline void board::switch_turn()
 {
-  turn *= -1;
+  turn = !turn;
   std::swap<std::bitset<64> >(me,opp);
 }
 
@@ -224,7 +221,7 @@ inline void board::randomize()
   
   me =  rand_64();
   opp = rand_64();
-  turn = -1 + 2*(rand() % 2);
+  turn = (rand() % 2);
   passed = false;
   
   me &= (~opp);

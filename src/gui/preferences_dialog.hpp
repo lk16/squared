@@ -7,7 +7,7 @@
 #include <gtkmm/frame.h>
 #include <gtkmm/box.h>
 
-class settings_dialog:
+class preferences_dialog:
   public Gtk::Dialog
 {
   Gtk::RadioButton radio_w_bot,radio_w_human,radio_b_bot,radio_b_human;
@@ -19,7 +19,7 @@ class settings_dialog:
 
 public:
   // use -1 for human
-  settings_dialog(Gtk::Window& parent,int black_level,int white_level);
+  preferences_dialog(Gtk::Window& parent,int black_level,int white_level);
   
   void collect_data(int* black_level,int* white_level);
   

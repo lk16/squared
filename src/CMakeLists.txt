@@ -33,7 +33,8 @@ SET(objects
   game/board.cpp
   game/game_control.cpp
   gui/main_window.cpp
-  gui/settings_dialog.cpp
+  gui/preferences_dialog.cpp
+  gui/clickable_image.cpp
   main/squared.cpp
   misc/testing.cpp
   misc/timing.cpp

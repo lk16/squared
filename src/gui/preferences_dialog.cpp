@@ -1,7 +1,7 @@
-#include "settings_dialog.hpp"
+#include "preferences_dialog.hpp"
 
-settings_dialog::settings_dialog(Gtk::Window& parent,int black_level,int white_level):
-  Gtk::Dialog("Settings",parent),
+preferences_dialog::preferences_dialog(Gtk::Window& parent,int black_level,int white_level):
+  Gtk::Dialog("Preferences",parent),
   radio_w_bot("Robot"),
   radio_w_human("Human"),
   radio_b_bot("Robot"),
@@ -53,7 +53,7 @@ settings_dialog::settings_dialog(Gtk::Window& parent,int black_level,int white_l
 
 }
 
-void settings_dialog::collect_data(int* black_level,int* white_level)
+void preferences_dialog::collect_data(int* black_level,int* white_level)
 {
   if(radio_b_human.get_active()){
     *black_level = -1;

@@ -8,7 +8,7 @@ main_window::main_window():
 {
   init_ui();
   control.on_new_game();
-  show_all_children(); // TODO << doesnt work properly
+  show_all_children(); 
 }
 
 
@@ -26,29 +26,24 @@ void main_window::init_ui(){
   /* Game menu */
   action_group->add(
     Gtk::Action::create("GameNew",Gtk::Stock::NEW,"_New","Start a new game"),
-    sigc::mem_fun(control,&game_control::on_new_game)
+    sigc::mem_fun(*this,&main_window::on_new_game)
   );
   action_group->add(
     Gtk::Action::create("GameUndo",Gtk::Stock::UNDO,"_Undo","Undo move"),
-    sigc::mem_fun(control,&game_control::on_undo)
+    sigc::mem_fun(*this,&main_window::on_undo)
   );
   action_group->add(
     Gtk::Action::create("GameRedo",Gtk::Stock::REDO,"_Redo","Redo move"),
-    sigc::mem_fun(control,&game_control::on_redo)
+    sigc::mem_fun(*this,&main_window::on_redo)
   );
   action_group->add(
     Gtk::Action::create("GameQuit",Gtk::Stock::QUIT,"_Quit","Quit game"),
     sigc::mem_fun(*this,&main_window::on_menu_game_quit)
   );
   
-  /* Settings menu */
   action_group->add(
-    Gtk::Action::create("SettingsFullscreen","_Full Screen"),
-    sigc::mem_fun(*this,&main_window::on_menu_settings_fullscreen)
-  );
-  action_group->add(
-    Gtk::Action::create("SettingsSettings","_Settings"),
-    sigc::mem_fun(*this,&main_window::on_menu_settings_settings)
+  Gtk::Action::create("SettingsPreferences","_Preferences"),
+    sigc::mem_fun(*this,&main_window::on_menu_settings_preferences)
   );
   
   
@@ -61,6 +56,7 @@ void main_window::init_ui(){
   }
   catch(const Glib::Error& ex){
     std::cerr << "Adding ui from 'menus.xml' failed: " << ex.what();
+    std::exit(1);
   }
   
   this->add(vbox);
@@ -89,49 +85,36 @@ void main_window::init_ui(){
 
 void main_window::on_menu_game_quit()
 {
-  Gtk::Dialog dialog("Quit?",*this);
-  Gtk::Label label("Are you sure you want to quit?",0.5,0.5,false);
-  dialog.get_vbox()->add(label);
-  dialog.show_all_children();
-  dialog.add_button(Gtk::Stock::NO,Gtk::RESPONSE_NO);
-  dialog.add_button(Gtk::Stock::YES,Gtk::RESPONSE_YES);
-  if(dialog.run() == Gtk::RESPONSE_YES){
-    hide();
-  }
+  hide();
 }
 
-void main_window::on_menu_settings_fullscreen()
-{
-  std::cout << "Toggle full screen\n";
-}
-
-void main_window::on_menu_settings_settings()
+void main_window::on_menu_settings_preferences()
 {
   int input_level[2],output_level[2];
   
-  input_level[0] = control.bot[0] ? control.bot[0]->get_search_depth() : -1;
-  input_level[1] = control.bot[1] ? control.bot[1]->get_search_depth() : -1;
+  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
+  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
   
   
-  settings_dialog sd(*this,input_level[0],input_level[1]);
+  preferences_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
   
   if(sd.run() == Gtk::RESPONSE_OK){
     
-    sd.collect_data(&output_level[0],&output_level[1]);
+    sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
     
-    if(output_level[0]==-1){
-      control.remove_bot(-1);
+    if(output_level[BLACK]==-1){
+      control.remove_bot(BLACK);
     }
     else{
-      int x = output_level[0];
-      control.add_bot(-1,x,max(2*x+2,16));
+      int x = output_level[BLACK];
+      control.add_bot(BLACK,x,max(2*x+2,16));
     }
-    if(output_level[1]==-1){
-      control.remove_bot(1);
+    if(output_level[WHITE]==-1){
+      control.remove_bot(WHITE);
     }
     else{
-      int x = output_level[1];
-      control.add_bot(1,x,max(2*x+2,16));
+      int x = output_level[WHITE];
+      control.add_bot(WHITE,x,max(2*x+2,16));
     }
   
   }
@@ -140,34 +123,31 @@ void main_window::on_menu_settings_settings()
 void main_window::update_fields()
 {
   const board *b;
-  int x,y;
   std::string imagefile;
   
   b = &control.current;
   
   std::bitset<64> white,black;
   
-  white = (b->turn== 1 ? b->me : b->opp);
-  black = (b->turn==-1 ? b->me : b->opp);
+  white = (b->turn ? b->me : b->opp);
+  black = (b->turn ? b->opp : b->me);
   
   
-   
-  for(y=0;y<8;y++){
-    for(x=0;x<8;x++){
-      if(white.test(y*8+x)){
-        imagefile = "white.png";
-      }
-      else if(black.test(y*8+x)){
-        imagefile = "black.png";
-      }
-      else if(b->is_valid_move(y*8+x)){
-        imagefile = "move.png";
-      }
-      else{
-        imagefile = "empty.png";
-      }
-      fields[x][y].set_image(IMAGE_PATH + imagefile);
+  
+  for(int i=0;i<64;i++){
+    if(white.test(i)){
+      imagefile = "white.png";
     }
+    else if(black.test(i)){
+      imagefile = "black.png";
+    }
+    else if(b->is_valid_move(i)){
+      imagefile = "move.png";
+    }
+    else{
+      imagefile = "empty.png";
+    }
+    fields[i%8][i/8].set_image(IMAGE_PATH + imagefile);
   }
 }
 
@@ -175,3 +155,19 @@ void main_window::update_status_bar(const std::string& text)
 {
   status_bar.push(text);
 }
+
+void main_window::on_new_game()
+{
+  control.on_new_game();
+}
+
+void main_window::on_redo()
+{
+  control.on_redo();
+}
+
+void main_window::on_undo()
+{
+  control.on_undo();
+}
+
