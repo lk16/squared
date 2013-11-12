@@ -41,13 +41,14 @@ int play_game(bot_base* b_player,bot_base* w_player){
 void show_help(){
   std::cout << 
   "Invalid argument syntax, try one of these:  \n"
-  "--------------------o-----------------------\n"
-  "testing             | run the testing_area()\n"
-  "timing              | run the timing_area() \n"
-  "show                | show start position   \n"
-  "show <board string> | show board            \n"
-  "<no args>           | run the windowed game \n"
-  "--------------------o-----------------------\n";
+  "o---------------------o--------------------------------------------------------o\n"
+  "| testing             | run the testing_area()                                 |\n"
+  "| timing              | run the timing_area()                                  |\n"
+  "| show                | show start position                                    |\n"
+  "| show <board string> | show board                                             |\n"
+  "| play                | play the windowed game                                 |\n"
+  "| <no args>           | play the windowed game                                 |\n"
+  "o---------------------o--------------------------------------------------------o\n";
 }
 
 
@@ -80,7 +81,17 @@ int main(int argc,char **argv){
       }
       return 0;
     }
-    
+    if(str[1] == "play"){
+      if(argc>=3){
+        main_window window(str[2]);
+        Gtk::Main::run(*&window);
+      }
+      else{
+        main_window window;
+        Gtk::Main::run(window);
+      }
+      return 0;
+    }
     show_help();
     
   }

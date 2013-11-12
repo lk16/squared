@@ -21,7 +21,12 @@ class main_window:
 {
 
 public:
+  
+  // shows board in start position
   main_window();
+  
+  // shows board b
+  main_window(const board& b);
 
   
   /* update from control.current */
