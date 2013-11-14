@@ -155,7 +155,12 @@ void main_window::update_fields()
       imagefile = "black.png";
     }
     else if(b->is_valid_move(i)){
-      imagefile = "move.png";
+      if(b->turn){
+        imagefile = "move_white.png";
+      }
+      else{
+        imagefile = "move_black.png";
+      }
     }
     else{
       imagefile = "empty.png";

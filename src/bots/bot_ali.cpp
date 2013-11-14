@@ -80,7 +80,7 @@ void bot_ali::do_move(const board* b,board* res)
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -negamax(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     sort_boards(children,heurs,child_count);
   }
@@ -93,10 +93,10 @@ void bot_ali::do_move(const board* b,board* res)
     int cur_heur;
     switch(mode){
       case NORMAL_MODE:
-        cur_heur = -negamax(MIN_HEURISTIC,-best_heur);
+        cur_heur = -pvs(MIN_HEURISTIC,-best_heur);
         break;
       case PERFECT_MODE:
-        cur_heur = -negamax_exact(-64,-best_heur);
+        cur_heur = -pvs_exact(-64,-best_heur);
         break;
     }
     if(cur_heur > best_heur){
@@ -124,7 +124,7 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
-int bot_ali::negamax(int alpha, int beta)
+int bot_ali::pvs(int alpha, int beta)
 {
  
   nodes++;
@@ -142,32 +142,47 @@ int bot_ali::negamax(int alpha, int beta)
     else{
       inspected.passed = true;
       inspected.switch_turn();
-      int heur = -negamax(-beta,-alpha);
+      int heur = -pvs(-beta,-alpha);
       inspected.switch_turn();
       inspected.passed = false;
       return heur;
     }
   }
   
+  bool null_window = false;
   
   while(valid_moves.any()){
-  
+    
     int move = find_first_set_64(valid_moves.to_ulong());
-    //if(move == -1){
-    //  break;
-    //}
+    std::bitset<64> undo_data;
+    int score;
     
-    std::bitset<64> undo_data = inspected.do_move(move);
-    int value = -negamax(-beta,-alpha);
-    inspected.undo_move(move,undo_data);
     
-    if(value >= beta){
+    if(null_window){
+      undo_data = inspected.do_move(move);
+      score = -pvs(-alpha-1,-alpha);
+      inspected.undo_move(move,undo_data);
+      
+      if((alpha < score) && (score < beta)){
+        undo_data = inspected.do_move(move);
+        score = -pvs(-beta,-alpha);
+        inspected.undo_move(move,undo_data);
+      }
+    }
+    else{
+      undo_data = inspected.do_move(move);
+      score = -pvs(-beta,-alpha);
+      inspected.undo_move(move,undo_data);
+      
+    }
+    
+    if(score >= beta){
       return beta;
     }
-    if(value >= alpha){
-      alpha = value;
+    if(score >= alpha){
+      alpha = score;
     }
-    
+    null_window = true;
     valid_moves.reset(move);
   }
   return alpha;
@@ -176,7 +191,7 @@ int bot_ali::negamax(int alpha, int beta)
 
 
 
-int bot_ali::negamax_exact(int alpha, int beta)
+int bot_ali::pvs_exact(int alpha, int beta)
 {
   
   nodes++;
@@ -190,7 +205,7 @@ int bot_ali::negamax_exact(int alpha, int beta)
     else{
       inspected.passed = true;
       inspected.switch_turn();
-      int heur = -negamax_exact(-beta,-alpha);
+      int heur = -pvs_exact(-beta,-alpha);
       inspected.switch_turn();
       inspected.passed = false;
       return heur;
@@ -199,20 +214,39 @@ int bot_ali::negamax_exact(int alpha, int beta)
   
   
   
-  while(true){
+  bool null_window = false;
+  
+  while(valid_moves.any()){
+    
     int move = find_first_set_64(valid_moves.to_ulong());
-    if(move == -1){
-      break;
+    std::bitset<64> undo_data;
+    int score;
+    
+    
+    if(null_window){
+      undo_data = inspected.do_move(move);
+      score = -pvs_exact(-alpha-1,-alpha);
+      inspected.undo_move(move,undo_data);
+      
+      if((alpha < score) && (score < beta)){
+        undo_data = inspected.do_move(move);
+        score = -pvs_exact(-beta,-alpha);
+        inspected.undo_move(move,undo_data);
+      }
     }
-    std::bitset<64> undo_data = inspected.do_move(move);
-    int value = -negamax_exact(-beta,-alpha);
-    inspected.undo_move(move,undo_data);
-    if(value >= beta){
+    else{
+      undo_data = inspected.do_move(move);
+      score = -pvs_exact(-beta,-alpha);
+      inspected.undo_move(move,undo_data);
+    }
+    
+    if(score >= beta){
       return beta;
     }
-    if(value >= alpha){
-      alpha = value;
+    if(score >= alpha){
+      alpha = score;
     }
+    null_window = true;
     valid_moves.reset(move);
   }
   return alpha;

@@ -46,14 +46,14 @@ public:
   /// positive is good for this->turn 
   int heuristic();
   
-  /// calculates the heuristic for this->inspected using negamax
-  /// positive result is good for white
-  int negamax(int alpha, int beta);
+  /// calculates the heuristic for this->inspected using principal variation search
+  /// positive result is good for this->inspected.turn
+  int pvs(int alpha, int beta);
   
   /// calculates the result for perfect play of this->inspected, 
-  /// positive result is good for white
+  /// positive result is good for this->inspected.turn
   /// this is NOT multiplied with EXACT_SCORE_FACTOR
-  int negamax_exact(int alpha, int beta);
+  int pvs_exact(int alpha, int beta);
   
   /// sort boards descending according to heurs
   void sort_boards(board *boards,int* heurs, int count);
