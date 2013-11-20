@@ -48,7 +48,8 @@ public:
   
   /// calculates the heuristic for this->inspected using principal variation search
   /// positive result is good for this->inspected.turn
-  int pvs(int alpha, int beta);
+  
+  template<bool sorted> int pvs(int alpha, int beta);
   
   /// calculates the result for perfect play of this->inspected, 
   /// positive result is good for this->inspected.turn

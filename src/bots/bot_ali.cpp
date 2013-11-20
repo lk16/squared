@@ -80,7 +80,7 @@ void bot_ali::do_move(const board* b,board* res)
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -pvs(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     sort_boards(children,heurs,child_count);
   }
@@ -93,7 +93,7 @@ void bot_ali::do_move(const board* b,board* res)
     int cur_heur;
     switch(mode){
       case NORMAL_MODE:
-        cur_heur = -pvs(MIN_HEURISTIC,-best_heur);
+        cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
         break;
       case PERFECT_MODE:
         cur_heur = -pvs_exact(-64,-best_heur);
@@ -124,14 +124,26 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
+template<bool sorted>
 int bot_ali::pvs(int alpha, int beta)
 {
  
   nodes++;
   
-  if(negamax_max_non_empty_fields == (int)inspected.get_non_empty_fields().count()){
-    return heuristic();
+  int depth_left = 
+    (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
+  
+  if(sorted){
+    if(depth_left < 7){
+      return pvs<false>(alpha,beta);
+    }
   }
+  else{
+    if(depth_left == 0){
+      return heuristic();
+    }
+  }
+  
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
   
@@ -142,51 +154,101 @@ int bot_ali::pvs(int alpha, int beta)
     else{
       inspected.passed = true;
       inspected.switch_turn();
-      int heur = -pvs(-beta,-alpha);
+      int heur = -pvs<sorted>(-beta,-alpha);
       inspected.switch_turn();
       inspected.passed = false;
       return heur;
     }
   }
   
-  bool null_window = false;
-  
-  while(valid_moves.any()){
     
-    int move = find_first_set_64(valid_moves.to_ulong());
-    std::bitset<64> undo_data;
-    int score;
+  if(sorted){
+    board children[32]; 
+    int heur[32];
+    int child_count = inspected.get_children(children) - children;
+    for(int i=0;i<child_count;i++){
+      heur[i] = -children[i].count_valid_moves();
+    }
+    sort_boards(children,heur,child_count);
     
     
-    if(null_window){
-      undo_data = inspected.do_move(move);
-      score = -pvs(-alpha-1,-alpha);
-      inspected.undo_move(move,undo_data);
+    bool null_window = false;
+    
+    for(int i=0;i<child_count;i++){
       
-      if((alpha < score) && (score < beta)){
-        undo_data = inspected.do_move(move);
-        score = -pvs(-beta,-alpha);
-        inspected.undo_move(move,undo_data);
+      int score;
+      
+      
+      if(null_window){
+        std::swap<board>(inspected,children[i]);
+        score = -pvs<sorted>(-alpha-1,-alpha);
+        std::swap<board>(inspected,children[i]);
+        
+        if((alpha < score) && (score < beta)){
+          std::swap<board>(inspected,children[i]);
+          score = -pvs<sorted>(-beta,-alpha);
+          std::swap<board>(inspected,children[i]);
+        }
       }
-    }
-    else{
-      undo_data = inspected.do_move(move);
-      score = -pvs(-beta,-alpha);
-      inspected.undo_move(move,undo_data);
+      else{
+        std::swap<board>(inspected,children[i]);
+        score = -pvs<sorted>(-beta,-alpha);
+        std::swap<board>(inspected,children[i]);
+        
+      }
       
+      if(score >= beta){
+        return beta;
+      }
+      if(score >= alpha){
+        alpha = score;
+      }
+      null_window = true;
     }
+    return alpha;
     
-    if(score >= beta){
-      return beta;
-    }
-    if(score >= alpha){
-      alpha = score;
-    }
-    null_window = true;
-    valid_moves.reset(move);
+    
   }
-  return alpha;
+  else{
+    bool null_window = false;
+    
+    while(valid_moves.any()){
+      int move = find_first_set_64(valid_moves.to_ulong());
+      std::bitset<64> undo_data;
+      int score;
+      
+      
+      if(null_window){
+        undo_data = inspected.do_move(move);
+        score = -pvs<sorted>(-alpha-1,-alpha);
+        inspected.undo_move(move,undo_data);
+        
+        if((alpha < score) && (score < beta)){
+          undo_data = inspected.do_move(move);
+          score = -pvs<sorted>(-beta,-alpha);
+          inspected.undo_move(move,undo_data);
+        }
+      }
+      else{
+        undo_data = inspected.do_move(move);
+        score = -pvs<sorted>(-beta,-alpha);
+        inspected.undo_move(move,undo_data);
+        
+      }
+      
+      if(score >= beta){
+        return beta;
+      }
+      if(score >= alpha){
+        alpha = score;
+      }
+      null_window = true;
+      valid_moves.reset(move);
+    }
+    return alpha;
+  }
 }
+
 
 
 
