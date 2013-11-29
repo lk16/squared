@@ -46,10 +46,12 @@ public:
   /// positive is good for this->turn 
   int heuristic();
   
-  /// calculates the heuristic for this->inspected using principal variation search
-  /// positive result is good for this->inspected.turn
-  
+  /** calculates the heuristic for this->inspected 
+      using principal variation search
+      positive result is good for this->inspected.turn
+  */
   template<bool sorted> int pvs(int alpha, int beta);
+  int pvs_null_window(int alpha);
   
   /// calculates the result for perfect play of this->inspected, 
   /// positive result is good for this->inspected.turn

@@ -134,7 +134,7 @@ int bot_ali::pvs(int alpha, int beta)
     (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
   
   if(sorted){
-    if(depth_left < 7){
+    if(depth_left < 5){
       return pvs<false>(alpha,beta);
     }
   }
@@ -181,7 +181,7 @@ int bot_ali::pvs(int alpha, int beta)
       
       if(null_window){
         std::swap<board>(inspected,children[i]);
-        score = -pvs<sorted>(-alpha-1,-alpha);
+        score = -pvs_null_window(-alpha-1);
         std::swap<board>(inspected,children[i]);
         
         if((alpha < score) && (score < beta)){
@@ -220,7 +220,7 @@ int bot_ali::pvs(int alpha, int beta)
       
       if(null_window){
         undo_data = inspected.do_move(move);
-        score = -pvs<sorted>(-alpha-1,-alpha);
+        score = -pvs_null_window(-alpha-1);
         inspected.undo_move(move,undo_data);
         
         if((alpha < score) && (score < beta)){
@@ -249,7 +249,56 @@ int bot_ali::pvs(int alpha, int beta)
   }
 }
 
+int bot_ali::pvs_null_window(int alpha)
+{
+  nodes++;
+  
+  int depth_left = 
+  (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
+  
+  if(depth_left == 0){
+    return heuristic();
+  }
 
+  
+  std::bitset<64> valid_moves = inspected.get_valid_moves();
+  
+  if(valid_moves.none()){
+    if(inspected.passed){
+      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      inspected.passed = true;
+      inspected.switch_turn();
+      int heur = -pvs_null_window(-(alpha+1));
+      inspected.switch_turn();
+      inspected.passed = false;
+      return heur;
+    }
+  }
+  
+  
+  
+  while(valid_moves.any()){
+    int move = find_first_set_64(valid_moves.to_ulong());
+    std::bitset<64> undo_data;
+    int score;
+    
+    undo_data = inspected.do_move(move);
+    score = -pvs_null_window(-(alpha+1));
+    inspected.undo_move(move,undo_data);
+    
+    if(score >= (alpha+1)){
+      return (alpha+1);
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
+    valid_moves.reset(move);
+  }
+  return alpha;
+  
+}
 
 
 
