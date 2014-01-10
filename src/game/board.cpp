@@ -355,3 +355,17 @@ board::board(const std::string& in){
   }
 }
 
+board board::do_random_moves(int count) const
+{
+  board moves[32];
+  board* end = NULL;
+  board res = *this;
+  for(int i=0;i<count;i++){
+    end = res.get_children(moves);
+    if(end == moves){
+      return res;
+    }
+    res = moves[rand() % (end-moves)];
+  }
+  return res;  
+}

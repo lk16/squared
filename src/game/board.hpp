@@ -82,6 +82,7 @@ struct board{
   /// out will represent a bitset in which each set bit represents a valid move
   std::bitset<64> get_valid_moves() const;
   
+  board do_random_moves(int count) const;
   
   /// gets all children from this board
   /// returns a possibly increased out pointer

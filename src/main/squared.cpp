@@ -47,6 +47,8 @@ void show_help(){
   "| show                | show start position                                    |\n"
   "| show <board string> | show board                                             |\n"
   "| play                | play the windowed game                                 |\n"
+  "| play <board string> | play the windowed game with given starting position    |\n"
+  "| random x y z        | play the windowed game, x random moves, y,z bot levels |\n"
   "| <no args>           | play the windowed game                                 |\n"
   "o---------------------o--------------------------------------------------------o\n";
 }
@@ -54,6 +56,7 @@ void show_help(){
 
 int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
+  srand(std::time(NULL));
   
   std::string str[10];
   for(int i=0;i < min<int>(10,argc);i++){
@@ -91,6 +94,27 @@ int main(int argc,char **argv){
         Gtk::Main::run(window);
       }
       return 0;
+    }
+    if(str[1] == "random"){
+      if(argc>=4){
+        board b;
+        b.reset();
+        b = b.do_random_moves(fromstr<int>(str[2]));
+        main_window window(b);
+        int depth,perfect;
+        depth = fromstr<int>(str[3]);
+        perfect = max(16,2*depth);
+        if(depth!=0){
+          window.control.add_bot(BLACK,depth,perfect);
+        }
+        depth = fromstr<int>(str[4]);
+        perfect = max(16,2*depth);
+        if(depth!=0){
+          window.control.add_bot(WHITE,depth,perfect);
+        }
+        Gtk::Main::run(window);
+        return 0;
+      }
     }
     show_help();
     
