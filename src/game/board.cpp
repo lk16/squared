@@ -315,44 +315,79 @@ std::bitset<64> board::do_move(int move_id)
 
 
 std::string board::to_string() const {
-  std::string res;
+  /* format:
+   * byte 0: '0' + bitset of turn = 0x1, passed = 0x2
+   * byte 1: reserved for rotation purposes
+   * byte 2-17: hex notation of me
+   * byte 18-33: hex notation of opp
+   * byte 34: \0
+   */
+  char res[35];  
+  const char hex[17] = "0123456789abcdef";
   
-  res += (turn ? 'o' : 'x');
-  res += (passed ? 'o' : 'x');
+  res[0] = '0' + ((turn ? 0x1 : 0x0) | (passed ? 0x2 : 0x0));
+  res[1] = '0';
   
-  for(int i=0;i<64;i++){
-    if(me.test(i)){
-      res += 'o';
-    }
-    else if(opp.test(i)){
-      res += 'x';
-    }
-    else{
-      res += '.';
-    }
+  for(int i=0;i<16;i++){
+    res[2+i] = hex[(me >> (4*i)).to_ulong() & 0xF];
+    res[18+i] = hex[(opp >> (4*i)).to_ulong() & 0xF];
   }
-  return res;
+  
+  res[34] = '\0';
+  
+  return std::string(res);  
 }
 
 board::board(const std::string& in){
-  turn = (in[0] == 'o');
-  passed = (in[1] == 'o');
-
-  me.reset();
-  opp.reset();
   
-  for(int i=2;i<66;i++){
-    switch(in[i]){
-      case 'o': 
-        me.set(i-2);
-        break;
-      case 'x':
-        opp.set(i-2);
-        break;
-      default:
-        break;
+  try{
+    if(in.length() != 34){
+      throw 0;
+    }
+    
+    turn = ((in[0] - '0') &  0x1);
+    passed = ((in[0] - '0') & 0x2);
+
+    me.reset();
+    opp.reset();
+    
+    unsigned long long x;
+    for(int i=0;i<16;i++){
+      if((in[2+i]>='0') && (in[2+i]<='9')){
+        x = in[2+i]-'0';
+      }
+      else if((in[2+i]>='a') && (in[2+i]<='f')){
+        x = 10 + in[2+i] - 'a';      
+      }
+      else{
+        throw 1;
+      }
+      me |= ((x & 0xF) << (i*4));
+    }
+    
+    for(int i=0;i<16;i++){
+      if((in[18+i]>='0') && (in[18+i]<='9')){
+        x = in[18+i]-'0';
+      }
+      else if((in[18+i]>='a') && (in[18+i]<='f')){
+        x = 10 + in[18+i] - 'a';      
+      }
+      else{
+        throw 2;
+      }
+      opp |= ((x & 0xF) << (i*4));
     }
   }
+  catch(int i){
+    me.reset();
+    opp.reset();
+    turn = passed = false;
+    std::cout << "ERROR: invalid board format fed to board(std::string)\n";
+    return;
+    
+  }
+  
+  
 }
 
 board board::do_random_moves(int count) const
