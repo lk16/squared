@@ -1,34 +1,45 @@
+project(squared)
+
 find_package(PkgConfig)
 
-pkg_check_modules(GTKMM gtkmm-2.4) # look into FindPkgConfig.cmake, 
+pkg_check_modules(GTKMM gtkmm-3.0)
+pkg_check_modules(GLIBMM glibmm-2.4)
+pkg_check_modules(GDK_PIXBUF gdk-pixbuf-2.0)
 
-
-
-link_directories(
-  ${GTKMM_LIBRARY_DIRS}
-)
 
 set(DEBUG_FLAGS
-  "-I .. -std=c++0x -Wall -Wextra -g  -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+  "-I .. -std=c++0x -Wall -Wextra -g -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
 )
 
 set(OPTIMIZED_DEBUG_FLAGS
   "-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O2 -g -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
-
 set(OPTIMIZING_FLAGS
   "-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
-
 set(CMAKE_CXX_FLAGS 
-  ${OPTIMIZING_FLAGS}
-  #${OPTIMIZED_DEBUG_FLAGS}
-  #${DEBUG_FLAGS} 
+  "${OPTIMIZING_FLAGS}"
+  #"${OPTIMIZED_DEBUG_FLAGS}"
+  #"${DEBUG_FLAGS}"
 ) 
 
-SET(objects
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+include_directories(${GTKMM_LIBRARY_DIRS})
+include_directories(${GTKMM_INCLUDE_DIRS})
+
+include_directories(${GLIBMM_LIBRARY_DIRS})
+include_directories(${GLIBMM_INCLUDE_DIRS})
+
+include_directories(${GDK_PIXBUF_LIBRARY_DIRS})
+include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
+
+
+
+set(objects
   bots/bot_ali.cpp
   game/board.cpp
   game/game_control.cpp
@@ -41,15 +52,12 @@ SET(objects
 )
 
 
-include_directories(.)
-include_directories(${GTKMM_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-
-ADD_EXECUTABLE(../squared
+add_executable(../squared
   ${objects}
 )
 
 target_link_libraries(../squared
   ${GTKMM_LIBRARIES}
+  ${GLIBMM_LIBRARIES}
+  ${GDK_PIXBUF_LIBRARIES}
 )
