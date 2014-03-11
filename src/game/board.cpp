@@ -404,3 +404,40 @@ board board::do_random_moves(int count) const
   }
   return res;  
 }
+
+board board::rotate(int n) const
+{
+  board b(*this);
+  
+  if(n>7){
+    std::cout << "WARNING: invalid n (" << n <<") fed to board::rotate!\n";
+    return b;
+  }
+  
+  if(n>=4){
+    b.me = mirror_vertical_line(b.me);
+    b.opp = mirror_vertical_line(b.opp);
+    n -= 4;
+  }
+  
+  for(int i=0;i<n;i++){
+    b.me = rotate_left(b.me);
+    b.opp = rotate_left(b.opp);
+  }
+  
+  return b;
+}
+
+std::string board::to_database_string() const
+{
+  board min_board = *this;
+  
+  for(int i=1;i<8;i++){
+    if(rotate(i) < min_board){
+      min_board = rotate(i);
+    }
+  }
+  
+  return min_board.to_string(); 
+}
+

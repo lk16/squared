@@ -116,6 +116,12 @@ struct board{
   void undo_move(int field_id,std::bitset<64> undo_data); 
   
   std::string to_string() const;
+  
+  // rotate/mirror the board, 0 <= n <= 7
+  board rotate(int n) const;
+  
+  std::string to_database_string() const;
+  
 };
 
 
@@ -167,17 +173,18 @@ inline void board::switch_turn()
 
 inline bool board::operator<(const board& b) const
 {
+  
+  if(turn ^ b.turn){
+    return b.turn;
+  }
+  if(passed ^ b.passed){
+    return b.passed;
+  }
   if(me != b.me){
     return me.to_ulong() < b.me.to_ulong();
   }
   if(opp != b.opp){
     return opp.to_ulong() < b.opp.to_ulong();
-  }
-  if(turn != b.turn){
-    return turn < b.turn;
-  }
-  if(passed != b.passed){
-    return passed;
   }
   return false;
 }

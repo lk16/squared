@@ -53,6 +53,7 @@ void game_control::on_any_move()
 {  
   current.show();
   std::cout << current.to_string() << std::endl;
+  std::cout << "database format: " << current.to_database_string() << std::endl;
   
   while(!redo_stack.empty()){
     redo_stack.pop();
