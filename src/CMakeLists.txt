@@ -20,9 +20,9 @@ set(OPTIMIZING_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS 
-  "${OPTIMIZING_FLAGS}"
+  #"${OPTIMIZING_FLAGS}"
   #"${OPTIMIZED_DEBUG_FLAGS}"
-  #"${DEBUG_FLAGS}"
+  "${DEBUG_FLAGS}"
 ) 
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -48,7 +48,6 @@ set(objects
   gui/clickable_image.cpp
   main/squared.cpp
   misc/testing.cpp
-  misc/timing.cpp
 )
 
 

@@ -35,7 +35,7 @@ private:
   
   
 public:
-
+  bot_ali();
   bot_ali(int c, int _search_depth,int _perfect_depth);
   ~bot_ali();
   

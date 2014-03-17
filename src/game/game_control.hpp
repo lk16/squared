@@ -21,7 +21,8 @@ struct game_control{
   
   std::stack<board> undo_stack,redo_stack;
   
-  game_control(main_window* mw);
+  game_control();
+  game_control(const game_control& gc);
   ~game_control();
   
   void add_bot(int color, int _depth, int _perfect_depth);

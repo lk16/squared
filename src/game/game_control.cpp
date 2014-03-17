@@ -1,10 +1,23 @@
 #include "game_control.hpp"
 #include "gui/main_window.hpp"
 
-game_control::game_control(main_window* _mw):
-  mw(_mw)
+game_control::game_control()
 {
   bot[0] = bot[1] = NULL;
+  current.reset();
+}
+
+
+
+game_control::game_control(const game_control& gc)
+{
+  bot[0] = gc.bot[0];
+  bot[1] = gc.bot[1];
+  current = gc.current;
+  redo_stack = gc.redo_stack;
+  undo_stack = gc.undo_stack;
+  
+  
   Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
 }
 

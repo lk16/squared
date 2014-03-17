@@ -51,6 +51,10 @@ struct board{
   /// copies a board
   board(const board& b);
 
+  board(const board&& b);
+  
+  
+  
   /// can be used to create board object from string of board::to_string()
   board(const std::string& in);
 
@@ -123,6 +127,15 @@ struct board{
   std::string to_database_string() const;
   
 };
+
+
+inline board::board(const board&& b):
+  me(std::move(b.me)),
+  opp(std::move(b.opp)),
+  turn(std::move(b.turn)),
+  passed(std::move(b.passed))
+{
+}
 
 
 inline board::board()

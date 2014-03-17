@@ -26,7 +26,7 @@ public:
   main_window();
   
   // shows board b
-  main_window(const board& b);
+  main_window(const game_control& gc);
 
   
   /* update from control.current */

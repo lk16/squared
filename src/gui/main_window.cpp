@@ -1,7 +1,7 @@
 #include "main_window.hpp"
 
 main_window::main_window():
-  control(this),
+  control(),
   table(8,8),
   aspect_frame("",0.5,0.5,1),
   ui_file(UI_PATH + "menus.xml")
@@ -11,15 +11,14 @@ main_window::main_window():
   show_all_children(); 
 }
 
-main_window::main_window(const board& b):
-  control(this),
+main_window::main_window(const game_control& gc):
+  control(gc),
   table(8,8),
   aspect_frame("",0.5,0.5,1),
   ui_file(UI_PATH + "menus.xml")
 {
+  control.mw = this;
   init_ui();
-  control.on_new_game();
-  control.current = b;
   update_fields();
   show_all_children(); 
 }

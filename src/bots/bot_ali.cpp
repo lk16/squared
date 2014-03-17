@@ -3,6 +3,14 @@
 const int bot_ali::location_values[10] =
 {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
 
+bot_ali::bot_ali(): bot_base(BLACK,1,2)
+{
+  name = "bot_ali";
+  shell_output = true;
+}
+
+
+
 bot_ali::bot_ali(int _c, int sd, int pd):
   bot_base(_c,sd,pd)
 {

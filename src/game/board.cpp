@@ -410,7 +410,7 @@ board board::rotate(int n) const
   board b(*this);
   
   if(n>7){
-    std::cout << "WARNING: invalid n (" << n <<") fed to board::rotate!\n";
+    std::cout << "WARNING: invalid n (" << n << ") fed to board::rotate!\n";
     return b;
   }
   
