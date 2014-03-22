@@ -1,5 +1,4 @@
-#ifndef SQUARED_SETTINGS_DIALOG_HPP
-#define SQUARED_SETTINGS_DIALOG_HPP
+#pragma once
 
 #include <gtkmm/dialog.h>
 #include <gtkmm/radiobutton.h>
@@ -25,5 +24,3 @@ public:
   
   
 };
-
-#endif

@@ -1,12 +1,12 @@
-#ifndef SQUARED_BOT_BASE_HPP
-#define SQUARED_BOT_BASE_HPP
+#pragma once
 
 #include <algorithm>
 #include <ctime>
 #include <string>
 #include <sys/time.h>
 
-#include "game/util.hpp"
+#include "util/const.hpp"
+#include "util/math.hpp"
 #include "game/board.hpp"
 
 class bot_base{
@@ -22,6 +22,8 @@ public:
   /// constructor
   bot_base(int _c, int sd,int pd);
   
+  virtual ~bot_base();
+  
   /// calculate best move of b and put it in res
   virtual void do_move(const board* b,board* res);
   
@@ -36,6 +38,8 @@ public:
   
 };
 
+inline bot_base::~bot_base()
+{}
 
 
 inline bot_base::bot_base(int _c, int sd,int pd):
@@ -79,5 +83,3 @@ inline void bot_base::swap_color()
 {
   my_color = (my_color == -1 ? 1 : -1);
 }
-
-#endif

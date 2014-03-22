@@ -64,9 +64,18 @@ void game_control::on_bot_do_move()
 
 void game_control::on_any_move()
 {  
-  current.show();
   std::cout << current.to_string() << std::endl;
-  std::cout << "database format: " << current.to_database_string() << std::endl;
+
+  if(current.get_non_empty_fields().count() < 24){
+    csv movesfile(BOOK_PATH + "moves.csv");
+    std::vector<std::string> line;
+    line.push_back(tostr<int>(current.get_non_empty_fields().count()-4));
+    line.push_back(current.to_database_string());
+    movesfile.append_line(line);
+  }
+  
+  
+  
   
   while(!redo_stack.empty()){
     redo_stack.pop();

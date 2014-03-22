@@ -1,5 +1,4 @@
-#ifndef SQUARED_MAIN_WINDOW_HPP
-#define SQUARED_MAIN_WINDOW_HPP
+#pragma once
 
 #include <cassert>
 #include <iostream>
@@ -9,10 +8,11 @@
 
 #include "bots/bot_ali.hpp"
 #include "game/game_control.hpp"
-#include "game/util.hpp"
 #include "game/board.hpp"
 #include "gui/clickable_image.hpp"
 #include "gui/preferences_dialog.hpp"
+#include "util/const.hpp"
+
 
 class board;
 
@@ -64,5 +64,3 @@ protected:
 
 
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SQUARED_BOARD_HPP
-#define SQUARED_BOARD_HPP
+#pragma once
 
 #include <bitset>
 #include <cassert>
@@ -8,7 +7,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "game/util.hpp"
+#include "util/const.hpp"
+#include "util/bitset.hpp"
+#include "util/macros.hpp"
+#include "util/math.hpp"
 
 
 struct board{
@@ -365,4 +367,3 @@ inline std::bitset<64> board::get_valid_moves() const
   return res;
 }
 
-#endif

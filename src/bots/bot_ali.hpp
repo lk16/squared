@@ -1,12 +1,14 @@
-#ifndef SQUARED_BOT_ALI_HPP
-#define SQUARED_BOT_ALI_HPP
+#pragma once
 
 #include <bitset>
 #include <cassert>
 #include <string.h>
 #include <functional>
 
-#include "game/util.hpp"
+#include "util/const.hpp"
+#include "util/math.hpp"
+#include "util/macros.hpp"
+#include "util/string.hpp"
 #include "bots/bot_base.hpp"
 
 #define BOT_ALI_ALWAYS_SHOW_HEUR         0
@@ -67,6 +69,3 @@ public:
   
 };
 
-
-
-#endif

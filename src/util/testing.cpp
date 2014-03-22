@@ -1,5 +1,6 @@
 #include "testing.hpp"
 #include "bots/bot_ali.hpp"
+#include "util/csv.hpp"
 
 #include <future>
 #include <vector>
@@ -14,6 +15,10 @@ void print_time_diff(timeval start,timeval end,int runs,const char* name){
 
 
 void testing_area(){
+  
+  
+#if 0
+  
   
   timeval start,end;
   
@@ -66,5 +71,5 @@ void testing_area(){
   
   
   print_time_diff(start,end,n,"ali.do_move() parallel");
-  
+#endif  
 }

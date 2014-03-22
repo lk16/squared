@@ -1,12 +1,11 @@
-#ifndef SQUARED_FIELD_HPP
-#define SQUARED_FIELD_HPP
+#pragma once
 
 #include <boost/bind.hpp>
 
 #include <gtkmm/eventbox.h>
 #include <gtkmm/image.h>
 
-#include "game/util.hpp"
+//#include "util/"
 
 class main_window;
 
@@ -47,4 +46,3 @@ public:
   void set_image(const std::string& filename);
   
 };
-#endif

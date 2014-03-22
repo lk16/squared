@@ -1,5 +1,4 @@
-#ifndef SQUARED_GAMECONTROL_HPP
-#define SQUARED_GAMECONTROL_HPP
+#pragma once
 
 #include <stack>
 
@@ -8,6 +7,7 @@
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 #include "bots/bot_ali.hpp"
+#include "util/csv.hpp"
 
 class main_window;
 
@@ -46,5 +46,3 @@ struct game_control{
 };
 
 
-
-#endif

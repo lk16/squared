@@ -1,7 +1,7 @@
 #include <gtkmm.h>
 
 #include "gui/main_window.hpp"
-#include "misc/testing.hpp"
+#include "util/testing.hpp"
 
 
 
