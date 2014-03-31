@@ -4,6 +4,7 @@
 
 #include <future>
 #include <vector>
+#include <set>
 
 void print_time_diff(timeval start,timeval end,int runs,const char* name){
   
@@ -14,7 +15,41 @@ void print_time_diff(timeval start,timeval end,int runs,const char* name){
 }
 
 
+std::set<board> generate_all_boards_at_depth(int depth,board start){
+ 
+  std::set<board> tmp_set,res;
+  board* tmp_array = new board[32];
+  board* tmp_array_end;
+  
+  res.insert(start);
+  
+  for(int d=0;d<depth;d++){
+    for(board it: res){
+      tmp_array_end = it.get_children(tmp_array);
+      tmp_set.insert(tmp_array,tmp_array_end);
+    }
+    res.swap(tmp_set);
+    tmp_set.clear();
+  }
+  
+  delete[] tmp_array;
+  return res;
+}
+
+
 void testing_area(){
+
+  board b;
+  b.reset();  
+  std::set<board> boards = generate_all_boards_at_depth(9,b);
+  for(board it: boards){
+    csv movesfile(BOOK_PATH + "moves.csv");
+    std::vector<std::string> line;
+    line.push_back(tostr<int>(it.get_non_empty_fields().count()-4));
+    line.push_back(it.to_database_string());
+    movesfile.append_line(line);    
+  }
+  std::cout << "total "  << boards.size() << " boards\n";
   
   
 #if 0

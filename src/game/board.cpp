@@ -430,14 +430,13 @@ board board::rotate(int n) const
 
 std::string board::to_database_string() const
 {
-  board min_board = *this;
+  std::string min_str = to_string();
   
   for(int i=1;i<8;i++){
-    if(rotate(i) < min_board){
-      min_board = rotate(i);
-    }
+    std::string str = rotate(i).to_string();
+    min_str = (str < min_str) ? str : min_str;
   }
   
-  return min_board.to_string(); 
+  return min_str; 
 }
 
