@@ -1,39 +1,39 @@
 #include "util/csv.hpp"
 
 csv::csv(const std::string& _filename):
-  file(_filename,std::fstream::in | std::fstream::out | std::fstream::app),
-  filename(_filename)
+  filename(_filename),
+  line_buff_size(10240),
+  line_buff(new char[line_buff_size]),
+  file(_filename,std::fstream::in | std::fstream::out | std::fstream::app)
 {}
 
-void csv::append_line(const std::vector< std::string >& x)
+csv::~csv()
 {
-  for(unsigned i=0;i<x.size()-1;i++){
-    file << x[i] << ',';
+  delete[] line_buff;
+}
+
+
+void csv::append_line(const line_t& line)
+{
+  for(unsigned i=0;i<line.size()-1;i++){
+    file << line[i] << ',';
   }
-  if(x.size()>0){
-    file << x[x.size()-1];
+  if(line.size()>0){
+    file << line[line.size()-1];
   }
   file << '\n';
 }
 
-std::vector< std::vector< std::string > > csv::get_content()
+csv::content_t csv::get_content()
 {
-  file.seekg(0, file.end);
-  int filesize = file.tellg();
-  file.seekg(0, file.beg);
-  char* tmp = new char[filesize];
-  file.read(tmp,filesize);
-  tmp[filesize-1] = '\0'; //remove extra appended newline
-  std::vector<std::string> lines;
-  lines = str_explode(std::string(tmp),'\n');
-  std::vector<std::vector<std::string> > res;
-  for(const std::string s: lines){
-    res.push_back(str_explode(s,','));
-  } 
+  content_t res;
+  while(file.good()){
+    res.push_back(get_line());
+  }
   return res;
 }
 
-void csv::set_content(std::vector< std::vector< std::string > >& x)
+void csv::set_content(const content_t& content)
 {
   file.close();
   file.open(filename,
@@ -42,9 +42,18 @@ void csv::set_content(std::vector< std::vector< std::string > >& x)
             std::fstream::trunc
   );
   
-  for(std::vector<std::string> vs: x){
-    append_line(vs);
+  for(line_t line: content){
+    append_line(line);
   }
 }
 
+csv::line_t csv::get_line()
+{
+  file.getline(line_buff,line_buff_size);
+  return str_explode(std::string(line_buff),',');
+}
 
+const std::fstream* csv::get_file() const
+{
+  return &file;
+}

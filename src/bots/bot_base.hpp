@@ -49,7 +49,7 @@ inline bot_base::bot_base(int _c, int sd,int pd):
   my_color(_c),
   prev_move_time(std::time(NULL))
 {
-  assert(my_color==BLACK || my_color==WHITE);
+  assert(my_color==BLACK || my_color==WHITE || my_color==COLOR_UNDEFINED);
 }
 
 inline int bot_base::get_search_depth() const

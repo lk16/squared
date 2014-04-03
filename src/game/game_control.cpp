@@ -69,7 +69,6 @@ void game_control::on_any_move()
   if(current.get_non_empty_fields().count() < 24){
     csv movesfile(BOOK_PATH + "moves.csv");
     std::vector<std::string> line;
-    line.push_back(tostr<int>(current.get_non_empty_fields().count()-4));
     line.push_back(current.to_database_string());
     movesfile.append_line(line);
   }

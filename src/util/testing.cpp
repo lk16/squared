@@ -6,7 +6,7 @@
 #include <vector>
 #include <set>
 
-void print_time_diff(timeval start,timeval end,int runs,const char* name){
+void print_time_diff(timeval start,timeval end,int runs,const std::string& name){
   
   double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
   (start.tv_sec + (start.tv_usec / 1000000.0)); 
@@ -39,18 +39,24 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
 
 void testing_area(){
 
+ 
+#if 1
   board b;
   b.reset();  
-  std::set<board> boards = generate_all_boards_at_depth(9,b);
-  for(board it: boards){
-    csv movesfile(BOOK_PATH + "moves.csv");
-    std::vector<std::string> line;
-    line.push_back(tostr<int>(it.get_non_empty_fields().count()-4));
-    line.push_back(it.to_database_string());
-    movesfile.append_line(line);    
-  }
-  std::cout << "total "  << boards.size() << " boards\n";
   
+  timeval start,end;
+  
+  bot_ali bot(COLOR_UNDEFINED,11,11);
+  bot.disable_shell_output();
+  board tmp;
+  
+  
+  gettimeofday(&start,NULL);
+  
+  gettimeofday(&end,NULL);
+  print_time_diff(start,end,1,"evaluating boards");
+  
+#endif  
   
 #if 0
   

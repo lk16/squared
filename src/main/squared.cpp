@@ -2,8 +2,7 @@
 
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
-
-
+#include "main/learn.hpp"
 
 void show_help(){
   std::cout << 
@@ -21,7 +20,7 @@ void show_help(){
   "-s\n"
   "show given board (or start position if none given) in human readable format\n\n"
   "--learn\n"
-  "learn/improve the opening book\n\n";
+  "learn/improve the opening book, ignoring all other flags\n\n";
 }
 
 
@@ -54,6 +53,10 @@ int main(int argc,char **argv){
     else if(str[i] == "-s"){
       h_flag = true;
       i++;
+    }
+    else if(str[i] == "--learn"){
+      learn_book();
+      return 0;
     }
     else if(str[i] == "-b" || str[i] == "--board"){
       if(i+1 >= argc || board_is_initialized){

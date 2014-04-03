@@ -11,7 +11,7 @@ const std::string UI_PATH = "./xml/";
 // subdirectory where book data is stored
 const std::string BOOK_PATH = "./book/";
 
-// perfect score factor
+// multiplication factor for heuristics when computing exact score
 const int EXACT_SCORE_FACTOR = 1000;
 
 // heighest possible heuristic value
@@ -23,3 +23,4 @@ const int MIN_HEURISTIC = -1 * MAX_HEURISTIC;
 // player colors
 const int BLACK = 0;
 const int WHITE = 1;
+const int COLOR_UNDEFINED = 2;
