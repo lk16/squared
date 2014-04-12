@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
 #include <map>
 
 #include "game/board.hpp"
@@ -16,3 +17,7 @@ typedef std::map<std::string,book_value> book_t;
 void learn_book();
 
 book_t read_book();
+
+int get_move_index(const board* before,const board* after);
+
+int learn_move(bot_base* bot,const std::string& board_str,int depth);

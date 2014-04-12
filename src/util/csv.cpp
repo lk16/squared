@@ -22,6 +22,7 @@ void csv::append_line(const line_t& line)
     file << line[line.size()-1];
   }
   file << '\n';
+  file.flush();
 }
 
 csv::content_t csv::get_content()

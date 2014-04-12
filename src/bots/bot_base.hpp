@@ -28,13 +28,15 @@ public:
   virtual void do_move(const board* b,board* res);
   
   int get_search_depth() const;
-  int get_perfect_search_depth() const;
+  int get_perfect_depth() const;
   int get_nodes() const;
   int get_color() const;
   
   
   /// WARNING: this changes the color of this bot
   void swap_color();
+  
+  void set_search_depth(int sd,int pd);
   
 };
 
@@ -57,7 +59,7 @@ inline int bot_base::get_search_depth() const
   return search_depth; 
 }
 
-inline int bot_base::get_perfect_search_depth() const
+inline int bot_base::get_perfect_depth() const
 {
   return perfect_depth;
 }
@@ -83,3 +85,10 @@ inline void bot_base::swap_color()
 {
   my_color = (my_color == -1 ? 1 : -1);
 }
+
+inline void bot_base::set_search_depth(int sd, int psd)
+{
+  search_depth = sd;
+  perfect_depth = psd;
+}
+
