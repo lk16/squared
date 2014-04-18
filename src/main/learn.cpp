@@ -46,6 +46,8 @@ void learn_book()
   book_t::iterator book_it;
   
   csv moves_file(BOOK_PATH + "moves.csv");
+  
+  
   while(true){
     csv::line_t line = moves_file.get_line();
     if(moves_file.get_file()->fail()){
@@ -56,7 +58,7 @@ void learn_book()
     // evaluate it now
     book_it = book.find(line[0]);
     if(book_it == book.end() || (book_it->second.depth < learn_level)){
-     int index = learn_move(&bot,line[0],learn_level);
+     int index = learn_move(&bot,line[0],learn_level,-1,-1);
       
       csv::line_t book_line;
       book_line.push_back(line[0]);
@@ -73,14 +75,25 @@ void learn_book()
   }
   
     
+  
+    
   while(true){
+    int n = 0;
+    int total = 0;
     learn_level++;
     bot.set_search_depth(learn_level,learn_level);
+    
+    for(book_it = book.begin();book_it!=book.end();book_it++){
+      if(book_it->second.depth < learn_level){
+        total++;
+      }
+    }
+    
     for(book_it = book.begin();book_it!=book.end();book_it++){
      
       if(book_it->second.depth < learn_level){
      
-        int index = learn_move(&bot,book_it->first,learn_level);
+        int index = learn_move(&bot,book_it->first,learn_level,n,total);
      
         csv::line_t book_line;
         book_line.push_back(book_it->first);
@@ -90,13 +103,16 @@ void learn_book()
         
         book_it->second.best_move = index;
         book_it->second.depth = learn_level;
+        
+        n++;
       }
     }
+    
   }
   
 }
 
-int learn_move(bot_base* bot,const std::string& board_str,int depth){
+int learn_move(bot_base* bot,const std::string& board_str,int depth,int n,int total){
   timeval start,end;
   board after,before(board_str);
   std::cout << "learning " << board_str;
@@ -111,8 +127,11 @@ int learn_move(bot_base* bot,const std::string& board_str,int depth){
   
   
   std::cout << "Took " << std::setw(5) << time_diff;
-  std::cout << " seconds!" << std::endl;
-  std::cout.flush();
+  std::cout << " seconds!";
+  if(n != -1){
+    std::cout << " (" << n+1 << '/' << total << ')';
+  }
+  std::cout << std::endl << std::flush;
   return get_move_index(&before,&after);
 }
 
