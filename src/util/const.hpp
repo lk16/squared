@@ -11,7 +11,7 @@ const std::string UI_PATH = "./xml/";
 // subdirectory where book data is stored
 const std::string BOOK_PATH = "./book/";
 
-// multiplication factor for heuristics when computing exact score
+// multiplication factor for heuristics when finding an exact score 
 const int EXACT_SCORE_FACTOR = 1000;
 
 // highest possible heuristic value

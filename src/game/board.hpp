@@ -358,9 +358,8 @@ inline std::bitset<64> board::get_valid_moves() const
 
 inline int board::get_rotation(const board* b) const
 {
-  std::string b_db_str = b->to_database_string();
   for(int i=0;i<8;i++){
-    if(this->rotate(i).to_string() == b_db_str){
+    if(this->rotate(i) == *b){
       return i;
     }
   }

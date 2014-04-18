@@ -16,13 +16,12 @@
 
 #include "main/learn.hpp"
 
-#define BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT 5
-
 class bot_ali:
   public bot_base
 {
   
   static const int location_values[10];
+  static const int min_sort_depth = 6;
   
   enum eval_mode{
     ONE_MOVE_MODE,

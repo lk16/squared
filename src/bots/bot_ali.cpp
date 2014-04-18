@@ -90,7 +90,7 @@ void bot_ali::do_move(const board* b,board* res)
 
 
     
-    if(search_depth > BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
+    if(search_depth > min_sort_depth){
       int heurs[32];
       for(int i=0;i<child_count;i++){
         inspected = children[i];
@@ -142,10 +142,9 @@ void bot_ali::do_move(const board* b,board* res)
     case BOOK_MODE:
       {
         *res = board(b->to_database_string());
-        int rot = b->get_rotation(res);
+        int rot = res->get_rotation(b);
         res->do_move(it->second.best_move);
         *res = res->rotate(rot);
-        
         std::cout << "move found in book at depth " << it->second.depth << '\n';
       }
       break;
@@ -154,32 +153,6 @@ void bot_ali::do_move(const board* b,board* res)
       std::cout << "only one valid move found, evaluation skipped.\n";
       break;
   }
-  
-  /*
-  for(int id=0;id<child_count;++id){
-    inspected = children[id];
-    int cur_heur;
-    switch(mode){
-      case NORMAL_MODE:
-        cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
-        break;
-      case PERFECT_MODE:
-        cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
-        break;
-    }
-    if(cur_heur > best_heur){
-      best_heur = cur_heur;
-      best_id = id;
-    }
-    
-    if(shell_output){
-      std::cout << "move " << (id+1) << "/" << (child_count);
-      std::cout << ": " << best_heur << std::endl;
-    }
-  }
-  
-  *res = children[best_id]; */
-
   
   if(shell_output && (mode==NORMAL_MODE || mode==PERFECT_MODE)){
     struct timeval end;
@@ -201,16 +174,14 @@ int bot_ali::pvs(int alpha, int beta)
   int depth_left = 
     (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
   
-  if(sorted){
-    if(depth_left < 5){
-      return pvs<false>(alpha,beta);
-    }
+  if(sorted && (depth_left >= min_sort_depth)){
+    return pvs<false>(alpha,beta);
   }
-  else{
-    if(depth_left == 0){
-      return heuristic();
-    }
+  
+  if(depth_left == 0){
+    return heuristic();
   }
+
   
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
@@ -229,40 +200,43 @@ int bot_ali::pvs(int alpha, int beta)
     }
   }
   
+   
     
   if(sorted){
     board children[32]; 
-    int heur[32];
     int child_count = inspected.get_children(children) - children;
+    int heur[32];
+    
     for(int i=0;i<child_count;i++){
       heur[i] = -children[i].count_valid_moves();
     }
     sort_boards(children,heur,child_count);
     
     
-    bool null_window = false;
     
-    for(int i=0;i<child_count;i++){
+    std::swap<board>(inspected,children[0]);
+    int score = -pvs<sorted>(-beta,-alpha);
+    std::swap<board>(inspected,children[0]);
+    
+    if(score >= beta){
+        return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
       
-      int score;
+    
+    
+    for(int i=1;i<child_count;i++){
       
+      std::swap<board>(inspected,children[i]);
+      score = -pvs_null_window(-alpha-1);
+      std::swap<board>(inspected,children[i]);
       
-      if(null_window){
-        std::swap<board>(inspected,children[i]);
-        score = -pvs_null_window(-alpha-1);
-        std::swap<board>(inspected,children[i]);
-        
-        if((alpha < score) && (score < beta)){
-          std::swap<board>(inspected,children[i]);
-          score = -pvs<sorted>(-beta,-alpha);
-          std::swap<board>(inspected,children[i]);
-        }
-      }
-      else{
+      if((alpha < score) && (score < beta)){
         std::swap<board>(inspected,children[i]);
         score = -pvs<sorted>(-beta,-alpha);
         std::swap<board>(inspected,children[i]);
-        
       }
       
       if(score >= beta){
@@ -271,46 +245,46 @@ int bot_ali::pvs(int alpha, int beta)
       if(score >= alpha){
         alpha = score;
       }
-      null_window = true;
     }
     return alpha;
     
     
   }
   else{
-    bool null_window = false;
+    
+    int move = find_first_set_64(valid_moves.to_ulong());
+    board backup = inspected;  
+    
+    inspected.do_move(move);
+    int score = -pvs<sorted>(-beta,-alpha);
+    inspected = backup;
+
+    if(score >= beta){
+      return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
+    valid_moves.reset(move);
     
     while(valid_moves.any()){
-      int move = find_first_set_64(valid_moves.to_ulong());
-      std::bitset<64> undo_data;
-      int score;
+      move = find_first_set_64(valid_moves.to_ulong());
       
+      inspected.do_move(move);
+      score = -pvs_null_window(-alpha-1);
+      inspected = backup;
       
-      if(null_window){
-        undo_data = inspected.do_move(move);
-        score = -pvs_null_window(-alpha-1);
-        inspected.undo_move(move,undo_data);
-        
-        if((alpha < score) && (score < beta)){
-          undo_data = inspected.do_move(move);
-          score = -pvs<sorted>(-beta,-alpha);
-          inspected.undo_move(move,undo_data);
-        }
-      }
-      else{
-        undo_data = inspected.do_move(move);
+      if((alpha < score) && (score < beta)){
+        inspected.do_move(move);
         score = -pvs<sorted>(-beta,-alpha);
-        inspected.undo_move(move,undo_data);
-        
+        inspected = backup;
       }
-      
       if(score >= beta){
         return beta;
       }
       if(score >= alpha){
         alpha = score;
       }
-      null_window = true;
       valid_moves.reset(move);
     }
     return alpha;
