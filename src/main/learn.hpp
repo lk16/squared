@@ -20,4 +20,4 @@ book_t read_book();
 
 int get_move_index(const board* before,const board* after);
 
-int learn_move(bot_base* bot,const std::string& board_str,int depth,int n,int total);
+int learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left);

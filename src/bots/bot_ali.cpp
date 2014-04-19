@@ -3,8 +3,8 @@
 const int bot_ali::location_values[10] =
 {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
 
-bot_ali::bot_ali(int _c, int sd, int pd):
-  bot_base(_c,sd,pd)
+bot_ali::bot_ali(int sd, int pd):
+  bot_base(sd,pd)
 {
   name = "bot_ali";
   shell_output = use_book = true;
@@ -150,7 +150,9 @@ void bot_ali::do_move(const board* b,board* res)
       break;
     case ONE_MOVE_MODE:
       *res = children[0];
-      std::cout << "only one valid move found, evaluation skipped.\n";
+      if(shell_output){
+        std::cout << "only one valid move found, evaluation skipped.\n";
+      }
       break;
   }
   

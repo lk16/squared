@@ -38,12 +38,32 @@ void learn_book()
   int learn_level = min_learn_depth;
   book_t book = read_book();
   
-  bot_ali bot(COLOR_UNDEFINED,learn_level,learn_level);
+  book_t::iterator book_it;
+  
+  std::map<int,int> book_stats;
+  
+  for(book_it = book.begin(); book_it!=book.end(); book_it++){
+    int n = book_it->second.depth;
+    if(book_stats.find(n) == book_stats.end()){
+      book_stats[n] = 1;
+    }
+    else{
+      book_stats[n]++;
+    }
+  }
+  
+  for(std::map<int,int>::const_iterator it=book_stats.begin();it!=book_stats.end();it++){
+    std::cout << "Book contains " << it->second << " boards at depth ";
+    std::cout << it->first << std::endl;
+  }
+  
+  
+  bot_ali bot(learn_level,learn_level);
   bot.disable_shell_output();
   
   
   csv book_file(BOOK_PATH + "book.csv");
-  book_t::iterator book_it;
+  
   
   csv moves_file(BOOK_PATH + "moves.csv");
   
@@ -58,7 +78,7 @@ void learn_book()
     // evaluate it now
     book_it = book.find(line[0]);
     if(book_it == book.end() || (book_it->second.depth < learn_level)){
-     int index = learn_move(&bot,line[0],learn_level,-1,-1);
+     int index = learn_move(&bot,line[0],learn_level,-1);
       
       csv::line_t book_line;
       book_line.push_back(line[0]);
@@ -78,14 +98,13 @@ void learn_book()
   
     
   while(true){
-    int n = 0;
-    int total = 0;
+    int n_left = 0;
     learn_level++;
     bot.set_search_depth(learn_level,learn_level);
     
     for(book_it = book.begin();book_it!=book.end();book_it++){
       if(book_it->second.depth < learn_level){
-        total++;
+        n_left++;
       }
     }
     
@@ -93,7 +112,7 @@ void learn_book()
      
       if(book_it->second.depth < learn_level){
      
-        int index = learn_move(&bot,book_it->first,learn_level,n,total);
+        int index = learn_move(&bot,book_it->first,learn_level,n_left);
      
         csv::line_t book_line;
         book_line.push_back(book_it->first);
@@ -104,7 +123,7 @@ void learn_book()
         book_it->second.best_move = index;
         book_it->second.depth = learn_level;
         
-        n++;
+        n_left--;
       }
     }
     
@@ -112,7 +131,7 @@ void learn_book()
   
 }
 
-int learn_move(bot_base* bot,const std::string& board_str,int depth,int n,int total){
+int learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left){
   timeval start,end;
   board after,before(board_str);
   std::cout << "learning " << board_str;
@@ -128,8 +147,8 @@ int learn_move(bot_base* bot,const std::string& board_str,int depth,int n,int to
   
   std::cout << "Took " << std::setw(5) << time_diff;
   std::cout << " seconds!";
-  if(n != -1){
-    std::cout << " (" << n+1 << '/' << total << ')';
+  if(n_left != -1){
+    std::cout << " (" << n_left+1 << " left)";
   }
   std::cout << std::endl << std::flush;
   return get_move_index(&before,&after);
