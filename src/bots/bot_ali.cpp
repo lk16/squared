@@ -3,20 +3,11 @@
 const int bot_ali::location_values[10] =
 {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
 
-bot_ali::bot_ali():
-  bot_base(BLACK,1,2)
+bot_ali::bot_ali(int sd, int pd):
+  bot_base(sd,pd)
 {
   name = "bot_ali";
-  shell_output = true;
-}
-
-
-
-bot_ali::bot_ali(int _c, int sd, int pd):
-  bot_base(_c,sd,pd)
-{
-  name = "bot_ali";
-  shell_output = true;
+  shell_output = use_book = true;
   
   /*
   0,1,2,3,3,2,1,0,
@@ -29,7 +20,7 @@ bot_ali::bot_ali(int _c, int sd, int pd):
   0,1,2,3,3,2,1,0
   */
   
-  
+  book = read_book();
   
 }
 
@@ -38,91 +29,134 @@ void bot_ali::disable_shell_output()
   shell_output = false;
 }
 
+void bot_ali::disable_book()
+{
+  use_book = false;
+}
+
 
 void bot_ali::do_move(const board* b,board* res)
 {
   
   struct timeval start;
+  eval_mode mode;
+  int child_count;
+  board children[32];
   
+  
+  int empty_fields = b->get_empty_fields().count();
   
   if(shell_output){
     nodes = 0;
     gettimeofday(&start,NULL);
   }
   
-  int child_count;
-  board children[32];
-  
-  
   child_count = b->get_children(children) - children;
-  
   assert(child_count != 0);
   
 
-#if !BOT_ALI_ALWAYS_SHOW_HEUR
-  if(child_count==1){
-    *res = children[0];
-    return;
-  }
-#endif
   
-  int empty_fields = b->get_empty_fields().count();
-  eval_mode mode = (empty_fields > perfect_depth) ? NORMAL_MODE : PERFECT_MODE;
-
-  int best_heur = (mode==NORMAL_MODE) ? MIN_HEURISTIC : (-64);
+  book_t::const_iterator it = book.find(b->to_database_string());
   
-  // if we cannot prevent losing all discs, we at least have valid data to return
-  int best_id = 0;
-  
-  if(shell_output){
-    std::cout << name << " searching at depth ";
-    std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
-  }
-
-
-  // is used for small negamax search, to sort moves before big search
-  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth - 4;
-
-
-  
-  if(search_depth>BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT){
-    int heurs[32];
-    for(int i=0;i<child_count;i++){
-      inspected = children[i];
-      heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
+ 
+  if(child_count == 1){
+    mode = ONE_MOVE_MODE;
+  }  
+  else if(empty_fields > perfect_depth){
+    if(use_book && (it != book.end()) && (it->second.depth >= search_depth)){
+      mode = BOOK_MODE;
     }
-    sort_boards(children,heurs,child_count);
+    else{
+      mode = NORMAL_MODE;
+    }
   }
+  else{
+    mode = PERFECT_MODE;
+  }
+  
 
-  // is used for big negamax search
-  negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth;
-
-  for(int id=0;id<child_count;++id){
-    inspected = children[id];
-    int cur_heur;
-    switch(mode){
-      case NORMAL_MODE:
-        cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
-        break;
-      case PERFECT_MODE:
-        cur_heur = -pvs_exact(-64,-best_heur);
-        break;
-    }
-    if(cur_heur > best_heur){
-      best_heur = cur_heur;
-      best_id = id;
-    }
-    
+  if(mode==NORMAL_MODE || mode==PERFECT_MODE){
+  
     if(shell_output){
-      std::cout << "move " << (id+1) << "/" << (child_count);
-      std::cout << ": " << best_heur << std::endl;
+      
+      std::cout << name << " searching at depth ";
+      std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
     }
+
+
+    // is used for small negamax search, to sort moves before big search
+    negamax_max_non_empty_fields = 
+        b->get_non_empty_fields().count() + search_depth - 4;
+
+
+    
+    if(search_depth > min_sort_depth){
+      int heurs[32];
+      for(int i=0;i<child_count;i++){
+        inspected = children[i];
+        heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
+      }
+      sort_boards(children,heurs,child_count);
+    }
+
+    // is used for big negamax search
+    negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth;
+
   }
   
-  *res = children[best_id];
-
+  int best_heur,best_id=0;
   
-  if(shell_output){
+  switch(mode){
+    case NORMAL_MODE:
+      best_heur = MIN_HEURISTIC;
+      for(int id=0;id<child_count;++id){
+        inspected = children[id];
+        int cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
+        if(cur_heur > best_heur){
+          best_heur = cur_heur;
+          best_id = id;
+        }
+        if(shell_output){
+          std::cout << "move " << (id+1) << "/" << (child_count);
+          std::cout << ": " << best_heur << std::endl;
+        }
+      }
+      *res = children[best_id];
+      break;
+    case PERFECT_MODE:
+      best_heur = MIN_PERFECT_HEURISTIC;
+      for(int id=0;id<child_count;++id){
+        inspected = children[id];
+        int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
+        if(cur_heur > best_heur){
+          best_heur = cur_heur;
+          best_id = id;
+        }
+        if(shell_output){
+          std::cout << "move " << (id+1) << "/" << (child_count);
+          std::cout << ": " << best_heur << std::endl;
+        }
+      }
+      *res = children[best_id];
+      break;
+    case BOOK_MODE:
+      {
+        *res = board(b->to_database_string());
+        int rot = res->get_rotation(b);
+        res->do_move(it->second.best_move);
+        *res = res->rotate(rot);
+        std::cout << "move found in book at depth " << it->second.depth << '\n';
+      }
+      break;
+    case ONE_MOVE_MODE:
+      *res = children[0];
+      if(shell_output){
+        std::cout << "only one valid move found, evaluation skipped.\n";
+      }
+      break;
+  }
+  
+  if(shell_output && (mode==NORMAL_MODE || mode==PERFECT_MODE)){
     struct timeval end;
     gettimeofday(&end,NULL);
     double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
@@ -142,16 +176,14 @@ int bot_ali::pvs(int alpha, int beta)
   int depth_left = 
     (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
   
-  if(sorted){
-    if(depth_left < 5){
-      return pvs<false>(alpha,beta);
-    }
+  if(sorted && (depth_left >= min_sort_depth)){
+    return pvs<false>(alpha,beta);
   }
-  else{
-    if(depth_left == 0){
-      return heuristic();
-    }
+  
+  if(depth_left == 0){
+    return heuristic();
   }
+
   
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
@@ -170,40 +202,43 @@ int bot_ali::pvs(int alpha, int beta)
     }
   }
   
+   
     
   if(sorted){
     board children[32]; 
-    int heur[32];
     int child_count = inspected.get_children(children) - children;
+    int heur[32];
+    
     for(int i=0;i<child_count;i++){
       heur[i] = -children[i].count_valid_moves();
     }
     sort_boards(children,heur,child_count);
     
     
-    bool null_window = false;
     
-    for(int i=0;i<child_count;i++){
+    std::swap<board>(inspected,children[0]);
+    int score = -pvs<sorted>(-beta,-alpha);
+    std::swap<board>(inspected,children[0]);
+    
+    if(score >= beta){
+        return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
       
-      int score;
+    
+    
+    for(int i=1;i<child_count;i++){
       
+      std::swap<board>(inspected,children[i]);
+      score = -pvs_null_window(-alpha-1);
+      std::swap<board>(inspected,children[i]);
       
-      if(null_window){
-        std::swap<board>(inspected,children[i]);
-        score = -pvs_null_window(-alpha-1);
-        std::swap<board>(inspected,children[i]);
-        
-        if((alpha < score) && (score < beta)){
-          std::swap<board>(inspected,children[i]);
-          score = -pvs<sorted>(-beta,-alpha);
-          std::swap<board>(inspected,children[i]);
-        }
-      }
-      else{
+      if((alpha < score) && (score < beta)){
         std::swap<board>(inspected,children[i]);
         score = -pvs<sorted>(-beta,-alpha);
         std::swap<board>(inspected,children[i]);
-        
       }
       
       if(score >= beta){
@@ -212,46 +247,46 @@ int bot_ali::pvs(int alpha, int beta)
       if(score >= alpha){
         alpha = score;
       }
-      null_window = true;
     }
     return alpha;
     
     
   }
   else{
-    bool null_window = false;
+    
+    int move = find_first_set_64(valid_moves.to_ulong());
+    board backup = inspected;  
+    
+    inspected.do_move(move);
+    int score = -pvs<sorted>(-beta,-alpha);
+    inspected = backup;
+
+    if(score >= beta){
+      return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
+    valid_moves.reset(move);
     
     while(valid_moves.any()){
-      int move = find_first_set_64(valid_moves.to_ulong());
-      std::bitset<64> undo_data;
-      int score;
+      move = find_first_set_64(valid_moves.to_ulong());
       
+      inspected.do_move(move);
+      score = -pvs_null_window(-alpha-1);
+      inspected = backup;
       
-      if(null_window){
-        undo_data = inspected.do_move(move);
-        score = -pvs_null_window(-alpha-1);
-        inspected.undo_move(move,undo_data);
-        
-        if((alpha < score) && (score < beta)){
-          undo_data = inspected.do_move(move);
-          score = -pvs<sorted>(-beta,-alpha);
-          inspected.undo_move(move,undo_data);
-        }
-      }
-      else{
-        undo_data = inspected.do_move(move);
+      if((alpha < score) && (score < beta)){
+        inspected.do_move(move);
         score = -pvs<sorted>(-beta,-alpha);
-        inspected.undo_move(move,undo_data);
-        
+        inspected = backup;
       }
-      
       if(score >= beta){
         return beta;
       }
       if(score >= alpha){
         alpha = score;
       }
-      null_window = true;
       valid_moves.reset(move);
     }
     return alpha;
@@ -397,7 +432,7 @@ void bot_ali::sort_boards(board *boards,int* heurs, int count)
 int bot_ali::heuristic()
 {
 
-  int res = 0;
+  /*int res = 0;
   
   for(int i=9;i>=0;--i){
     res += bot_ali::location_values[i] * (
@@ -406,7 +441,28 @@ int bot_ali::heuristic()
     );
   }  
   
-  return res;
+  return res;*/
+  
+  
+#define LOCATION_HEUR(i) \
+  bot_ali::location_values[i] * ( \
+    (inspected.me & board::location[i]).count() \
+    -(inspected.opp & board::location[i]).count() \
+  )
+  
+  return
+  LOCATION_HEUR(0) +
+  LOCATION_HEUR(1) +
+  LOCATION_HEUR(2) +
+  LOCATION_HEUR(3) +
+  LOCATION_HEUR(4) +
+  LOCATION_HEUR(5) +
+  LOCATION_HEUR(6) +
+  LOCATION_HEUR(7) +
+  LOCATION_HEUR(8) +
+  LOCATION_HEUR(9);
+  
+#undef LOCATION_HEUR
 }
 
 bot_ali::~bot_ali(){}

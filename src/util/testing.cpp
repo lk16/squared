@@ -46,7 +46,7 @@ void testing_area(){
   
   timeval start,end;
   
-  bot_ali bot(COLOR_UNDEFINED,11,11);
+  bot_ali bot(11,11);
   bot.disable_shell_output();
   board tmp;
   

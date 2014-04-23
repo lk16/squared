@@ -128,7 +128,8 @@ struct board{
   
   std::string to_database_string() const;
   
-  
+  // returns how *this was rotated to get b or -1 if no matches are found
+  int get_rotation(const board* b) const;
 };
 
 
@@ -353,5 +354,15 @@ inline std::bitset<64> board::get_valid_moves() const
   
   res &= get_empty_fields();
   return res;
+}
+
+inline int board::get_rotation(const board* b) const
+{
+  for(int i=0;i<8;i++){
+    if(this->rotate(i) == *b){
+      return i;
+    }
+  }
+  return -1;
 }
 

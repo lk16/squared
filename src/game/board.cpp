@@ -382,7 +382,8 @@ board::board(const std::string& in){
     me.reset();
     opp.reset();
     turn = passed = false;
-    std::cout << "ERROR: invalid board format fed to board(std::string)\n";
+    std::cout << "ERROR: invalid board format fed to board(std::string): ";
+    std::cout << in << "\n";
     return;
     
   }

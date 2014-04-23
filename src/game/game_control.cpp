@@ -186,7 +186,7 @@ void game_control::add_bot(int c, int d,int pd)
   if(bot[c]){
     delete bot[c];
   }
-  bot[c] = new bot_ali(c,d,pd);
+  bot[c] = new bot_ali(d,pd);
 }
 
 void game_control::remove_bot(int c)

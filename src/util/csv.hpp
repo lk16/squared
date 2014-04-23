@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "util/string.hpp"
-
 // class to easily manipulate csv files
 // this simple implementation does not handle escaped characters, 
 // quotes or newlines within quotes

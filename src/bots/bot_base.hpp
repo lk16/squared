@@ -14,27 +14,26 @@ class bot_base{
 protected:
   std::string name;
   int search_depth,perfect_depth;
-  int my_color;
   long long nodes;
   double prev_move_time;
  
 public:
-  /// constructor
-  bot_base(int _c, int sd,int pd);
   
+  /// ctor
+  bot_base(int _search_depth,int _perfect_depth);
+  
+  /// dtor
   virtual ~bot_base();
   
   /// calculate best move of b and put it in res
-  virtual void do_move(const board* b,board* res);
+  virtual void do_move(const board* in,board* out);
   
   int get_search_depth() const;
-  int get_perfect_search_depth() const;
+  int get_perfect_depth() const;
   int get_nodes() const;
-  int get_color() const;
   
   
-  /// WARNING: this changes the color of this bot
-  void swap_color();
+  void set_search_depth(int _search_depth,int _perfect_depth);
   
 };
 
@@ -42,14 +41,11 @@ inline bot_base::~bot_base()
 {}
 
 
-inline bot_base::bot_base(int _c, int sd,int pd):
+inline bot_base::bot_base(int _search_depth,int _perfect_depth):
   name("bot_base"),
-  search_depth(sd),
-  perfect_depth(pd),
-  my_color(_c),
   prev_move_time(std::time(NULL))
 {
-  assert(my_color==BLACK || my_color==WHITE || my_color==COLOR_UNDEFINED);
+  set_search_depth(_search_depth,_perfect_depth);
 }
 
 inline int bot_base::get_search_depth() const
@@ -57,7 +53,7 @@ inline int bot_base::get_search_depth() const
   return search_depth; 
 }
 
-inline int bot_base::get_perfect_search_depth() const
+inline int bot_base::get_perfect_depth() const
 {
   return perfect_depth;
 }
@@ -68,18 +64,16 @@ inline int bot_base::get_nodes() const
   return nodes; 
 }
 
-inline int bot_base::get_color() const
-{
-  return my_color;
-}
-
 inline void bot_base::do_move(const board* b,board* res){
   (void) b;
   (void) res;
   CRASH;
 }
 
-inline void bot_base::swap_color()
+
+inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
 {
-  my_color = (my_color == -1 ? 1 : -1);
+  search_depth = _search_depth;
+  perfect_depth = _perfect_depth;
 }
+

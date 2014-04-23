@@ -6,39 +6,44 @@
 #include <functional>
 
 #include "util/const.hpp"
+#include "util/csv.hpp"
 #include "util/math.hpp"
 #include "util/macros.hpp"
 #include "util/string.hpp"
+#include "util/types.hpp"
+
 #include "bots/bot_base.hpp"
 
-#define BOT_ALI_ALWAYS_SHOW_HEUR         0
-#define BOT_ALI_MIN_SEARCH_DEPTH_TO_SORT 5
+#include "main/learn.hpp"
 
-struct bot_ali:
+class bot_ali:
   public bot_base
 {
   
+  static const int location_values[10];
+  static const int min_sort_depth = 6;
+  
   enum eval_mode{
+    ONE_MOVE_MODE,
     NORMAL_MODE,
-    PERFECT_MODE
+    PERFECT_MODE,
+    BOOK_MODE
   };
   
-  bool shell_output;
-  
-  static const int location_values[10];
-  
-private:
-  
-  /// this board will be used by negamax(), negamax_exact(), heuristic(), and do_move()
+  /// this board will be used by move evaluation functions and do_move()
   /// it represents the currently inspected move
   board inspected;
   
   int negamax_max_non_empty_fields;
   
+  book_t book;
+  
+    
+  bool shell_output,use_book;
+  
   
 public:
-  bot_ali();
-  bot_ali(int c, int _search_depth,int _perfect_depth);
+  bot_ali(int _search_depth,int _perfect_depth);
   ~bot_ali();
   
   /// picks a move!
@@ -64,7 +69,7 @@ public:
   void sort_boards(board *boards,int* heurs, int count);
   
   void disable_shell_output();
-  
+  void disable_book();
   
   
 };
