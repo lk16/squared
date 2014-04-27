@@ -55,7 +55,10 @@ int main(int argc,char **argv){
       i++;
     }
     else if(str[i] == "--learn"){
-      learn_book();
+      book_t book(BOOK_PATH + "book.csv");
+      book.add_from_moves_file(BOOK_PATH + "moves.csv");
+      bot_ali bot(-1,-1); 
+      book.learn(&bot);
       return 0;
     }
     else if(str[i] == "-b" || str[i] == "--board"){
@@ -72,7 +75,6 @@ int main(int argc,char **argv){
         syntax_error_flag = true;
         break;
       }
-      // b.reset() is done earlier
       gc.current = gc.current.do_random_moves(fromstr<int>(str[i+1]));
       board_is_initialized = true;
       i+=2;

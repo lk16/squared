@@ -41,13 +41,13 @@ include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
 
 set(objects
   bots/bot_ali.cpp
+  book/book.cpp
   game/board.cpp
   game/game_control.cpp
   gui/main_window.cpp
   gui/preferences_dialog.cpp
   gui/clickable_image.cpp
   main/squared.cpp
-  main/learn.cpp
   util/testing.cpp
   util/csv.cpp
   util/string.cpp

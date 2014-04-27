@@ -5,7 +5,6 @@
 #include <gtkmm/eventbox.h>
 #include <gtkmm/image.h>
 
-//#include "util/"
 
 class main_window;
 

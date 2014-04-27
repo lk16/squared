@@ -28,10 +28,12 @@ public:
   /// calculate best move of b and put it in res
   virtual void do_move(const board* in,board* out);
   
+  virtual void disable_shell_output() = 0;
+  virtual void disable_book() = 0;
+  
   int get_search_depth() const;
   int get_perfect_depth() const;
   int get_nodes() const;
-  
   
   void set_search_depth(int _search_depth,int _perfect_depth);
   

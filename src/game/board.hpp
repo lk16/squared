@@ -50,9 +50,10 @@ struct board{
   /// does NOTHING; call reset() to initialize
   board();
   
-  /// copies a board
+  /// copy ctor
   board(const board& b);
 
+  /// move ctor
   board(const board&& b);
   
   
@@ -73,13 +74,8 @@ struct board{
   /// resets the board to starting position
   void reset();
   
-  /// switches the turn member
+  /// switches me and opp and inverses turn
   void switch_turn();
-  
-  /// generate random board 
-  /// WARNING: no guarantees on number of moves or 
-  /// reachability from reset() board can be given
-  void randomize();
   
   /// checks whether for *this and this->turn, field_id is a valid move
   bool is_valid_move(int field_id) const;
@@ -121,15 +117,19 @@ struct board{
   /// recovers a board state before move field_id, with flipped discs in undo_data 
   void undo_move(int field_id,std::bitset<64> undo_data); 
   
+  /// returns string representation
   std::string to_string() const;
   
-  // rotate/mirror the board, 0 <= n <= 7
-  board rotate(int n) const;
-  
+  /// returns string representation modulo rotation
   std::string to_database_string() const;
   
-  // returns how *this was rotated to get b or -1 if no matches are found
+  /// rotate/mirror the board, 0 <= n <= 7
+  board rotate(int n) const;
+  
+  /// returns how *this was rotated to get b or -1 if no matches are found
   int get_rotation(const board* b) const;
+
+  
 };
 
 
@@ -217,18 +217,6 @@ inline bool board::has_valid_moves() const
 inline int board::count_valid_moves() const
 {
   return get_valid_moves().count();  
-}
-
-inline void board::randomize()
-{
-  
-  me =  rand_64();
-  opp = rand_64();
-  turn = (rand() % 2);
-  passed = false;
-  
-  me &= (~opp);
-  opp &= (~me);
 }
 
 inline bool board::is_valid_move(int field_id) const
@@ -359,7 +347,7 @@ inline std::bitset<64> board::get_valid_moves() const
 inline int board::get_rotation(const board* b) const
 {
   for(int i=0;i<8;i++){
-    if(this->rotate(i) == *b){
+    if(rotate(i) == *b){
       return i;
     }
   }

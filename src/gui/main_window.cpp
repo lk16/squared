@@ -119,14 +119,14 @@ void main_window::on_menu_settings_preferences()
     }
     else{
       int x = output_level[BLACK];
-      control.add_bot(BLACK,x,max(2*x+2,16));
+      control.add_bot(BLACK,x,max(2*x,16));
     }
     if(output_level[WHITE]==-1){
       control.remove_bot(WHITE);
     }
     else{
       int x = output_level[WHITE];
-      control.add_bot(WHITE,x,max(2*x+2,16));
+      control.add_bot(WHITE,x,max(2*x,16));
     }
   
   }

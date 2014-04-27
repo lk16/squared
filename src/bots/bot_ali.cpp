@@ -1,10 +1,12 @@
 #include "bot_ali.hpp"
+#include "book/book.hpp"
 
 const int bot_ali::location_values[10] =
 {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
 
 bot_ali::bot_ali(int sd, int pd):
-  bot_base(sd,pd)
+  bot_base(sd,pd),
+  book(BOOK_PATH + "book.csv")
 {
   name = "bot_ali";
   shell_output = use_book = true;
@@ -20,7 +22,7 @@ bot_ali::bot_ali(int sd, int pd):
   0,1,2,3,3,2,1,0
   */
   
-  book = read_book();
+  book.add_from_moves_file(BOOK_PATH + "moves.csv");
   
 }
 
@@ -56,14 +58,14 @@ void bot_ali::do_move(const board* b,board* res)
   
 
   
-  book_t::const_iterator it = book.find(b->to_database_string());
+  book_t::citer it = book.data.find(b->to_database_string());
   
  
   if(child_count == 1){
     mode = ONE_MOVE_MODE;
   }  
   else if(empty_fields > perfect_depth){
-    if(use_book && (it != book.end()) && (it->second.depth >= search_depth)){
+    if(use_book && (it != book.data.end()) && (it->second.depth >= search_depth)){
       mode = BOOK_MODE;
     }
     else{
@@ -122,6 +124,20 @@ void bot_ali::do_move(const board* b,board* res)
         }
       }
       *res = children[best_id];
+      /*if(use_book 
+        && (b->get_non_empty_fields().size() < (unsigned)book_t::entry_max_discs)
+        && (search_depth>=book_t::min_learn_depth)
+      ){
+        int move = book.get_move_index(b,res);
+        book_t::citer it = book.data.find(b->to_database_string());
+        if(it == book.data.end() || search_depth>it->second.depth){
+          book_t::value bv;
+          bv.best_move = move;
+          bv.depth = search_depth;
+          book.data[b->to_database_string()] = bv;      
+        }
+        book.add_to_book_file(b->to_database_string(),search_depth,move);
+      }*/
       break;
     case PERFECT_MODE:
       best_heur = MIN_PERFECT_HEURISTIC;
