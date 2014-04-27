@@ -54,35 +54,6 @@ void book_t::print_stats() const
 }
 
 
-void book_t::add_from_moves_file(const std::string& fname)
-{
-  
-  csv moves_file(fname);
-  
-  while(true){
-    csv::line_t line = moves_file.get_line();
-    if(moves_file.get_file()->fail()){
-      break;
-    }
-
-    citer book_it = data.find(line[0]);
-    if(book_it == data.end()){
-      
-      
-      // add dummy data to be evaluated later
-      // since depth = 0, this will never be used by any decent bot
-      value bv;
-      bv.best_move = 0;
-      bv.depth = 0;
-      data[line[0]] = bv;
-      
-    }
-  }
-}
-
-
-
-
 void book_t::learn(bot_base* bot)
 {
   int learn_level = min_learn_depth;

@@ -34,8 +34,6 @@ struct book_t{
   
   int get_move_index(const board* before,const board* after);
   
-  void add_from_moves_file(const std::string& fname);
-
   void learn(bot_base* bot);
 
   int learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left);

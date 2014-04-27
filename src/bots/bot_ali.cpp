@@ -22,8 +22,6 @@ bot_ali::bot_ali(int sd, int pd):
   0,1,2,3,3,2,1,0
   */
   
-  book.add_from_moves_file(BOOK_PATH + "moves.csv");
-  
 }
 
 void bot_ali::disable_shell_output()
@@ -96,7 +94,7 @@ void bot_ali::do_move(const board* b,board* res)
       int heurs[32];
       for(int i=0;i<child_count;i++){
         inspected = children[i];
-        heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
+        heurs[i] = -pvs<true>(MIN_HEURISTIC,MAX_HEURISTIC);
       }
       sort_boards(children,heurs,child_count);
     }
