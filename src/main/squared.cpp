@@ -5,56 +5,27 @@
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
 #include "main/learn.hpp"
+#include "util/args.hpp"
 
-
-class arg_parser{
+struct squared_arg_t
+{
   
-  static const int IGNORE_OTHER_ARGS = -1;
-  static const int ERROR = -2;
+  arg_parser<squared_arg_t>* parser;
   
-  const char **current_arg,**end_arg;
+  game_control gc;
+  bool show_flag;
+  bool start_windowed_game;
   
-  // check whether there are enough remaining arguments
-  // --set-value value -> use n=1
-  bool has_enough_args(int n){
-    if(current_arg + n >= end_arg){
-      error_flag = true;
-      return false;
-    }  
-    return true;
+  squared_arg_t()
+  {
+    show_flag = false;
+    start_windowed_game = true;
+    parser = NULL;
   }
-  
-  const char* get_arg(int n){
-    return *(current_arg + n);
-  }
-  
-  typedef std::map<std::string,int(arg_parser::*)()> func_map_t;
-  
-  // maps arguments to a function that modifies the argument state
-  // that function should return how many arguments it has used
-  // or IGNORE_OTHER_ARGS or ERROR when appropriate
-  func_map_t func_map;
   
   void fill_func_map();
   
-public:
-  game_control gc;
-  bool show_flag;
-  bool error_flag;
-  bool start_windowed_game;
-  
-  arg_parser(int _argc,const char** _argv):
-    current_arg(_argv+1),
-    end_arg(_argv+_argc)
-  {
-    show_flag = false;
-    error_flag = false;
-    start_windowed_game = true;
-  }
-  
-  //returns false on errors
-  bool parse();
-  
+  // modifiers
   int show_help();
   int show_board();
   int testing_area_mask();
@@ -67,7 +38,7 @@ public:
 };
 
 
-int arg_parser::show_help(){
+int squared_arg_t::show_help(){
   std::cout << 
   "-h, --help\n"
   "show this help\n\n"
@@ -88,115 +59,62 @@ int arg_parser::show_help(){
   return -1;
 }
 
-int arg_parser::show_board(){
+int squared_arg_t::show_board(){
   start_windowed_game = false;
   show_flag = true;
   return 1;
 }
 
-int arg_parser::testing_area_mask(){
+int squared_arg_t::testing_area_mask(){
   start_windowed_game = false;
   testing_area();
-  return IGNORE_OTHER_ARGS;
+  return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int arg_parser::learn(){
+int squared_arg_t::learn(){
   book_t book(BOOK_PATH + "book.csv");
   bot_ali bot(-1,-1); 
   book.learn(&bot);
-  return IGNORE_OTHER_ARGS;
+  return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int arg_parser::set_board(){
-  if(!has_enough_args(1)){
-    return ERROR;
+int squared_arg_t::set_board(){
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
   }
-  gc.current = board(get_arg(1));
+  gc.current = board(parser->get_arg(1));
   return 2;
 }
 
-
-
-void arg_parser::fill_func_map()
+int squared_arg_t::set_black_level()
 {
-  func_map["--help"] = &arg_parser::show_help;
-  func_map["-h"] = &arg_parser::show_help;
-  
-  func_map["--testing"] = &arg_parser::testing_area_mask;
-  
-  func_map["-s"] = &arg_parser::show_board;
-  
-  func_map["--learn"] = &arg_parser::learn;
-  func_map["-l"] = &arg_parser::learn;
-  
-  func_map["--randomize"] = &arg_parser::randomize_board;
-  func_map["-r"] = &arg_parser::randomize_board;
-  
-  func_map["-lb"] = &arg_parser::set_black_level;
-  func_map["-lw"] = &arg_parser::set_white_level;
-  
-  func_map["--board"] = &arg_parser::set_board;
-  func_map["-b"] = &arg_parser::set_board;
-}
-
-
-int arg_parser::set_black_level()
-{
-  if(!has_enough_args(1)){
-    return ERROR;
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
   }
-  int lvl = fromstr<int>(get_arg(1));
+  int lvl = fromstr<int>(parser->get_arg(1));
   gc.add_bot(BLACK,lvl,max(16,2*lvl));
   return 2;
 }
 
-int arg_parser::set_white_level()
+int squared_arg_t::set_white_level()
 {
-  if(!has_enough_args(1)){
-    return ERROR;
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
   }
-  int lvl = fromstr<int>(get_arg(1));
+  int lvl = fromstr<int>(parser->get_arg(1));
   gc.add_bot(BLACK,lvl,max(16,2*lvl));
   return 2;
 }
 
-int arg_parser::randomize_board()
+int squared_arg_t::randomize_board()
 {
-  if(!has_enough_args(1)){
-    return ERROR;    
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;    
   }
-  gc.current = gc.current.do_random_moves(fromstr<int>(get_arg(1)));
+  gc.current = gc.current.do_random_moves(fromstr<int>(parser->get_arg(1)));
   return 2;  
 }
 
-bool arg_parser::parse()
-{
-  fill_func_map();
-  
-  func_map_t::const_iterator it;
-  while(!error_flag && current_arg<end_arg){
-    it = func_map.find(std::string(*current_arg));
-    if(it != func_map.end()){
-      int diff = (this->*(it->second))();
-      if(diff == ERROR){
-        error_flag = true;
-      }
-      else if(diff == IGNORE_OTHER_ARGS){
-        break;
-      }
-      else{
-        current_arg += diff;
-      }
-    }
-    else{
-      error_flag = true;
-    }
-  }
-  if(error_flag){
-    std::cout << "Invalid argument syntax. Try the -h flag for help\n";
-  }
-  return !error_flag;
-}
 
 
 
@@ -204,19 +122,34 @@ int main(int argc,char **argv){
   Gtk::Main kit(argc,argv);
   srand(std::time(NULL));
   
-  arg_parser parser(argc,(const char**)argv);
+  arg_parser<squared_arg_t> parser(argc,(const char**)argv);
+  
+  parser.func_map["--help"] = &squared_arg_t::show_help;
+  parser.func_map["-h"] = &squared_arg_t::show_help;
+  parser.func_map["--testing"] = &squared_arg_t::testing_area_mask;
+  parser.func_map["-s"] = &squared_arg_t::show_board;
+  parser.func_map["--learn"] = &squared_arg_t::learn;
+  parser.func_map["-l"] = &squared_arg_t::learn;
+  parser.func_map["--randomize"] = &squared_arg_t::randomize_board;
+  parser.func_map["-r"] = &squared_arg_t::randomize_board;
+  parser.func_map["-lb"] = &squared_arg_t::set_black_level;
+  parser.func_map["-lw"] = &squared_arg_t::set_white_level;
+  parser.func_map["--board"] = &squared_arg_t::set_board;
+  parser.func_map["-b"] = &squared_arg_t::set_board;
+  
   
   if(!parser.parse()){
     return 0;
   }
   
+  squared_arg_t arg_data = parser.t;
 
-  if(parser.show_flag){
-    parser.gc.current.show();
+  if(arg_data.show_flag){
+    arg_data.gc.current.show();
   }
   
-  if(parser.start_windowed_game){
-    main_window window(parser.gc);
+  if(arg_data.start_windowed_game){
+    main_window window(arg_data.gc);
     Gtk::Main::run(window);
   }
   
