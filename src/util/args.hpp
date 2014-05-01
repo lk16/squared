@@ -34,6 +34,7 @@ struct arg_parser{
   bool parse();
   
   // class containing parsing data
+  // should have a member pointer parser of type arg_parser<typeof(T)>*
   T t;
 };
 
