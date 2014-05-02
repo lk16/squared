@@ -19,7 +19,7 @@ class bot_ali:
 {
   
   static const int location_values[10];
-  static const int min_sort_depth = 6;
+  static const int search_max_sort_depth = 6;
   
   enum eval_mode{
     ONE_MOVE_MODE,
@@ -32,7 +32,8 @@ class bot_ali:
   /// it represents the currently inspected move
   board inspected;
   
-  int negamax_max_non_empty_fields;
+  /// stop finite depth search when going beyond this number of discs
+  int search_max_discs;
   
   book_t book;
   
@@ -55,7 +56,9 @@ public:
       using principal variation search
       positive result is good for this->inspected.turn
   */
-  template<bool sorted> int pvs(int alpha, int beta);
+  int pvs_unsorted(int alpha, int beta);
+  int pvs_sorted(int alpha,int beta);
+  
   int pvs_null_window(int alpha);
   
   /// calculates the result for perfect play of this->inspected, 
@@ -64,7 +67,7 @@ public:
   int pvs_exact(int alpha, int beta);
   
   /// sort boards descending according to heurs
-  void sort_boards(board *boards,int* heurs, int count);
+  void sort_children(board *boards,int* heurs, int count);
   
   void disable_shell_output();
   void disable_book();
