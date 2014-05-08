@@ -66,11 +66,9 @@ void game_control::on_any_move()
 {  
   std::cout << current.to_string() << std::endl;
 
-  if(current.get_non_empty_fields().count() < 24){
-    csv movesfile(BOOK_PATH + "moves.csv");
-    std::vector<std::string> line;
-    line.push_back(current.to_database_string());
-    movesfile.append_line(line);
+  if(current.get_non_empty_fields().count() < (unsigned)book_t::entry_max_discs){
+    book_t book(BOOK_PATH + "book.csv");
+    book.add_to_book_file(current.to_database_string(),0,0);
   }
   
   

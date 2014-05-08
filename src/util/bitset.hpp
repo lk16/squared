@@ -19,7 +19,7 @@ inline std::bitset<64> mirror_vertical_line(const std::bitset<64>& b){
   y = (x ^ (x >>  1)) & 0x0808080808080808; x ^= y ^ (y <<  1);
   
   
-  return std::bitset<64>(x);
+  return std::bitset<64>(x); 
 }
 
 // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
@@ -35,7 +35,6 @@ inline std::bitset<64> rotate_left(std::bitset<64>& b) {
   y = (x ^ (x >> 27)) & 0x0000000102040810; x ^= y ^ (y << 27);
   y = (x ^ (x >> 18)) & 0x0000010204081020; x ^= y ^ (y << 18);
   y = (x ^ (x >>  9)) & 0x0001020408102040; x ^= y ^ (y <<  9);
-
   std::bitset<64> tmp(x);
   return mirror_vertical_line(tmp);
 }

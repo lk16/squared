@@ -10,11 +10,9 @@
 #include "util/math.hpp"
 #include "util/macros.hpp"
 #include "util/string.hpp"
-#include "util/types.hpp"
-
 #include "bots/bot_base.hpp"
-
 #include "main/learn.hpp"
+#include "book/book.hpp"
 
 class bot_ali:
   public bot_base

@@ -148,7 +148,7 @@ int learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left){
   std::cout << "Took " << std::setw(5) << time_diff;
   std::cout << " seconds!";
   if(n_left != -1){
-    std::cout << " (" << n_left+1 << " left)";
+    std::cout << " (" << n_left-1 << " left)";
   }
   std::cout << std::endl << std::flush;
   return get_move_index(&before,&after);

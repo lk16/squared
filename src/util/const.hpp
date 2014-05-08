@@ -23,6 +23,9 @@ const int MIN_HEURISTIC = -1 * MAX_HEURISTIC;
 // lowest possible perfect heuristic (losing every disc)
 const int MIN_PERFECT_HEURISTIC = -64;
 
+// parsing constants
+static const int PARSING_IGNORE_OTHER_ARGS = -1;
+static const int PARSING_ERROR = -2;
 
 // player colors
 const int BLACK = 0;

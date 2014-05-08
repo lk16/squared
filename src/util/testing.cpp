@@ -5,6 +5,7 @@
 #include <future>
 #include <vector>
 #include <set>
+#include <unistd.h>
 
 void print_time_diff(timeval start,timeval end,int runs,const std::string& name){
   
@@ -39,8 +40,10 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
 
 void testing_area(){
 
+  book_t book(BOOK_PATH + "book.csv");
+  book.remove_obsolete_lines();
  
-#if 1
+#if 0
   board b;
   b.reset();  
   
