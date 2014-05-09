@@ -35,6 +35,7 @@ struct squared_arg_t
   int randomize_board();
   int set_white_level();
   int set_black_level();
+  int compress_book();
   
 };
 
@@ -116,6 +117,13 @@ int squared_arg_t::randomize_board()
   return 2;  
 }
 
+int squared_arg_t::compress_book()
+{
+  book_t book(BOOK_PATH + "book.csv");
+  book.remove_obsolete_lines();
+  start_windowed_game = false;
+  return PARSING_IGNORE_OTHER_ARGS;
+}
 
 
 
@@ -137,6 +145,8 @@ int main(int argc,char **argv){
   parser.func_map["-lw"] = &squared_arg_t::set_white_level;
   parser.func_map["--board"] = &squared_arg_t::set_board;
   parser.func_map["-b"] = &squared_arg_t::set_board;
+  parser.func_map["--compress-book"] = &squared_arg_t::compress_book;
+  parser.func_map["-cb"] = &squared_arg_t::compress_book;
   
   
   if(!parser.parse()){

@@ -85,22 +85,22 @@ void bot_ali::do_move(const board* b,board* res)
 
 
     // is used for small negamax search, to sort moves before big search
-    negamax_max_non_empty_fields = 
+    search_max_discs = 
         b->get_non_empty_fields().count() + search_depth - 4;
 
 
     
-    if(search_depth > min_sort_depth){
+    if(search_depth > search_max_sort_depth){
       int heurs[32];
       for(int i=0;i<child_count;i++){
         inspected = children[i];
-        heurs[i] = -pvs<true>(MIN_HEURISTIC,MAX_HEURISTIC);
+        heurs[i] = -pvs_sorted(MIN_HEURISTIC,MAX_HEURISTIC);
       }
-      sort_boards(children,heurs,child_count);
+      sort_children(children,heurs,child_count);
     }
 
     // is used for big negamax search
-    negamax_max_non_empty_fields = b->get_non_empty_fields().count() + search_depth;
+    search_max_discs += 4;
 
   }
   
@@ -111,7 +111,7 @@ void bot_ali::do_move(const board* b,board* res)
       best_heur = MIN_HEURISTIC;
       for(int id=0;id<child_count;++id){
         inspected = children[id];
-        int cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
+        int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
         if(cur_heur > best_heur){
           best_heur = cur_heur;
           best_id = id;
@@ -181,24 +181,20 @@ void bot_ali::do_move(const board* b,board* res)
   }
 }
 
-template<bool sorted>
-int bot_ali::pvs(int alpha, int beta)
+int bot_ali::pvs_sorted(int alpha, int beta)
 {
- 
   nodes++;
   
   int depth_left = 
-    (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
+    (int)inspected.get_non_empty_fields().count() - search_max_discs;
   
-  if(sorted && (depth_left >= min_sort_depth)){
-    return pvs<false>(alpha,beta);
+  if(depth_left > search_max_sort_depth){
+    return pvs_unsorted(alpha,beta);
   }
   
   if(depth_left == 0){
     return heuristic();
   }
-
-  
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
   
@@ -209,72 +205,126 @@ int bot_ali::pvs(int alpha, int beta)
     else{
       inspected.passed = true;
       inspected.switch_turn();
-      int heur = -pvs<sorted>(-beta,-alpha);
+      int heur = -pvs_sorted(-beta,-alpha);
+      inspected.switch_turn();
+      inspected.passed = false;
+      return heur;
+    }
+  }
+    
+  board children[32]; 
+  int child_count = inspected.get_children(children) - children;
+  int heur[32];
+  
+  int tmp_search_max_discs = inspected.get_non_empty_fields().count() + 2;
+  std::swap(tmp_search_max_discs,search_max_discs);
+  
+  for(int i=0;i<child_count;i++){
+    //heur[i] = -children[i].count_valid_moves();
+    std::swap(inspected,children[i]);
+    heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+    std::swap(inspected,children[i]);
+  }
+  
+  std::swap(tmp_search_max_discs,search_max_discs);
+  
+  sort_children(children,heur,child_count);
+  
+  
+  
+  std::swap<board>(inspected,children[0]);
+  int score = -pvs_sorted(-beta,-alpha);
+  std::swap<board>(inspected,children[0]);
+  
+  if(score >= beta){
+      return beta;
+  }
+  if(score >= alpha){
+    alpha = score;
+  }
+      
+    
+    
+  for(int i=1;i<child_count;i++){
+    
+    std::swap<board>(inspected,children[i]);
+    score = -pvs_null_window(-alpha-1);
+    std::swap<board>(inspected,children[i]);
+    
+    if((alpha < score) && (score < beta)){
+      std::swap<board>(inspected,children[i]);
+      score = -pvs_sorted(-beta,-alpha);
+      std::swap<board>(inspected,children[i]);
+    }
+    
+    if(score >= beta){
+      return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
+  }
+  return alpha;
+    
+    
+}
+
+
+int bot_ali::pvs_unsorted(int alpha, int beta)
+{
+ 
+  nodes++;
+  
+  int depth_left = 
+    (int)inspected.get_non_empty_fields().count() - search_max_discs;
+  
+  if(depth_left == 0){
+    return heuristic();
+  }
+  
+  std::bitset<64> valid_moves = inspected.get_valid_moves();
+  
+  if(valid_moves.none()){
+    if(inspected.passed){
+      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      inspected.passed = true;
+      inspected.switch_turn();
+      int heur = -pvs_unsorted(-beta,-alpha);
       inspected.switch_turn();
       inspected.passed = false;
       return heur;
     }
   }
   
-   
-    
-  if(sorted){
-    board children[32]; 
-    int child_count = inspected.get_children(children) - children;
-    int heur[32];
-    
-    for(int i=0;i<child_count;i++){
-      heur[i] = -children[i].count_valid_moves();
-    }
-    sort_boards(children,heur,child_count);
-    
-    
-    
-    std::swap<board>(inspected,children[0]);
-    int score = -pvs<sorted>(-beta,-alpha);
-    std::swap<board>(inspected,children[0]);
-    
-    if(score >= beta){
-        return beta;
-    }
-    if(score >= alpha){
-      alpha = score;
-    }
-      
-    
-    
-    for(int i=1;i<child_count;i++){
-      
-      std::swap<board>(inspected,children[i]);
-      score = -pvs_null_window(-alpha-1);
-      std::swap<board>(inspected,children[i]);
-      
-      if((alpha < score) && (score < beta)){
-        std::swap<board>(inspected,children[i]);
-        score = -pvs<sorted>(-beta,-alpha);
-        std::swap<board>(inspected,children[i]);
-      }
-      
-      if(score >= beta){
-        return beta;
-      }
-      if(score >= alpha){
-        alpha = score;
-      }
-    }
-    return alpha;
-    
-    
+  int move = find_first_set_64(valid_moves.to_ulong());
+  board backup = inspected;  
+  
+  inspected.do_move(move);
+  int score = -pvs_unsorted(-beta,-alpha);
+  inspected = backup;
+
+  if(score >= beta){
+    return beta;
   }
-  else{
-    
-    int move = find_first_set_64(valid_moves.to_ulong());
-    board backup = inspected;  
+  if(score >= alpha){
+    alpha = score;
+  }
+  valid_moves.reset(move);
+  
+  while(valid_moves.any()){
+    move = find_first_set_64(valid_moves.to_ulong());
     
     inspected.do_move(move);
-    int score = -pvs<sorted>(-beta,-alpha);
+    score = -pvs_null_window(-alpha-1);
     inspected = backup;
-
+    
+    if((alpha < score) && (score < beta)){
+      inspected.do_move(move);
+      score = -pvs_unsorted(-beta,-alpha);
+      inspected = backup;
+    }
     if(score >= beta){
       return beta;
     }
@@ -282,29 +332,8 @@ int bot_ali::pvs(int alpha, int beta)
       alpha = score;
     }
     valid_moves.reset(move);
-    
-    while(valid_moves.any()){
-      move = find_first_set_64(valid_moves.to_ulong());
-      
-      inspected.do_move(move);
-      score = -pvs_null_window(-alpha-1);
-      inspected = backup;
-      
-      if((alpha < score) && (score < beta)){
-        inspected.do_move(move);
-        score = -pvs<sorted>(-beta,-alpha);
-        inspected = backup;
-      }
-      if(score >= beta){
-        return beta;
-      }
-      if(score >= alpha){
-        alpha = score;
-      }
-      valid_moves.reset(move);
-    }
-    return alpha;
   }
+  return alpha;
 }
 
 int bot_ali::pvs_null_window(int alpha)
@@ -312,7 +341,7 @@ int bot_ali::pvs_null_window(int alpha)
   nodes++;
   
   int depth_left = 
-  (int)inspected.get_non_empty_fields().count() - negamax_max_non_empty_fields;
+  (int)inspected.get_non_empty_fields().count() - search_max_discs;
   
   if(depth_left == 0){
     return heuristic();
@@ -423,7 +452,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
 
 
 
-void bot_ali::sort_boards(board *boards,int* heurs, int count)
+void bot_ali::sort_children(board *boards,int* heurs, int count)
 {
   bool loop;
   do{
