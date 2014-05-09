@@ -27,7 +27,7 @@ class bot_ali:
     PERFECT_MODE,
     BOOK_MODE
   };
-  
+    
   /// this board will be used by move evaluation functions and do_move()
   /// it represents the currently inspected move
   board inspected;

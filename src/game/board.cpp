@@ -207,9 +207,6 @@ void board::show() const
 int board::get_disc_diff() const
 {
   int count[2];
-
- 
-  
   
   count[0] = me.count();
   count[1] = opp.count();
