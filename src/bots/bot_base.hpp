@@ -9,22 +9,30 @@
 #include "util/math.hpp"
 #include "game/board.hpp"
 
-class bot_base{
+struct bot_base{
 
-protected:
   std::string name;
   int search_depth,perfect_depth;
   long long nodes;
   double prev_move_time;
  
-public:
+  struct stat_t{
+    timeval start_time,stop_time;
+    unsigned long long nodes;
+    
+    void start();
+    void stop();
+    double get_seconds();
+    unsigned long long get_nodes_per_second();
+  } search_stats;
+  
   
   /// ctor
   bot_base(int _search_depth,int _perfect_depth);
   
   /// dtor
   virtual ~bot_base();
-  
+
   /// calculate best move of b and put it in res
   virtual void do_move(const board* in,board* out);
   
@@ -78,4 +86,29 @@ inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
   search_depth = _search_depth;
   perfect_depth = _perfect_depth;
 }
+
+inline void bot_base::stat_t::start()
+{
+  nodes = 0ull;
+  gettimeofday(&start_time,NULL);
+}
+
+inline void bot_base::stat_t::stop()
+{
+  gettimeofday(&stop_time,NULL);
+}
+
+inline double bot_base::stat_t::get_seconds()
+{
+  return (stop_time.tv_sec + (stop_time.tv_usec / 1000000.0)) - 
+  (start_time.tv_sec + (start_time.tv_usec / 1000000.0)); 
+}
+
+inline unsigned long long bot_base::stat_t::get_nodes_per_second()
+{
+  return (unsigned long long)(nodes / get_seconds());
+}
+
+
+
 
