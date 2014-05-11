@@ -10,17 +10,29 @@ book_t::book_t(const std::string& _filename):
    * board in database format,depth,best_move index (0 .. 63)
    */
   
+  int errors = 0;
   csv book_file(_filename);
   while(true){
     csv::line_t line = book_file.get_line();
     if(book_file.get_file()->fail()){
       break; 
     }
+    if(line.size() < 3){
+      errors++;
+      continue;
+    }
     book_t::value bv;
     bv.depth = fromstr<int>(line[1]);
     bv.best_move = fromstr<int>(line[2]);
     data[line[0]] = bv;
   }
+  
+  if(errors > 0){
+    std::cout << "There were " << errors;
+    std::cout << " lines skipped. Please fix the bookfile ";
+    std::cout << '\"' << _filename << '\"' << std::endl;
+  }
+  
 }
 
 

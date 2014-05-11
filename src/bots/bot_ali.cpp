@@ -43,7 +43,7 @@ void bot_ali::do_move(const board* b,board* res)
   board children[32];
   
   
-  int empty_fields = b->get_empty_fields().count();
+  int empty_fields = b->count_empty_fields();
   
   stats.start_timer();
   
@@ -275,9 +275,9 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     return heuristic();
   }
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
+  bits valid_moves = inspected.get_valid_moves();
   
-  if(valid_moves.none()){
+  if(valid_moves == 0ull){
     if(inspected.passed){
       return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
@@ -291,7 +291,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     }
   }
   
-  int move = find_first_set_64(valid_moves.to_ulong());
+  int move = find_first_set_64(valid_moves);
   board backup = inspected;  
   
   inspected.do_move(move);
@@ -304,10 +304,10 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
   if(score >= alpha){
     alpha = score;
   }
-  valid_moves.reset(move);
+  valid_moves &= board::bit[move];
   
-  while(valid_moves.any()){
-    move = find_first_set_64(valid_moves.to_ulong());
+  while(valid_moves != 0ull){
+    move = find_first_set_64(valid_moves);
     
     inspected.do_move(move);
     score = -pvs_null_window(-alpha-1);
@@ -324,7 +324,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves.reset(move);
+    valid_moves &= ~board::bit[move];
   }
   return alpha;
 }
@@ -341,9 +341,9 @@ int bot_ali::pvs_null_window(int alpha)
   }
 
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
+  bits valid_moves = inspected.get_valid_moves();
   
-  if(valid_moves.none()){
+  if(valid_moves == 0ull){
     if(inspected.passed){
       return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
@@ -359,9 +359,9 @@ int bot_ali::pvs_null_window(int alpha)
   
   
   
-  while(valid_moves.any()){
-    int move = find_first_set_64(valid_moves.to_ulong());
-    std::bitset<64> undo_data;
+  while(valid_moves != 0ull){
+    int move = find_first_set_64(valid_moves);
+    bits undo_data;
     int score;
     
     undo_data = inspected.do_move(move);
@@ -374,7 +374,7 @@ int bot_ali::pvs_null_window(int alpha)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves.reset(move);
+    valid_moves &= ~board::bit[move];
   }
   return alpha;
   
@@ -387,9 +387,9 @@ int bot_ali::pvs_exact(int alpha, int beta)
   
   stats.inc_nodes();
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
+  bits valid_moves = inspected.get_valid_moves();
   
-  if(valid_moves.none()){
+  if(valid_moves == 0ull){
     if(inspected.passed){
       return inspected.get_disc_diff();    
     }
@@ -407,10 +407,10 @@ int bot_ali::pvs_exact(int alpha, int beta)
   
   bool null_window = false;
   
-  while(valid_moves.any()){
+  while(valid_moves != 0ull){
     
-    int move = find_first_set_64(valid_moves.to_ulong());
-    std::bitset<64> undo_data;
+    int move = find_first_set_64(valid_moves);
+    bits undo_data;
     int score;
     
     
@@ -438,7 +438,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
       alpha = score;
     }
     null_window = true;
-    valid_moves.reset(move);
+    valid_moves &= ~board::bit[move];
   }
   return alpha;
 }
@@ -482,8 +482,8 @@ int bot_ali::heuristic()
   
 #define LOCATION_HEUR(i) \
   bot_ali::location_values[i] * ( \
-    (inspected.me & board::location[i]).count() \
-    -(inspected.opp & board::location[i]).count() \
+    count_64(inspected.me & board::location[i]) \
+    - count_64(inspected.opp & board::location[i]) \
   )
   
   return

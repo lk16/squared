@@ -20,7 +20,14 @@ struct board{
   static const unsigned int border[64]; // border flags
   
   // (1 << x) for x in [0,63]
-  static const bits bit[64];       
+  static const bits bit[64];
+  
+  // ((~0ull) << (64-x)) for x in [0,63]
+  static const bits bits_before[64];
+  
+  // ((~0ull) >> (64-x)) for x in [0,63]
+  static const bits bits_after[64];
+  
   
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
@@ -97,6 +104,7 @@ struct board{
   bits get_empty_fields() const;
   bits get_non_empty_fields() const;
   int count_discs() const;
+  int count_empty_fields() const;
   
   /// get hash
   long long unsigned hash() const;
@@ -209,15 +217,15 @@ inline bool board::has_valid_moves() const
 
 inline int board::count_valid_moves() const
 {
-  return get_valid_moves().count();  
+  return count_64(get_valid_moves());  
 }
 
 inline bool board::is_valid_move(int field_id) const
 { 
-  return (get_valid_moves() & board::bit[field_id]).any();
+  return (get_valid_moves() & board::bit[field_id]) != 0ull;
 }
 
-inline void board::undo_move(int field_id, std::bitset<64> undo_data)
+inline void board::undo_move(int field_id,bits undo_data)
 {
   switch_turn();
   
@@ -227,12 +235,12 @@ inline void board::undo_move(int field_id, std::bitset<64> undo_data)
   
   assert((me & undo_data).none());
   assert((opp & undo_data) == undo_data);
-  assert((get_non_empty_fields() & board::bit[field_id]).none());
+  assert((get_non_empty_fields() & board::bit[field_id]) == 0ull);
 }
 
-inline std::bitset<64> board::get_valid_moves() const
+inline bits board::get_valid_moves() const
 {
-  std::bitset<64> res;
+  bits res = 0ull;
   
   for(int d=4;d<8;d++){
     
@@ -349,6 +357,11 @@ inline int board::get_rotation(const board* b) const
 
 inline int board::count_discs() const
 {
-  return get_non_empty_fields().count();
+  return count_64(get_non_empty_fields());
+}
+
+inline int board::count_empty_fields() const
+{
+  return count_64(get_empty_fields());
 }
 

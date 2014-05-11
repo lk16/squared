@@ -146,8 +146,8 @@ void game_control::on_game_ended()
   current.show();
   std::cout << current.to_string() << std::endl;
   
-  int b_count = current.opp.count();
-  int w_count = current.me.count();
+  int b_count = count_64(current.opp);
+  int w_count = count_64(current.me);
   
   if(!current.turn){ // it's blacks turn
     std::swap<int>(b_count,w_count);

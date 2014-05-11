@@ -4,7 +4,7 @@ typedef unsigned long long bits;
 
 // returns -1 if ul==0ul, returns least significant bit otherwise
 inline int find_first_set_64(bits b){
-  return __builtin_ffsl(ul) - 1;
+  return __builtin_ffsl(b) - 1;
 }
 
 
@@ -23,9 +23,9 @@ inline int count_64(bits b){
 
 
 // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
-inline bits mirror_vertical_line(const bits x){
+inline bits mirror_vertical_line(const bits b){
   
-  bits y;
+  bits x=b,y;
   
   // reflect x against vertical center line
   y = (x ^ (x >>  7)) & 0x0101010101010101; x ^= y ^ (y <<  7);
@@ -38,9 +38,9 @@ inline bits mirror_vertical_line(const bits x){
 }
 
 // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
-inline std::bitset<64> rotate_left(bits x){
+inline bits rotate_left(const bits b){
   
-  bits y;
+  bits x=b,y;
   
   // reflect x against diagonal line going through bits 1<<7 and 1<<56
   y = (x ^ (x >> 63)) & 0x0000000000000001; x ^= y ^ (y << 63);

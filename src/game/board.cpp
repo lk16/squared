@@ -22,82 +22,82 @@ const int board::walk_diff[8][7] = {
   {  9, 18, 27, 36, 45, 54, 63}  // 7: down right
 };
 
-const std::bitset<64> board::walk_possible[8][7] = {
+const bits board::walk_possible[8][7] = {
   { // up left
-    std::bitset<64>(0xFEFEFEFEFEFEFE00),
-    std::bitset<64>(0xFCFCFCFCFCFC0000),
-    std::bitset<64>(0xF8F8F8F8F8000000),
-    std::bitset<64>(0xF0F0F0F000000000),
-    std::bitset<64>(0xE0E0E00000000000),
-    std::bitset<64>(0xC0C0000000000000),
-    std::bitset<64>(0x8000000000000000)
+    0xFEFEFEFEFEFEFE00,
+    0xFCFCFCFCFCFC0000,
+    0xF8F8F8F8F8000000,
+    0xF0F0F0F000000000,
+    0xE0E0E00000000000,
+    0xC0C0000000000000,
+    0x8000000000000000
   },
   { // up
-    std::bitset<64>(0xFFFFFFFFFFFFFF00),
-    std::bitset<64>(0xFFFFFFFFFFFF0000),
-    std::bitset<64>(0xFFFFFFFFFF000000),
-    std::bitset<64>(0xFFFFFFFF00000000),
-    std::bitset<64>(0xFFFFFF0000000000),
-    std::bitset<64>(0xFFFF000000000000),
-    std::bitset<64>(0xFF00000000000000)
+    0xFFFFFFFFFFFFFF00,
+    0xFFFFFFFFFFFF0000,
+    0xFFFFFFFFFF000000,
+    0xFFFFFFFF00000000,
+    0xFFFFFF0000000000,
+    0xFFFF000000000000,
+    0xFF00000000000000
   },
   { // up right
-    std::bitset<64>(0x7F7F7F7F7F7F7F00),
-    std::bitset<64>(0x3F3F3F3F3F3F0000),
-    std::bitset<64>(0x1F1F1F1F1F000000),
-    std::bitset<64>(0x0F0F0F0F00000000),
-    std::bitset<64>(0x0707070000000000),
-    std::bitset<64>(0x0303000000000000),
-    std::bitset<64>(0x0100000000000000)
+    0x7F7F7F7F7F7F7F00,
+    0x3F3F3F3F3F3F0000,
+    0x1F1F1F1F1F000000,
+    0x0F0F0F0F00000000,
+    0x0707070000000000,
+    0x0303000000000000,
+    0x0100000000000000
   },
   { // left
-    std::bitset<64>(0xFEFEFEFEFEFEFEFE),
-    std::bitset<64>(0xFCFCFCFCFCFCFCFC),
-    std::bitset<64>(0xF8F8F8F8F8F8F8F8),
-    std::bitset<64>(0xF0F0F0F0F0F0F0F0),
-    std::bitset<64>(0xE0E0E0E0E0E0E0E0),
-    std::bitset<64>(0xC0C0C0C0C0C0C0C0),
-    std::bitset<64>(0x8080808080808080)
+    0xFEFEFEFEFEFEFEFE,
+    0xFCFCFCFCFCFCFCFC,
+    0xF8F8F8F8F8F8F8F8,
+    0xF0F0F0F0F0F0F0F0,
+    0xE0E0E0E0E0E0E0E0,
+    0xC0C0C0C0C0C0C0C0,
+    0x8080808080808080
   },
   { // right
-    std::bitset<64>(0x7F7F7F7F7F7F7F7F),
-    std::bitset<64>(0x3F3F3F3F3F3F3F3F),
-    std::bitset<64>(0x1F1F1F1F1F1F1F1F),
-    std::bitset<64>(0x0F0F0F0F0F0F0F0F),
-    std::bitset<64>(0x0707070707070707),
-    std::bitset<64>(0x0303030303030303),
-    std::bitset<64>(0x0101010101010101)
+    0x7F7F7F7F7F7F7F7F,
+    0x3F3F3F3F3F3F3F3F,
+    0x1F1F1F1F1F1F1F1F,
+    0x0F0F0F0F0F0F0F0F,
+    0x0707070707070707,
+    0x0303030303030303,
+    0x0101010101010101
   },
   { // down left
-  std::bitset<64>(0x00FEFEFEFEFEFEFE),
-  std::bitset<64>(0x0000FCFCFCFCFCFC),
-  std::bitset<64>(0x000000F8F8F8F8F8),
-  std::bitset<64>(0x00000000F0F0F0F0),
-  std::bitset<64>(0x0000000000E0E0E0),
-  std::bitset<64>(0x000000000000C0C0),
-  std::bitset<64>(0x0000000000000080)
+    0x00FEFEFEFEFEFEFE,
+    0x0000FCFCFCFCFCFC,
+    0x000000F8F8F8F8F8,
+    0x00000000F0F0F0F0,
+    0x0000000000E0E0E0,
+    0x000000000000C0C0,
+    0x0000000000000080
   },
   { // down
-    std::bitset<64>(0x00FFFFFFFFFFFFFF),
-    std::bitset<64>(0x0000FFFFFFFFFFFF),
-    std::bitset<64>(0x000000FFFFFFFFFF),
-    std::bitset<64>(0x00000000FFFFFFFF),
-    std::bitset<64>(0x0000000000FFFFFF),
-    std::bitset<64>(0x000000000000FFFF),
-    std::bitset<64>(0x00000000000000FF)
+    0x00FFFFFFFFFFFFFF,
+    0x0000FFFFFFFFFFFF,
+    0x000000FFFFFFFFFF,
+    0x00000000FFFFFFFF,
+    0x0000000000FFFFFF,
+    0x000000000000FFFF,
+    0x00000000000000FF
   },
   { // down right
-  std::bitset<64>(0x007F7F7F7F7F7F7F),
-  std::bitset<64>(0x00003F3F3F3F3F3F),
-  std::bitset<64>(0x0000001F1F1F1F1F),
-  std::bitset<64>(0x000000000F0F0F0F),
-  std::bitset<64>(0x0000000000070707),
-  std::bitset<64>(0x0000000000000303),
-  std::bitset<64>(0x0000000000000001)
+    0x007F7F7F7F7F7F7F,
+    0x00003F3F3F3F3F3F,
+    0x0000001F1F1F1F1F,
+    0x000000000F0F0F0F,
+    0x0000000000070707,
+    0x0000000000000303,
+    0x0000000000000001
   }
 };
 
-const std::bitset<64> board::bit[64] = {
+const bits board::bit[64] = {
   (1ul <<  0),(1ul <<  1),(1ul <<  2),(1ul <<  3),(1ul <<  4),
   (1ul <<  5),(1ul <<  6),(1ul <<  7),(1ul <<  8),(1ul <<  9),
   (1ul << 10),(1ul << 11),(1ul << 12),(1ul << 13),(1ul << 14),
@@ -122,7 +122,7 @@ const std::bitset<64> board::bit[64] = {
 // 1,4,5,6,6,5,4,1,
 // 0,1,2,3,3,2,1,0
 
-const std::bitset<64> board::location[10] = {
+const bits board::location[10] = {
   /* 0 */ bit[0] | bit[7] | bit[56] | bit[63],
   /* 1 */ bit[1] | bit[6] | bit[8] | bit[15] | bit[48] | bit[55] | bit[57] | bit[62],
   /* 2 */ bit[2] | bit[5] | bit[16] | bit[23] | bit[40] | bit[47] | bit[58] | bit[61],
@@ -135,8 +135,139 @@ const std::bitset<64> board::location[10] = {
   /* 9 */ bit[27] | bit[28] | bit[35] | bit[36]
 };
   
+const bits board::bits_before[64] = {
+  0x0, // used to prevent warnings
+  (0xFFFFFFFFFFFFFFFF << 63),
+  (0xFFFFFFFFFFFFFFFF << 62),
+  (0xFFFFFFFFFFFFFFFF << 61),
+  (0xFFFFFFFFFFFFFFFF << 60),
+  (0xFFFFFFFFFFFFFFFF << 59),
+  (0xFFFFFFFFFFFFFFFF << 58),
+  (0xFFFFFFFFFFFFFFFF << 57),
+  (0xFFFFFFFFFFFFFFFF << 56),   
+  (0xFFFFFFFFFFFFFFFF << 55),
+  (0xFFFFFFFFFFFFFFFF << 54),
+  (0xFFFFFFFFFFFFFFFF << 53),
+  (0xFFFFFFFFFFFFFFFF << 52),
+  (0xFFFFFFFFFFFFFFFF << 51),
+  (0xFFFFFFFFFFFFFFFF << 50),
+  (0xFFFFFFFFFFFFFFFF << 49),
+  (0xFFFFFFFFFFFFFFFF << 48),
+  (0xFFFFFFFFFFFFFFFF << 47),
+  (0xFFFFFFFFFFFFFFFF << 46),   
+  (0xFFFFFFFFFFFFFFFF << 45),
+  (0xFFFFFFFFFFFFFFFF << 44),
+  (0xFFFFFFFFFFFFFFFF << 43),
+  (0xFFFFFFFFFFFFFFFF << 42),
+  (0xFFFFFFFFFFFFFFFF << 41),
+  (0xFFFFFFFFFFFFFFFF << 40),
+  (0xFFFFFFFFFFFFFFFF << 39),
+  (0xFFFFFFFFFFFFFFFF << 38),
+  (0xFFFFFFFFFFFFFFFF << 37),
+  (0xFFFFFFFFFFFFFFFF << 36),   
+  (0xFFFFFFFFFFFFFFFF << 35),
+  (0xFFFFFFFFFFFFFFFF << 34),
+  (0xFFFFFFFFFFFFFFFF << 33),
+  (0xFFFFFFFFFFFFFFFF << 32),
+  (0xFFFFFFFFFFFFFFFF << 31),
+  (0xFFFFFFFFFFFFFFFF << 30),
+  (0xFFFFFFFFFFFFFFFF << 29),
+  (0xFFFFFFFFFFFFFFFF << 28),
+  (0xFFFFFFFFFFFFFFFF << 27),
+  (0xFFFFFFFFFFFFFFFF << 26),   
+  (0xFFFFFFFFFFFFFFFF << 25),
+  (0xFFFFFFFFFFFFFFFF << 24),
+  (0xFFFFFFFFFFFFFFFF << 23),
+  (0xFFFFFFFFFFFFFFFF << 22),
+  (0xFFFFFFFFFFFFFFFF << 21),
+  (0xFFFFFFFFFFFFFFFF << 20),
+  (0xFFFFFFFFFFFFFFFF << 19),
+  (0xFFFFFFFFFFFFFFFF << 18),
+  (0xFFFFFFFFFFFFFFFF << 17),
+  (0xFFFFFFFFFFFFFFFF << 16),   
+  (0xFFFFFFFFFFFFFFFF << 15),
+  (0xFFFFFFFFFFFFFFFF << 14),
+  (0xFFFFFFFFFFFFFFFF << 13),
+  (0xFFFFFFFFFFFFFFFF << 12),
+  (0xFFFFFFFFFFFFFFFF << 11),
+  (0xFFFFFFFFFFFFFFFF << 10),
+  (0xFFFFFFFFFFFFFFFF << 9),
+  (0xFFFFFFFFFFFFFFFF << 8),
+  (0xFFFFFFFFFFFFFFFF << 7),
+  (0xFFFFFFFFFFFFFFFF << 6),   
+  (0xFFFFFFFFFFFFFFFF << 5),
+  (0xFFFFFFFFFFFFFFFF << 4),
+  (0xFFFFFFFFFFFFFFFF << 3),
+  (0xFFFFFFFFFFFFFFFF << 2),
+  (0xFFFFFFFFFFFFFFFF << 1)
+};
 
-
+const bits board::bits_after[64] = {
+  (0xFFFFFFFFFFFFFFFF << 1),
+  (0xFFFFFFFFFFFFFFFF << 2),
+  (0xFFFFFFFFFFFFFFFF << 3),
+  (0xFFFFFFFFFFFFFFFF << 4),
+  (0xFFFFFFFFFFFFFFFF << 5),
+  (0xFFFFFFFFFFFFFFFF << 6),
+  (0xFFFFFFFFFFFFFFFF << 7),
+  (0xFFFFFFFFFFFFFFFF << 8),
+  (0xFFFFFFFFFFFFFFFF << 9),
+  (0xFFFFFFFFFFFFFFFF << 10),
+  (0xFFFFFFFFFFFFFFFF << 11),
+  (0xFFFFFFFFFFFFFFFF << 12),
+  (0xFFFFFFFFFFFFFFFF << 13),
+  (0xFFFFFFFFFFFFFFFF << 14),
+  (0xFFFFFFFFFFFFFFFF << 15),
+  (0xFFFFFFFFFFFFFFFF << 16),
+  (0xFFFFFFFFFFFFFFFF << 17),
+  (0xFFFFFFFFFFFFFFFF << 18),
+  (0xFFFFFFFFFFFFFFFF << 19),
+  (0xFFFFFFFFFFFFFFFF << 20),
+  (0xFFFFFFFFFFFFFFFF << 21),
+  (0xFFFFFFFFFFFFFFFF << 22),
+  (0xFFFFFFFFFFFFFFFF << 23),
+  (0xFFFFFFFFFFFFFFFF << 24),
+  (0xFFFFFFFFFFFFFFFF << 25),
+  (0xFFFFFFFFFFFFFFFF << 26),
+  (0xFFFFFFFFFFFFFFFF << 27),
+  (0xFFFFFFFFFFFFFFFF << 28),
+  (0xFFFFFFFFFFFFFFFF << 29),
+  (0xFFFFFFFFFFFFFFFF << 30),
+  (0xFFFFFFFFFFFFFFFF << 31),
+  (0xFFFFFFFFFFFFFFFF << 32),
+  (0xFFFFFFFFFFFFFFFF << 33),
+  (0xFFFFFFFFFFFFFFFF << 34),
+  (0xFFFFFFFFFFFFFFFF << 35),
+  (0xFFFFFFFFFFFFFFFF << 36),
+  (0xFFFFFFFFFFFFFFFF << 37),
+  (0xFFFFFFFFFFFFFFFF << 38),
+  (0xFFFFFFFFFFFFFFFF << 39),
+  (0xFFFFFFFFFFFFFFFF << 40),
+  (0xFFFFFFFFFFFFFFFF << 41),
+  (0xFFFFFFFFFFFFFFFF << 42),
+  (0xFFFFFFFFFFFFFFFF << 43),
+  (0xFFFFFFFFFFFFFFFF << 44),
+  (0xFFFFFFFFFFFFFFFF << 45),
+  (0xFFFFFFFFFFFFFFFF << 46),
+  (0xFFFFFFFFFFFFFFFF << 47),
+  (0xFFFFFFFFFFFFFFFF << 48),
+  (0xFFFFFFFFFFFFFFFF << 49),
+  (0xFFFFFFFFFFFFFFFF << 50),
+  (0xFFFFFFFFFFFFFFFF << 51),
+  (0xFFFFFFFFFFFFFFFF << 52),
+  (0xFFFFFFFFFFFFFFFF << 53),
+  (0xFFFFFFFFFFFFFFFF << 54),
+  (0xFFFFFFFFFFFFFFFF << 55),
+  (0xFFFFFFFFFFFFFFFF << 56),
+  (0xFFFFFFFFFFFFFFFF << 57),
+  (0xFFFFFFFFFFFFFFFF << 58),
+  (0xFFFFFFFFFFFFFFFF << 59),
+  (0xFFFFFFFFFFFFFFFF << 60),
+  (0xFFFFFFFFFFFFFFFF << 61),
+  (0xFFFFFFFFFFFFFFFF << 62),
+  (0xFFFFFFFFFFFFFFFF << 63),
+  0x0 // used to prevent compiler warnings
+};
 
 
 
@@ -146,11 +277,11 @@ board* board::get_children(board* out_begin) const
   assert(out_begin);
   
   board* out_end = out_begin;
-  std::bitset<64> valid_moves = get_valid_moves();
+  bits valid_moves = get_valid_moves();
   
   while(true){
     
-    int move_id = find_first_set_64(valid_moves.to_ulong());
+    int move_id = find_first_set_64(valid_moves);
     if(move_id == -1){
       break;
     } 
@@ -159,7 +290,7 @@ board* board::get_children(board* out_begin) const
     out_end->do_move(move_id);
     out_end++;
     
-    valid_moves.reset(move_id);
+    valid_moves &= ~board::bit[move_id];
     
   }
   return out_end;
@@ -171,7 +302,7 @@ void board::show() const
 {
   int x,y;
   
-  std::bitset<64> black,white;
+  bits black,white;
   black = (turn ? opp : me);
   white = (turn ? me : opp);
   
@@ -184,10 +315,10 @@ void board::show() const
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      if(black.test(y*8+x)){
+      if(black & board::bit[y*8+x]){
           std::cout << "\033[31;1m@\033[0m ";
       }
-      else if(white.test(y*8+x)){
+      else if(white & board::bit[y*8+x]){
           std::cout << "\033[34;1m@\033[0m ";
       }
       else if(is_valid_move(y*8+x)){
@@ -208,8 +339,8 @@ int board::get_disc_diff() const
 {
   int count[2];
   
-  count[0] = me.count();
-  count[1] = opp.count();
+  count[0] = count_64(me);
+  count[1] = count_64(opp);
   
   if(count[0] > count[1]){ /* I win */
     return 64 - (2*count[1]);
@@ -223,23 +354,23 @@ int board::get_disc_diff() const
 }
 
 
-std::bitset<64> board::do_move(int move_id)
+bits board::do_move(int move_id)
 {
   assert(is_valid_move(move_id));
   
-  std::bitset<64> tmp_mask,cur_bit,result;
+  bits tmp_mask,cur_bit,result = 0ull;
   
   for(int i=0;i<4;++i){
     
-    tmp_mask.reset();
+    tmp_mask = 0ull;
     cur_bit = board::bit[move_id];
     
     
     while(true){
-      assert(cur_bit.any());
+      assert(cur_bit != 0ull);
       
       // will i walk off the board next step?
-      if(!(walk_possible[i][0] & cur_bit).any()){
+      if((walk_possible[i][0] & cur_bit) == 0ull){
         break;
       }
       
@@ -247,24 +378,24 @@ std::bitset<64> board::do_move(int move_id)
       cur_bit >>= board::walk_diff[7-i][0];
       
       // current field = my color
-      if((me & cur_bit).any()){
+      if((me & cur_bit) != 0ull){
         result |= tmp_mask;
         break;
       }
       
       // current field = opponent color
-      if((opp & cur_bit).any()){
+      if((opp & cur_bit) != 0ull){
         tmp_mask |= cur_bit;
         continue;
       }
       
-      // current fiend = empty
+      // current field = empty
       break;
     }
   }
   for(int i=4;i<8;++i){
     
-    tmp_mask.reset();
+    tmp_mask = 0ull;
     cur_bit = board::bit[move_id];
     
     
@@ -272,20 +403,20 @@ std::bitset<64> board::do_move(int move_id)
       assert(cur_bit.any());
       
       // will i walk off the board next step?
-      if(!(walk_possible[i][0] & cur_bit).any()){
+      if((walk_possible[i][0] & cur_bit) == 0ull){
         break;
       }
       
       cur_bit <<= board::walk_diff[i][0];
       
       // current field = my color
-      if((me & cur_bit).any()){
+      if((me & cur_bit) != 0ull){
         result |= tmp_mask;
         break;
       }
       
       // current field = opponent color
-      if((opp & cur_bit).any()){
+      if((opp & cur_bit) != 0ull){
         tmp_mask |= cur_bit;
         continue;
       }
@@ -326,8 +457,8 @@ std::string board::to_string() const {
   res[1] = '0';
   
   for(int i=0;i<16;i++){
-    res[2+i] = hex[(me >> (4*i)).to_ulong() & 0xF];
-    res[18+i] = hex[(opp >> (4*i)).to_ulong() & 0xF];
+    res[2+i] = hex[(me >> (4*i)) & 0xF];
+    res[18+i] = hex[(opp >> (4*i)) & 0xF];
   }
   
   res[34] = '\0';
@@ -345,8 +476,7 @@ board::board(const std::string& in){
     turn = ((in[0] - '0') &  0x1);
     passed = ((in[0] - '0') & 0x2);
 
-    me.reset();
-    opp.reset();
+    opp = me = 0ull;
     
     unsigned long long x;
     for(int i=0;i<16;i++){
@@ -376,8 +506,7 @@ board::board(const std::string& in){
     }
   }
   catch(int i){
-    me.reset();
-    opp.reset();
+    me = opp = 0ull;
     turn = passed = false;
     std::cout << "ERROR: invalid board format fed to board(std::string): ";
     std::cout << in << "\n";
@@ -438,14 +567,14 @@ std::string board::to_database_string() const
   return min_str; 
 }
 
-std::bitset<64> board::do_move_field_id(int field_id){
-  std::bitset<64> flipped,mask;
+bits board::do_move_field_id(int field_id){
+  bits flipped = 0ull,mask;
   int end;
   // down
   if(field_id/8 < 6){
     mask = 0x0010101010101010 << field_id;
-    end = find_first_set_64((mask & me).to_ulong());
-    if((opp & mask) == (std::bitset<64>(bit[end].to_ulong() - 1) & mask)){
+    end = find_first_set_64(mask & me);
+    if((opp & mask) == (bits_before[end] & mask)){
       flipped |= (opp & mask);
     }
   }

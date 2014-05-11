@@ -86,21 +86,14 @@ inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
   perfect_depth = _perfect_depth;
 }
 
-<<<<<<< HEAD
-inline void bot_base::stat_t::start()
-=======
 inline void bot_base::stat_t::start_timer()
->>>>>>> 1d92a5f5f29ede9cb1955edf9446ef80fa85a4e3
 {
   nodes = 0ull;
   gettimeofday(&start_time,NULL);
 }
 
-<<<<<<< HEAD
-inline void bot_base::stat_t::stop()
-=======
+
 inline void bot_base::stat_t::stop_timer()
->>>>>>> 1d92a5f5f29ede9cb1955edf9446ef80fa85a4e3
 {
   gettimeofday(&stop_time,NULL);
 }
