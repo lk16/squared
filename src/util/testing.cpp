@@ -40,8 +40,8 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
 
 void testing_area(){
 
-  book_t book(BOOK_PATH + "book.csv");
-  book.remove_obsolete_lines();
+  std::cout << find_last_set_64(0x8000000000000000) << '\n';
+  std::cout << find_last_set_64(0x0000000000000001) << '\n';
  
 #if 0
   board b;

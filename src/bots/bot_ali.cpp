@@ -38,7 +38,6 @@ void bot_ali::disable_book()
 void bot_ali::do_move(const board* b,board* res)
 {
   
-  struct timeval start;
   eval_mode mode;
   int child_count;
   board children[32];
@@ -46,10 +45,7 @@ void bot_ali::do_move(const board* b,board* res)
   
   int empty_fields = b->get_empty_fields().count();
   
-  if(shell_output){
-    nodes = 0;
-    gettimeofday(&start,NULL);
-  }
+  stats.start_timer();
   
   child_count = b->get_children(children) - children;
   assert(child_count != 0);
@@ -171,19 +167,17 @@ void bot_ali::do_move(const board* b,board* res)
   }
   
   if(shell_output && (mode==NORMAL_MODE || mode==PERFECT_MODE)){
-    struct timeval end;
-    gettimeofday(&end,NULL);
-    double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
-    (start.tv_sec + (start.tv_usec / 1000000.0));
-
-    std::cout << big_number(nodes) << " nodes in " << time_diff << " seconds: ";
-    std::cout << big_number((long)(nodes/(time_diff<0.000001 ? 1 : time_diff))) << " nodes / sec\n";
+    stats.stop_timer();
+    
+    std::cout << big_number(stats.get_nodes()) << " nodes in ";
+    std::cout << stats.get_seconds() << " seconds: ";
+    std::cout << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
   }
 }
 
 int bot_ali::pvs_sorted(int alpha, int beta)
 {
-  nodes++;
+  stats.inc_nodes();
   
   int depth_left = 
     (int)inspected.count_discs() - search_max_discs;
@@ -272,8 +266,7 @@ int bot_ali::pvs_sorted(int alpha, int beta)
 
 int bot_ali::pvs_unsorted(int alpha, int beta)
 {
- 
-  nodes++;
+  stats.inc_nodes();
   
   int depth_left = 
     (int)inspected.count_discs() - search_max_discs;
@@ -338,7 +331,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
 
 int bot_ali::pvs_null_window(int alpha)
 {
-  nodes++;
+  stats.inc_nodes();
   
   int depth_left = 
   (int)inspected.count_discs() - search_max_discs;
@@ -392,7 +385,7 @@ int bot_ali::pvs_null_window(int alpha)
 int bot_ali::pvs_exact(int alpha, int beta)
 {
   
-  nodes++;
+  stats.inc_nodes();
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
   

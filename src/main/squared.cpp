@@ -4,7 +4,6 @@
 
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
-#include "main/learn.hpp"
 #include "util/args.hpp"
 
 struct squared_arg_t

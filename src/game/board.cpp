@@ -438,3 +438,20 @@ std::string board::to_database_string() const
   return min_str; 
 }
 
+std::bitset<64> board::do_move_field_id(int field_id){
+  std::bitset<64> flipped,mask;
+  int end;
+  // down
+  if(field_id/8 < 6){
+    mask = 0x0010101010101010 << field_id;
+    end = find_first_set_64((mask & me).to_ulong());
+    if((opp & mask) == (std::bitset<64>(bit[end].to_ulong() - 1) & mask)){
+      flipped |= (opp & mask);
+    }
+  }
+  
+  me |= bit[field_id] | flipped;
+  opp &= ~me;
+  return flipped;
+}
+
