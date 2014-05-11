@@ -56,8 +56,6 @@ struct board{
   /// move ctor
   board(const board&& b);
   
-  
-  
   /// can be used to create board object from string of board::to_string()
   board(const std::string& in);
 
@@ -96,10 +94,10 @@ struct board{
   /// returns the number of children, without calculating the actual children
   int count_valid_moves() const;
   
-  /// gets whatever name says
+
   std::bitset<64> get_empty_fields() const;
   std::bitset<64> get_non_empty_fields() const;
-  
+  int count_discs() const;
   
   
   /// get hash
@@ -352,5 +350,10 @@ inline int board::get_rotation(const board* b) const
     }
   }
   return -1;
+}
+
+inline int board::count_discs() const
+{
+  return get_non_empty_fields().count();
 }
 

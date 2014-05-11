@@ -86,7 +86,7 @@ void bot_ali::do_move(const board* b,board* res)
 
     // is used for small negamax search, to sort moves before big search
     search_max_discs = 
-        b->get_non_empty_fields().count() + search_depth - 4;
+        b->count_discs() + search_depth - 4;
 
 
     
@@ -186,7 +186,7 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   nodes++;
   
   int depth_left = 
-    (int)inspected.get_non_empty_fields().count() - search_max_discs;
+    (int)inspected.count_discs() - search_max_discs;
   
   if(depth_left > search_max_sort_depth){
     return pvs_unsorted(alpha,beta);
@@ -216,7 +216,7 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   int child_count = inspected.get_children(children) - children;
   int heur[32];
   
-  int tmp_search_max_discs = inspected.get_non_empty_fields().count() + 2;
+  int tmp_search_max_discs = inspected.count_discs() + 2;
   std::swap(tmp_search_max_discs,search_max_discs);
   
   for(int i=0;i<child_count;i++){
@@ -276,7 +276,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
   nodes++;
   
   int depth_left = 
-    (int)inspected.get_non_empty_fields().count() - search_max_discs;
+    (int)inspected.count_discs() - search_max_discs;
   
   if(depth_left == 0){
     return heuristic();
@@ -341,7 +341,7 @@ int bot_ali::pvs_null_window(int alpha)
   nodes++;
   
   int depth_left = 
-  (int)inspected.get_non_empty_fields().count() - search_max_discs;
+  (int)inspected.count_discs() - search_max_discs;
   
   if(depth_left == 0){
     return heuristic();
