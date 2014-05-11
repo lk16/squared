@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bitset>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -15,30 +14,30 @@
 
 struct board{
   
+  
+  
   // static constants
   static const unsigned int border[64]; // border flags
   
   // (1 << x) for x in [0,63]
-  static const std::bitset<64> bit[64];       
+  static const bits bit[64];       
   
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
-  static const std::bitset<64> walk_possible[8][7];
+  static const bits walk_possible[8][7];
   
   // contains index differences when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
   
   // location on board, for table see source file 
-  static const std::bitset<64> location[10];    
+  static const bits location[10];    
   
 
 
-  // discs of player to move
-  std::bitset<64> me;
-  
-  // discs of opponent of player to move
-  std::bitset<64> opp;
+  // me = discs of player to move
+  // opp = opponent
+  bits me,opp;
   
   // represents which player is to move:
   // false means black, true means white
@@ -80,7 +79,7 @@ struct board{
   
   
   /// out will represent a bitset in which each set bit represents a valid move
-  std::bitset<64> get_valid_moves() const;
+  bits get_valid_moves() const;
   
   board do_random_moves(int count) const;
   
@@ -95,13 +94,12 @@ struct board{
   int count_valid_moves() const;
   
 
-  std::bitset<64> get_empty_fields() const;
-  std::bitset<64> get_non_empty_fields() const;
+  bits get_empty_fields() const;
+  bits get_non_empty_fields() const;
   int count_discs() const;
   
-  
   /// get hash
-  unsigned long hash() const;
+  long long unsigned hash() const;
   
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
@@ -109,11 +107,15 @@ struct board{
   /// returns disc count difference positive means this->turn has more
   int get_disc_diff() const;
   
-  /// does a move
-  std::bitset<64> do_move(int field_id);
+  /// does a move, returns flipped discs
+  bits do_move(int field_id);
+  
+  /// experimental code for making specific move functions for each field
+  bits do_move_field_id(int field_id);
+  
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
-  void undo_move(int field_id,std::bitset<64> undo_data); 
+  void undo_move(int field_id,bits undo_data); 
   
   /// returns string representation
   std::string to_string() const;
@@ -146,15 +148,8 @@ inline board::board()
 
 inline void board::reset(){
   
-  /* wipe all discs of the board */
-  me.reset();
-  opp.reset();
-  
-  /* put starting pieces on board */
-  me.set(28);
-  me.set(35);
-  opp.set(27);
-  opp.set(36);
+  me = bit[28] | bit[35];
+  opp = bit[27] | bit[36];
   
   passed = false;
   turn = false;
@@ -182,7 +177,7 @@ inline bool board::operator==(const board& b) const
 inline void board::switch_turn()
 {
   turn = !turn;
-  std::swap<std::bitset<64> >(me,opp);
+  std::swap<bits>(me,opp);
 }
 
 
@@ -192,24 +187,24 @@ inline bool board::operator<(const board& b) const
 }
 
 
-inline long unsigned int board::hash() const
+inline long long unsigned board::hash() const
 {
-  return 3*me.to_ulong() + 5*opp.to_ulong() + 7*turn + 11*(passed ? 1 : 0);
+  return 3*me + 5*opp + 7*turn + 11*(passed ? 1 : 0);
 }
 
-inline std::bitset<64> board::get_empty_fields() const
+inline bits board::get_empty_fields() const
 {
   return ~get_non_empty_fields();
 }
 
-inline std::bitset<64> board::get_non_empty_fields() const
+inline bits board::get_non_empty_fields() const
 {
   return me | opp;
 }
 
 inline bool board::has_valid_moves() const
 {
-  return get_valid_moves().any();
+  return get_valid_moves() != 0;
 }
 
 inline int board::count_valid_moves() const

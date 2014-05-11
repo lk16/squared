@@ -11,20 +11,24 @@
 
 struct bot_base{
 
-  std::string name;
-  int search_depth,perfect_depth;
-  long long nodes;
-  double prev_move_time;
- 
-  struct stat_t{
+  class stat_t{
     timeval start_time,stop_time;
     unsigned long long nodes;
     
-    void start();
-    void stop();
-    double get_seconds();
-    unsigned long long get_nodes_per_second();
-  } search_stats;
+  public:
+    stat_t();
+    void start_timer();
+    void stop_timer();
+    double get_seconds() const;
+    unsigned long long get_nodes_per_second() const;
+    unsigned long long get_nodes() const;
+    void inc_nodes();
+  };
+  
+  std::string name;
+  int search_depth,perfect_depth;
+  stat_t stats;
+  
   
   
   /// ctor
@@ -41,7 +45,6 @@ struct bot_base{
   
   int get_search_depth() const;
   int get_perfect_depth() const;
-  int get_nodes() const;
   
   void set_search_depth(int _search_depth,int _perfect_depth);
   
@@ -52,8 +55,7 @@ inline bot_base::~bot_base()
 
 
 inline bot_base::bot_base(int _search_depth,int _perfect_depth):
-  name("bot_base"),
-  prev_move_time(std::time(NULL))
+  name("bot_base")
 {
   set_search_depth(_search_depth,_perfect_depth);
 }
@@ -69,11 +71,6 @@ inline int bot_base::get_perfect_depth() const
 }
 
 
-inline int bot_base::get_nodes() const
-{
-  return nodes; 
-}
-
 inline void bot_base::do_move(const board* b,board* res){
   (void) b;
   (void) res;
@@ -83,32 +80,59 @@ inline void bot_base::do_move(const board* b,board* res){
 
 inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
 {
+  assert(_search_depth > 0 && _search_depth <= 60);
+  assert(_perfect_depth > 0 && _perfect_depth <= 60);
   search_depth = _search_depth;
   perfect_depth = _perfect_depth;
 }
 
+<<<<<<< HEAD
 inline void bot_base::stat_t::start()
+=======
+inline void bot_base::stat_t::start_timer()
+>>>>>>> 1d92a5f5f29ede9cb1955edf9446ef80fa85a4e3
 {
   nodes = 0ull;
   gettimeofday(&start_time,NULL);
 }
 
+<<<<<<< HEAD
 inline void bot_base::stat_t::stop()
+=======
+inline void bot_base::stat_t::stop_timer()
+>>>>>>> 1d92a5f5f29ede9cb1955edf9446ef80fa85a4e3
 {
   gettimeofday(&stop_time,NULL);
 }
 
-inline double bot_base::stat_t::get_seconds()
+inline double bot_base::stat_t::get_seconds() const
 {
   return (stop_time.tv_sec + (stop_time.tv_usec / 1000000.0)) - 
   (start_time.tv_sec + (start_time.tv_usec / 1000000.0)); 
 }
 
-inline unsigned long long bot_base::stat_t::get_nodes_per_second()
+inline unsigned long long bot_base::stat_t::get_nodes_per_second() const
 {
+  if(get_seconds() < 0.00000001){
+    return 0ull;
+  }
   return (unsigned long long)(nodes / get_seconds());
 }
 
+inline bot_base::stat_t::stat_t()
+{
+  nodes = 0;
+}
+
+inline long long unsigned int bot_base::stat_t::get_nodes() const
+{
+  return nodes;
+}
+
+inline void bot_base::stat_t::inc_nodes()
+{
+  nodes++;
+}
 
 
 

@@ -4,7 +4,6 @@
 
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
-#include "main/learn.hpp"
 #include "util/args.hpp"
 
 struct squared_arg_t
@@ -16,7 +15,8 @@ struct squared_arg_t
   bool show_flag;
   bool start_windowed_game;
   
-  squared_arg_t()
+  squared_arg_t():
+    gc()
   {
     show_flag = false;
     start_windowed_game = true;

@@ -112,23 +112,20 @@ void book_t::add_to_book_file(const std::string& b, int depth, int move)
 
 
 int book_t::learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left){
-  timeval start,end;
   board after,before(board_str);
-  std::cout << "learning " << board_str;
-  std::cout << " at depth " << depth << " ... ";
+  std::cout << board_str << " at depth " << depth << '\t';
   std::cout.flush();
-  gettimeofday(&start,NULL);
+  
+  bot->stats.start_timer();
+  
   bot->do_move(&before,&after);
-  gettimeofday(&end,NULL);
   
-  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
-  (start.tv_sec + (start.tv_usec / 1000000.0)); 
+  bot->stats.stop_timer();
   
-  
-  std::cout << "Took " << std::setw(5) << time_diff;
-  std::cout << " seconds!";
+  std::cout << (int)bot->stats.get_seconds() << " s\t";
+  std::cout << big_number(bot->stats.get_nodes_per_second()) << "n/s\t";
   if(n_left != -1){
-    std::cout << " (" << n_left-1 << " left)";
+    std::cout << n_left-1 << " left\t";
   }
   std::cout << std::endl << std::flush;
   return get_move_index(&before,&after);
@@ -138,6 +135,7 @@ void book_t::remove_obsolete_lines() const
 {
   /* test if file exists, return if not */
   if(access(filename.c_str(), F_OK) == -1){
+    std::cout << "file \"" << filename << "\" not found." << std::endl;
     return;    
   }
   
@@ -156,5 +154,7 @@ void book_t::remove_obsolete_lines() const
   
   /* remove backup file */
   std::remove((filename + ".bak").c_str());
+  
+  std::cout << "Book succesfully cleaned." << std::endl;
 }
 
