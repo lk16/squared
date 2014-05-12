@@ -1,7 +1,6 @@
 #include <gtkmm.h>
 
 #include <map>
-
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
 #include "util/args.hpp"
@@ -127,7 +126,6 @@ int squared_arg_t::compress_book()
 
 
 int main(int argc,char **argv){
-  Gtk::Main kit(argc,argv);
   srand(std::time(NULL));
   
   arg_parser<squared_arg_t> parser(argc,(const char**)argv);
@@ -159,6 +157,7 @@ int main(int argc,char **argv){
   }
   
   if(arg_data.start_windowed_game){
+    Gtk::Main kit(argc,argv);
     main_window window(arg_data.gc);
     Gtk::Main::run(window);
   }
