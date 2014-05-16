@@ -20,9 +20,9 @@ set(OPTIMIZING_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS 
-  "${OPTIMIZING_FLAGS}"
+  #"${OPTIMIZING_FLAGS}"
   #"${OPTIMIZED_DEBUG_FLAGS}"
-  #"${DEBUG_FLAGS}"
+  "${DEBUG_FLAGS}"
 ) 
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -43,6 +43,7 @@ set(objects
   bots/bot_ali.cpp
   book/book.cpp
   game/board.cpp
+  game/board_move.cpp
   game/game_control.cpp
   gui/main_window.cpp
   gui/preferences_dialog.cpp

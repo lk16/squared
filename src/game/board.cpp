@@ -22,7 +22,7 @@ const int board::walk_diff[8][7] = {
   {  9, 18, 27, 36, 45, 54, 63}  // 7: down right
 };
 
-const bits board::walk_possible[8][7] = {
+const bits64 board::walk_possible[8][7] = {
   { // up left
     0xFEFEFEFEFEFEFE00,
     0xFCFCFCFCFCFC0000,
@@ -97,7 +97,7 @@ const bits board::walk_possible[8][7] = {
   }
 };
 
-const bits board::bit[64] = {
+const bits64 board::bit[65] = {
   (1ul <<  0),(1ul <<  1),(1ul <<  2),(1ul <<  3),(1ul <<  4),
   (1ul <<  5),(1ul <<  6),(1ul <<  7),(1ul <<  8),(1ul <<  9),
   (1ul << 10),(1ul << 11),(1ul << 12),(1ul << 13),(1ul << 14),
@@ -110,8 +110,77 @@ const bits board::bit[64] = {
   (1ul << 45),(1ul << 46),(1ul << 47),(1ul << 48),(1ul << 49),
   (1ul << 50),(1ul << 51),(1ul << 52),(1ul << 53),(1ul << 54),
   (1ul << 55),(1ul << 56),(1ul << 57),(1ul << 58),(1ul << 59),
-  (1ul << 60),(1ul << 61),(1ul << 62),(1ul << 63)
+  (1ul << 60),(1ul << 61),(1ul << 62),(1ul << 63), 0x0
 };
+
+bits64 (board::* const move_funcs[65])() = {
+  &board::do_move_A1,
+  &board::do_move_A2,
+  &board::do_move_A3,
+  &board::do_move_A4,
+  &board::do_move_A5,
+  &board::do_move_A6,
+  &board::do_move_A7,
+  &board::do_move_A8,
+  &board::do_move_B1,
+  &board::do_move_B2,
+  &board::do_move_B3,
+  &board::do_move_B4,
+  &board::do_move_B5,
+  &board::do_move_B6,
+  &board::do_move_B7,
+  &board::do_move_B8,
+  &board::do_move_C1,
+  &board::do_move_C2,
+  &board::do_move_C3,
+  &board::do_move_C4,
+  &board::do_move_C5,
+  &board::do_move_C6,
+  &board::do_move_C7,
+  &board::do_move_C8,
+  &board::do_move_D1,
+  &board::do_move_D2,
+  &board::do_move_D3,
+  &board::do_move_D4,
+  &board::do_move_D5,
+  &board::do_move_D6,
+  &board::do_move_D7,
+  &board::do_move_D8,
+  &board::do_move_E1,
+  &board::do_move_E2,
+  &board::do_move_E3,
+  &board::do_move_E4,
+  &board::do_move_E5,
+  &board::do_move_E6,
+  &board::do_move_E7,
+  &board::do_move_E8,
+  &board::do_move_F1,
+  &board::do_move_F2,
+  &board::do_move_F3,
+  &board::do_move_F4,
+  &board::do_move_F5,
+  &board::do_move_F6,
+  &board::do_move_F7,
+  &board::do_move_F8,
+  &board::do_move_G1,
+  &board::do_move_G2,
+  &board::do_move_G3,
+  &board::do_move_G4,
+  &board::do_move_G5,
+  &board::do_move_G6,
+  &board::do_move_G7,
+  &board::do_move_G8,
+  &board::do_move_H1,
+  &board::do_move_H2,
+  &board::do_move_H3,
+  &board::do_move_H4,
+  &board::do_move_H5,
+  &board::do_move_H6,
+  &board::do_move_H7,
+  &board::do_move_H8,
+  &board::do_move_pass
+};
+
 
 // 0,1,2,3,3,2,1,0,
 // 1,4,5,6,6,5,4,1,
@@ -122,7 +191,7 @@ const bits board::bit[64] = {
 // 1,4,5,6,6,5,4,1,
 // 0,1,2,3,3,2,1,0
 
-const bits board::location[10] = {
+const bits64 board::location[10] = {
   /* 0 */ bit[0] | bit[7] | bit[56] | bit[63],
   /* 1 */ bit[1] | bit[6] | bit[8] | bit[15] | bit[48] | bit[55] | bit[57] | bit[62],
   /* 2 */ bit[2] | bit[5] | bit[16] | bit[23] | bit[40] | bit[47] | bit[58] | bit[61],
@@ -135,74 +204,75 @@ const bits board::location[10] = {
   /* 9 */ bit[27] | bit[28] | bit[35] | bit[36]
 };
   
-const bits board::bits_before[64] = {
+const bits64 board::bits_before[65] = {
   0x0, // used to prevent warnings
-  (0xFFFFFFFFFFFFFFFF << 63),
-  (0xFFFFFFFFFFFFFFFF << 62),
-  (0xFFFFFFFFFFFFFFFF << 61),
-  (0xFFFFFFFFFFFFFFFF << 60),
-  (0xFFFFFFFFFFFFFFFF << 59),
-  (0xFFFFFFFFFFFFFFFF << 58),
-  (0xFFFFFFFFFFFFFFFF << 57),
-  (0xFFFFFFFFFFFFFFFF << 56),   
-  (0xFFFFFFFFFFFFFFFF << 55),
-  (0xFFFFFFFFFFFFFFFF << 54),
-  (0xFFFFFFFFFFFFFFFF << 53),
-  (0xFFFFFFFFFFFFFFFF << 52),
-  (0xFFFFFFFFFFFFFFFF << 51),
-  (0xFFFFFFFFFFFFFFFF << 50),
-  (0xFFFFFFFFFFFFFFFF << 49),
-  (0xFFFFFFFFFFFFFFFF << 48),
-  (0xFFFFFFFFFFFFFFFF << 47),
-  (0xFFFFFFFFFFFFFFFF << 46),   
-  (0xFFFFFFFFFFFFFFFF << 45),
-  (0xFFFFFFFFFFFFFFFF << 44),
-  (0xFFFFFFFFFFFFFFFF << 43),
-  (0xFFFFFFFFFFFFFFFF << 42),
-  (0xFFFFFFFFFFFFFFFF << 41),
-  (0xFFFFFFFFFFFFFFFF << 40),
-  (0xFFFFFFFFFFFFFFFF << 39),
-  (0xFFFFFFFFFFFFFFFF << 38),
-  (0xFFFFFFFFFFFFFFFF << 37),
-  (0xFFFFFFFFFFFFFFFF << 36),   
-  (0xFFFFFFFFFFFFFFFF << 35),
-  (0xFFFFFFFFFFFFFFFF << 34),
-  (0xFFFFFFFFFFFFFFFF << 33),
-  (0xFFFFFFFFFFFFFFFF << 32),
-  (0xFFFFFFFFFFFFFFFF << 31),
-  (0xFFFFFFFFFFFFFFFF << 30),
-  (0xFFFFFFFFFFFFFFFF << 29),
-  (0xFFFFFFFFFFFFFFFF << 28),
-  (0xFFFFFFFFFFFFFFFF << 27),
-  (0xFFFFFFFFFFFFFFFF << 26),   
-  (0xFFFFFFFFFFFFFFFF << 25),
-  (0xFFFFFFFFFFFFFFFF << 24),
-  (0xFFFFFFFFFFFFFFFF << 23),
-  (0xFFFFFFFFFFFFFFFF << 22),
-  (0xFFFFFFFFFFFFFFFF << 21),
-  (0xFFFFFFFFFFFFFFFF << 20),
-  (0xFFFFFFFFFFFFFFFF << 19),
-  (0xFFFFFFFFFFFFFFFF << 18),
-  (0xFFFFFFFFFFFFFFFF << 17),
-  (0xFFFFFFFFFFFFFFFF << 16),   
-  (0xFFFFFFFFFFFFFFFF << 15),
-  (0xFFFFFFFFFFFFFFFF << 14),
-  (0xFFFFFFFFFFFFFFFF << 13),
-  (0xFFFFFFFFFFFFFFFF << 12),
-  (0xFFFFFFFFFFFFFFFF << 11),
-  (0xFFFFFFFFFFFFFFFF << 10),
-  (0xFFFFFFFFFFFFFFFF << 9),
-  (0xFFFFFFFFFFFFFFFF << 8),
-  (0xFFFFFFFFFFFFFFFF << 7),
-  (0xFFFFFFFFFFFFFFFF << 6),   
-  (0xFFFFFFFFFFFFFFFF << 5),
-  (0xFFFFFFFFFFFFFFFF << 4),
-  (0xFFFFFFFFFFFFFFFF << 3),
-  (0xFFFFFFFFFFFFFFFF << 2),
-  (0xFFFFFFFFFFFFFFFF << 1)
+  (0xFFFFFFFFFFFFFFFF >> 63),
+  (0xFFFFFFFFFFFFFFFF >> 62),
+  (0xFFFFFFFFFFFFFFFF >> 61),
+  (0xFFFFFFFFFFFFFFFF >> 60),
+  (0xFFFFFFFFFFFFFFFF >> 59),
+  (0xFFFFFFFFFFFFFFFF >> 58),
+  (0xFFFFFFFFFFFFFFFF >> 57),
+  (0xFFFFFFFFFFFFFFFF >> 56),   
+  (0xFFFFFFFFFFFFFFFF >> 55),
+  (0xFFFFFFFFFFFFFFFF >> 54),
+  (0xFFFFFFFFFFFFFFFF >> 53),
+  (0xFFFFFFFFFFFFFFFF >> 52),
+  (0xFFFFFFFFFFFFFFFF >> 51),
+  (0xFFFFFFFFFFFFFFFF >> 50),
+  (0xFFFFFFFFFFFFFFFF >> 49),
+  (0xFFFFFFFFFFFFFFFF >> 48),
+  (0xFFFFFFFFFFFFFFFF >> 47),
+  (0xFFFFFFFFFFFFFFFF >> 46),   
+  (0xFFFFFFFFFFFFFFFF >> 45),
+  (0xFFFFFFFFFFFFFFFF >> 44),
+  (0xFFFFFFFFFFFFFFFF >> 43),
+  (0xFFFFFFFFFFFFFFFF >> 42),
+  (0xFFFFFFFFFFFFFFFF >> 41),
+  (0xFFFFFFFFFFFFFFFF >> 40),
+  (0xFFFFFFFFFFFFFFFF >> 39),
+  (0xFFFFFFFFFFFFFFFF >> 38),
+  (0xFFFFFFFFFFFFFFFF >> 37),
+  (0xFFFFFFFFFFFFFFFF >> 36),   
+  (0xFFFFFFFFFFFFFFFF >> 35),
+  (0xFFFFFFFFFFFFFFFF >> 34),
+  (0xFFFFFFFFFFFFFFFF >> 33),
+  (0xFFFFFFFFFFFFFFFF >> 32),
+  (0xFFFFFFFFFFFFFFFF >> 31),
+  (0xFFFFFFFFFFFFFFFF >> 30),
+  (0xFFFFFFFFFFFFFFFF >> 29),
+  (0xFFFFFFFFFFFFFFFF >> 28),
+  (0xFFFFFFFFFFFFFFFF >> 27),
+  (0xFFFFFFFFFFFFFFFF >> 26),   
+  (0xFFFFFFFFFFFFFFFF >> 25),
+  (0xFFFFFFFFFFFFFFFF >> 24),
+  (0xFFFFFFFFFFFFFFFF >> 23),
+  (0xFFFFFFFFFFFFFFFF >> 22),
+  (0xFFFFFFFFFFFFFFFF >> 21),
+  (0xFFFFFFFFFFFFFFFF >> 20),
+  (0xFFFFFFFFFFFFFFFF >> 19),
+  (0xFFFFFFFFFFFFFFFF >> 18),
+  (0xFFFFFFFFFFFFFFFF >> 17),
+  (0xFFFFFFFFFFFFFFFF >> 16),   
+  (0xFFFFFFFFFFFFFFFF >> 15),
+  (0xFFFFFFFFFFFFFFFF >> 14),
+  (0xFFFFFFFFFFFFFFFF >> 13),
+  (0xFFFFFFFFFFFFFFFF >> 12),
+  (0xFFFFFFFFFFFFFFFF >> 11),
+  (0xFFFFFFFFFFFFFFFF >> 10),
+  (0xFFFFFFFFFFFFFFFF >> 9),
+  (0xFFFFFFFFFFFFFFFF >> 8),
+  (0xFFFFFFFFFFFFFFFF >> 7),
+  (0xFFFFFFFFFFFFFFFF >> 6),   
+  (0xFFFFFFFFFFFFFFFF >> 5),
+  (0xFFFFFFFFFFFFFFFF >> 4),
+  (0xFFFFFFFFFFFFFFFF >> 3),
+  (0xFFFFFFFFFFFFFFFF >> 2),
+  (0xFFFFFFFFFFFFFFFF >> 1),
+  0x0 // hack which works with find_first_set_64 and find_last_set_64
 };
 
-const bits board::bits_after[64] = {
+const bits64 board::bits_after[65] = {
   (0xFFFFFFFFFFFFFFFF << 1),
   (0xFFFFFFFFFFFFFFFF << 2),
   (0xFFFFFFFFFFFFFFFF << 3),
@@ -266,7 +336,8 @@ const bits board::bits_after[64] = {
   (0xFFFFFFFFFFFFFFFF << 61),
   (0xFFFFFFFFFFFFFFFF << 62),
   (0xFFFFFFFFFFFFFFFF << 63),
-  0x0 // used to prevent compiler warnings
+  0x0, // used to prevent compiler warnings
+  0x0, // hack which works with find_first_set_64 and find_last_set_64
 };
 
 
@@ -277,12 +348,12 @@ board* board::get_children(board* out_begin) const
   assert(out_begin);
   
   board* out_end = out_begin;
-  bits valid_moves = get_valid_moves();
+  bits64 valid_moves = get_valid_moves();
   
   while(true){
     
     int move_id = find_first_set_64(valid_moves);
-    if(move_id == -1){
+    if(move_id == 64){
       break;
     } 
     
@@ -302,7 +373,7 @@ void board::show() const
 {
   int x,y;
   
-  bits black,white;
+  bits64 black,white;
   black = (turn ? opp : me);
   white = (turn ? me : opp);
   
@@ -354,11 +425,13 @@ int board::get_disc_diff() const
 }
 
 
-bits board::do_move(int move_id)
+bits64 board::do_move(int move_id)
 {
   assert(is_valid_move(move_id));
   
-  bits tmp_mask,cur_bit,result = 0ull;
+  //return (this->*move_funcs[move_id])(); 
+  
+  bits64 tmp_mask,cur_bit,result = 0ull;
   
   for(int i=0;i<4;++i){
     
@@ -367,7 +440,6 @@ bits board::do_move(int move_id)
     
     
     while(true){
-      assert(cur_bit != 0ull);
       
       // will i walk off the board next step?
       if((walk_possible[i][0] & cur_bit) == 0ull){
@@ -400,7 +472,6 @@ bits board::do_move(int move_id)
     
     
     while(true){
-      assert(cur_bit.any());
       
       // will i walk off the board next step?
       if((walk_possible[i][0] & cur_bit) == 0ull){
@@ -426,9 +497,9 @@ bits board::do_move(int move_id)
     }
   }
   
-  assert((me & result).none());
+  assert((me & result) == 0ull);
   assert((opp & result) == result);
-  assert((get_non_empty_fields() & board::bit[move_id]).none());
+  assert((get_non_empty_fields() & board::bit[move_id]) == 0ull);
   
   me |= (result | board::bit[move_id]);
   opp &= ~me;
@@ -567,20 +638,128 @@ std::string board::to_database_string() const
   return min_str; 
 }
 
-bits board::do_move_field_id(int field_id){
-  bits flipped = 0ull,mask;
+bits64 board::do_move_experimental(const int field_id){
+  bits64 line,flipped = 0ull;
   int end;
+  
+  bits64 left_border_mask,right_border_mask;
+  left_border_mask = right_border_mask = 0x0;
+  
+  switch(field_id%8){
+    case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
+    case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
+    case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
+    case 3: right_border_mask = 0xF0F0F0F0F0F0F0F0; break;
+    case 4: right_border_mask = 0xE0E0E0E0E0E0E0E0; break;
+    case 5: right_border_mask = 0xC0C0C0C0C0C0C0C0; break;
+    default: right_border_mask = 0x0; break;
+  }
+  
+  switch(field_id%8){
+    case 2: left_border_mask = 0x0303030303030303; break;
+    case 3: left_border_mask = 0x0707070707070707; break;
+    case 4: left_border_mask = 0x0F0F0F0F0F0F0F0F; break;
+    case 5: left_border_mask = 0x1F1F1F1F1F1F1F1F; break;
+    case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
+    case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
+    default: left_border_mask = 0x0; break;
+  }
+  
+  
+  
   // down
   if(field_id/8 < 6){
-    mask = 0x0010101010101010 << field_id;
-    end = find_first_set_64(mask & me);
-    if((opp & mask) == (bits_before[end] & mask)){
-      flipped |= (opp & mask);
+    line = 0x0101010101010100l << field_id;
+    end = find_first_set_64(line & me);
+    if((opp & line) == (bits_before[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // up
+  if(field_id/8 > 1){
+    line = 0x0080808080808080l >> (63-field_id);
+    end = find_last_set_64(line & me);
+    if((opp & line) == (bits_after[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // left
+  if(field_id%8 > 1){
+    line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
+    end = find_last_set_64(line & me);
+    if((opp & line) == (bits_after[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // right
+  if(field_id%8 < 6){
+    line = (0x00000000000000FEl << field_id) & right_border_mask;
+    end = find_first_set_64(line & me);
+    if((opp & line) == (bits_before[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // right down
+  if((field_id%8 < 6) && (field_id/8 < 6)){
+    line = (0x0040201008040201 << field_id) & right_border_mask;
+    end = find_first_set_64(line & me);
+    if((opp & line) == (bits_before[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // left up
+  if((field_id%8 > 1) && (field_id/8 > 1)){
+    line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;
+    end = find_last_set_64(line & me);
+      if((opp & line) == (bits_after[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // right up
+  if((field_id%8 < 6) && (field_id/8 > 1)){
+    if(field_id<=56){
+      line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;
+    }
+    else{
+      line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
+    }
+    end = find_last_set_64(line & me);
+     if((opp & line) == (bits_after[end] & line)){
+      flipped |= (opp & line);
+    }
+  }
+  
+  // left down
+  if((field_id%8 > 1) && (field_id/8 < 6)){
+    if(field_id>=7){
+      line = (0x0102040810204000 << (field_id-7)) & left_border_mask;
+    }
+    else{
+      line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
+    }
+    end = find_first_set_64(line & me);
+    if((opp & line) == (bits_before[end] & line)){
+      flipped |= (opp & line);
     }
   }
   
   me |= bit[field_id] | flipped;
   opp &= ~me;
+  passed = false;
+  switch_turn();  
   return flipped;
 }
+
+bits64 board::do_move_pass()
+{
+  switch_turn();
+  return 0ull;
+}
+
 

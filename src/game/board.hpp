@@ -6,10 +6,18 @@
 #include <iostream>
 #include <sstream>
 
+#include "util/bitset.hpp"
 #include "util/const.hpp"
 #include "util/bitset.hpp"
 #include "util/macros.hpp"
 #include "util/math.hpp"
+
+  
+struct board;
+//typedef bits64(board::*move_func_t)();
+
+extern bits64 (board::* const move_funcs[65])();
+
 
 
 struct board{
@@ -19,32 +27,45 @@ struct board{
   // static constants
   static const unsigned int border[64]; // border flags
   
-  // (1 << x) for x in [0,63]
-  static const bits bit[64];
+  // (1 << x) for x in [0,63], 0x0 as hack
+  static const bits64 bit[65];
   
-  // ((~0ull) << (64-x)) for x in [0,63]
-  static const bits bits_before[64];
+  // ((~0ull) << (64-x)) for x in [0,63], 0x0 as hack
+  static const bits64 bits_before[65];
   
-  // ((~0ull) >> (64-x)) for x in [0,63]
-  static const bits bits_after[64];
+  // ((~0ull) >> (64-x)) for x in [0,63], 0x0 as hack
+  static const bits64 bits_after[65];
   
   
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
-  static const bits walk_possible[8][7];
+  static const bits64 walk_possible[8][7];
   
   // contains index differences when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
   
   // location on board, for table see source file 
-  static const bits location[10];    
+  static const bits64 location[10];    
   
+
+  
+  enum fields{
+    A1,A2,A3,A4,A5,A6,A7,A8,
+    B1,B2,B3,B4,B5,B6,B7,B8,
+    C1,C2,C3,C4,C5,C6,C7,C8,
+    D1,D2,D3,D4,D5,D6,D7,D8,
+    E1,E2,E3,E4,E5,E6,E7,E8,
+    F1,F2,F3,F4,F5,F6,F7,F8,
+    G1,G2,G3,G4,G5,G6,G7,G8,
+    H1,H2,H3,H4,H5,H6,H7,H8,
+    PASS
+  };
 
 
   // me = discs of player to move
   // opp = opponent
-  bits me,opp;
+  bits64 me,opp;
   
   // represents which player is to move:
   // false means black, true means white
@@ -86,7 +107,7 @@ struct board{
   
   
   /// out will represent a bitset in which each set bit represents a valid move
-  bits get_valid_moves() const;
+  bits64 get_valid_moves() const;
   
   board do_random_moves(int count) const;
   
@@ -101,8 +122,8 @@ struct board{
   int count_valid_moves() const;
   
 
-  bits get_empty_fields() const;
-  bits get_non_empty_fields() const;
+  bits64 get_empty_fields() const;
+  bits64 get_non_empty_fields() const;
   int count_discs() const;
   int count_empty_fields() const;
   
@@ -116,14 +137,80 @@ struct board{
   int get_disc_diff() const;
   
   /// does a move, returns flipped discs
-  bits do_move(int field_id);
+  bits64 do_move(int field_id);
   
   /// experimental code for making specific move functions for each field
-  bits do_move_field_id(int field_id);
+  bits64 do_move_experimental(const int field_id);
   
+  /// does named move
+  bits64 do_move_A1();
+  bits64 do_move_A2();
+  bits64 do_move_A3();
+  bits64 do_move_A4();
+  bits64 do_move_A5();
+  bits64 do_move_A6();
+  bits64 do_move_A7();
+  bits64 do_move_A8();
+  bits64 do_move_B1();
+  bits64 do_move_B2();
+  bits64 do_move_B3();
+  bits64 do_move_B4();
+  bits64 do_move_B5();
+  bits64 do_move_B6();
+  bits64 do_move_B7();
+  bits64 do_move_B8();
+  bits64 do_move_C1();
+  bits64 do_move_C2();
+  bits64 do_move_C3();
+  bits64 do_move_C4();
+  bits64 do_move_C5();
+  bits64 do_move_C6();
+  bits64 do_move_C7();
+  bits64 do_move_C8();
+  bits64 do_move_D1();
+  bits64 do_move_D2();
+  bits64 do_move_D3();
+  bits64 do_move_D4();
+  bits64 do_move_D5();
+  bits64 do_move_D6();
+  bits64 do_move_D7();
+  bits64 do_move_D8();
+  bits64 do_move_E1();
+  bits64 do_move_E2();
+  bits64 do_move_E3();
+  bits64 do_move_E4();
+  bits64 do_move_E5();
+  bits64 do_move_E6();
+  bits64 do_move_E7();
+  bits64 do_move_E8();
+  bits64 do_move_F1();
+  bits64 do_move_F2();
+  bits64 do_move_F3();
+  bits64 do_move_F4();
+  bits64 do_move_F5();
+  bits64 do_move_F6();
+  bits64 do_move_F7();
+  bits64 do_move_F8();
+  bits64 do_move_G1();
+  bits64 do_move_G2();
+  bits64 do_move_G3();
+  bits64 do_move_G4();
+  bits64 do_move_G5();
+  bits64 do_move_G6();
+  bits64 do_move_G7();
+  bits64 do_move_G8();
+  bits64 do_move_H1();
+  bits64 do_move_H2();
+  bits64 do_move_H3();
+  bits64 do_move_H4();
+  bits64 do_move_H5();
+  bits64 do_move_H6();
+  bits64 do_move_H7();
+  bits64 do_move_H8();
+  bits64 do_move_pass();
   
   /// recovers a board state before move field_id, with flipped discs in undo_data 
-  void undo_move(int field_id,bits undo_data); 
+  void undo_move(int field_id,bits64 undo_data); 
   
   /// returns string representation
   std::string to_string() const;
@@ -185,7 +272,7 @@ inline bool board::operator==(const board& b) const
 inline void board::switch_turn()
 {
   turn = !turn;
-  std::swap<bits>(me,opp);
+  std::swap<bits64>(me,opp);
 }
 
 
@@ -200,12 +287,12 @@ inline long long unsigned board::hash() const
   return 3*me + 5*opp + 7*turn + 11*(passed ? 1 : 0);
 }
 
-inline bits board::get_empty_fields() const
+inline bits64 board::get_empty_fields() const
 {
   return ~get_non_empty_fields();
 }
 
-inline bits board::get_non_empty_fields() const
+inline bits64 board::get_non_empty_fields() const
 {
   return me | opp;
 }
@@ -225,7 +312,7 @@ inline bool board::is_valid_move(int field_id) const
   return (get_valid_moves() & board::bit[field_id]) != 0ull;
 }
 
-inline void board::undo_move(int field_id,bits undo_data)
+inline void board::undo_move(int field_id,bits64 undo_data)
 {
   switch_turn();
   
@@ -233,14 +320,14 @@ inline void board::undo_move(int field_id,bits undo_data)
   opp |= (undo_data);  
   
   
-  assert((me & undo_data).none());
+  assert((me & undo_data) == 0ull);
   assert((opp & undo_data) == undo_data);
   assert((get_non_empty_fields() & board::bit[field_id]) == 0ull);
 }
 
-inline bits board::get_valid_moves() const
+inline bits64 board::get_valid_moves() const
 {
-  bits res = 0ull;
+  bits64 res = 0ull;
   
   for(int d=4;d<8;d++){
     

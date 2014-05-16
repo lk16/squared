@@ -275,7 +275,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     return heuristic();
   }
   
-  bits valid_moves = inspected.get_valid_moves();
+  bits64 valid_moves = inspected.get_valid_moves();
   
   if(valid_moves == 0ull){
     if(inspected.passed){
@@ -341,7 +341,7 @@ int bot_ali::pvs_null_window(int alpha)
   }
 
   
-  bits valid_moves = inspected.get_valid_moves();
+  bits64 valid_moves = inspected.get_valid_moves();
   
   if(valid_moves == 0ull){
     if(inspected.passed){
@@ -361,7 +361,7 @@ int bot_ali::pvs_null_window(int alpha)
   
   while(valid_moves != 0ull){
     int move = find_first_set_64(valid_moves);
-    bits undo_data;
+    bits64 undo_data;
     int score;
     
     undo_data = inspected.do_move(move);
@@ -387,7 +387,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
   
   stats.inc_nodes();
   
-  bits valid_moves = inspected.get_valid_moves();
+  bits64 valid_moves = inspected.get_valid_moves();
   
   if(valid_moves == 0ull){
     if(inspected.passed){
@@ -410,7 +410,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
   while(valid_moves != 0ull){
     
     int move = find_first_set_64(valid_moves);
-    bits undo_data;
+    bits64 undo_data;
     int score;
     
     

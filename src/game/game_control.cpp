@@ -65,7 +65,7 @@ void game_control::on_bot_do_move()
 void game_control::on_any_move()
 {  
   std::cout << current.to_string() << std::endl;
-
+  
   if(current.count_discs() < book_t::entry_max_discs){
     book_t book(BOOK_PATH + "book.csv");
     book.add_to_book_file(current.to_database_string(),0,0);
