@@ -151,11 +151,16 @@ void book_t::remove_obsolete_lines() const
     return;    
   }
   
+  int lines_before,lines_after;
+  
+  lines_before = data.size();
+  
   /* create backup file, to prevent losing data */
   std::rename(filename.c_str(),(filename + ".bak").c_str());
 
   /* fill new file with data */
   csv book_file(filename);  
+  
   for(citer it=data.begin();it!=data.end();it++){
     csv::line_t book_line;
     book_line.push_back(it->first);
@@ -164,9 +169,17 @@ void book_t::remove_obsolete_lines() const
     book_file.append_line(book_line);
   }
   
+  lines_after = book_file.get_written_lines();
+  
   /* remove backup file */
   std::remove((filename + ".bak").c_str());
   
-  std::cout << "Book succesfully cleaned." << std::endl;
+  if(lines_after != lines_before){
+    std::cout << "Removed " << (lines_before-lines_after) << " lines." << std::endl;
+    std::cout << "Book succesfully cleaned." << std::endl;
+  }
+  else{
+    std::cout << "Nothing to clean from book." << std::endl;
+  }
 }
 

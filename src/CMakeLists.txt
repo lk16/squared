@@ -43,6 +43,7 @@ set(objects
   bots/bot_ali.cpp
   book/book.cpp
   game/board.cpp
+  game/board_move.cpp
   game/game_control.cpp
   gui/main_window.cpp
   gui/preferences_dialog.cpp

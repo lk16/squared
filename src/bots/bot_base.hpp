@@ -79,9 +79,7 @@ inline void bot_base::do_move(const board* b,board* res){
 
 
 inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
-{
-  assert(_search_depth > 0 && _search_depth <= 60);
-  assert(_perfect_depth > 0 && _perfect_depth <= 60);
+{       
   search_depth = _search_depth;
   perfect_depth = _perfect_depth;
 }
