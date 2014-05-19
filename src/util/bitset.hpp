@@ -2,6 +2,8 @@
 
 typedef unsigned long long bits;
 
+extern const int bits_counts[65536];
+
 // returns -1 if ul==0ul, returns least significant bit otherwise
 inline int find_first_set_64(bits b){
   return __builtin_ffsl(b) - 1;
@@ -17,7 +19,14 @@ inline int find_last_set_64(bits b){
 }
 
 inline int count_64(bits b){
+#if 0
   return __builtin_popcountll(b);
+#else
+  return bits_counts[b & 0xFFFF] + 
+  bits_counts[(b >> 16) & 0xFFFF] +
+  bits_counts[(b >> 32) & 0xFFFF] +
+  bits_counts[(b >> 48) & 0xFFFF];
+#endif
 }
 
 

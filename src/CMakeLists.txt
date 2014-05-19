@@ -48,6 +48,7 @@ set(objects
   gui/preferences_dialog.cpp
   gui/clickable_image.cpp
   main/squared.cpp
+  util/bitset.cpp
   util/csv.cpp
   util/testing.cpp
   util/string.cpp
