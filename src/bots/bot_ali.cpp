@@ -192,18 +192,17 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
   
-  if(valid_moves.none()){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_sorted(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_unsorted(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
     
   board children[32]; 
@@ -267,30 +266,26 @@ int bot_ali::pvs_sorted(int alpha, int beta)
 int bot_ali::pvs_unsorted(int alpha, int beta)
 {
   stats.inc_nodes();
-  
-  int depth_left = 
-    (int)inspected.count_discs() - search_max_discs;
-  
-  if(depth_left == 0){
+    
+  if(inspected.count_discs() == search_max_discs){
     return heuristic();
   }
   
   bits64 valid_moves = inspected.get_valid_moves();
-  
+
   if(valid_moves == 0ull){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_unsorted(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_unsorted(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
-  
+
   int move = find_first_set_64(valid_moves);
   board backup = inspected;  
   
@@ -333,31 +328,25 @@ int bot_ali::pvs_null_window(int alpha)
 {
   stats.inc_nodes();
   
-  int depth_left = 
-  (int)inspected.count_discs() - search_max_discs;
-  
-  if(depth_left == 0){
+  if(inspected.count_discs() == search_max_discs){
     return heuristic();
   }
 
   
   bits64 valid_moves = inspected.get_valid_moves();
-  
+
   if(valid_moves == 0ull){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_null_window(-(alpha+1));
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_null_window(-(alpha+1));
     }
+    inspected.switch_turn();
+    return heur;
   }
-  
-  
   
   while(valid_moves != 0ull){
     int move = find_first_set_64(valid_moves);
@@ -388,23 +377,20 @@ int bot_ali::pvs_exact(int alpha, int beta)
   stats.inc_nodes();
   
   bits64 valid_moves = inspected.get_valid_moves();
-  
+
   if(valid_moves == 0ull){
-    if(inspected.passed){
-      return inspected.get_disc_diff();    
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_exact(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_exact(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
-  
-  
-  
+
   bool null_window = false;
   
   while(valid_moves != 0ull){

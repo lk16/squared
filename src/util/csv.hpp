@@ -15,6 +15,7 @@ class csv{
   const int line_buff_size;
   char* line_buff;
   std::fstream file;
+  int read_lines,written_lines;
   
   
   
@@ -40,6 +41,7 @@ public:
   // returns file
   const std::fstream* get_file() const;
 
-
+  int get_read_lines() const;
+  int get_written_lines() const;
 
 };

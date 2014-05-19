@@ -427,8 +427,10 @@ int board::get_disc_diff() const
 
 bits64 board::do_move(int move_id)
 {
-  assert(is_valid_move(move_id));
+  // disabled for testing purposes
+  // assert(is_valid_move(move_id));
   
+  // disabled because of bugs!
   //return (this->*move_funcs[move_id])(); 
   
   bits64 tmp_mask,cur_bit,result = 0ull;

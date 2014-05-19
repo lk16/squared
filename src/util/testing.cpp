@@ -41,6 +41,9 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
 
 void testing_area(){
   
+  std::cout << "sizeof(board) = " << sizeof(board) << '\n';
+  
+  
   const int diff[8] = {-9,-8,-7,-1,1,7,8,9};
   
   board b1,b2,original;
