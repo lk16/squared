@@ -115,7 +115,6 @@ bits64 board::do_move_##field_id(){\
   \
   me |= bit[field_id] | flipped;\
   opp &= ~me;\
-  passed = false;\
   switch_turn();  \
   return flipped;\
 }

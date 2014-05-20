@@ -505,9 +505,7 @@ bits64 board::do_move(int move_id)
   
   me |= (result | board::bit[move_id]);
   opp &= ~me;
-  
-  passed = false;
-  
+    
   switch_turn();
   
   return result;
@@ -517,7 +515,7 @@ bits64 board::do_move(int move_id)
 
 std::string board::to_string() const {
   /* format:
-   * byte 0: '0' + bitset of turn = 0x1, passed = 0x2
+   * byte 0: '0' + bitset of turn = 0x1
    * byte 1: reserved for rotation purposes
    * byte 2-17: hex notation of me
    * byte 18-33: hex notation of opp
@@ -526,7 +524,7 @@ std::string board::to_string() const {
   char res[35];  
   const char hex[17] = "0123456789abcdef";
   
-  res[0] = '0' + ((turn ? 0x1 : 0x0) | (passed ? 0x2 : 0x0));
+  res[0] = '0' + (turn ? 0x1 : 0x0);
   res[1] = '0';
   
   for(int i=0;i<16;i++){
@@ -547,7 +545,6 @@ board::board(const std::string& in){
     }
     
     turn = ((in[0] - '0') &  0x1);
-    passed = ((in[0] - '0') & 0x2);
 
     opp = me = 0ull;
     
@@ -580,7 +577,6 @@ board::board(const std::string& in){
   }
   catch(int i){
     me = opp = 0ull;
-    turn = passed = false;
     std::cout << "ERROR: invalid board format fed to board(std::string): ";
     std::cout << in << "\n";
     return;
@@ -753,7 +749,6 @@ bits64 board::do_move_experimental(const int field_id){
   
   me |= bit[field_id] | flipped;
   opp &= ~me;
-  passed = false;
   switch_turn();  
   return flipped;
 }

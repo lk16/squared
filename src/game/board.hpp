@@ -70,10 +70,7 @@ struct board{
   // represents which player is to move:
   // false means black, true means white
   bool turn;
-  
-  // did any player pass yet?
-  bool passed;  
-  
+    
   /// does NOTHING; call reset() to initialize
   board();
   
@@ -231,8 +228,7 @@ struct board{
 inline board::board(const board&& b):
   me(std::move(b.me)),
   opp(std::move(b.opp)),
-  turn(std::move(b.turn)),
-  passed(std::move(b.passed))
+  turn(std::move(b.turn))
 {
 }
 
@@ -246,7 +242,6 @@ inline void board::reset(){
   me = bit[28] | bit[35];
   opp = bit[27] | bit[36];
   
-  passed = false;
   turn = false;
 }
 
@@ -260,13 +255,12 @@ inline board& board::operator=(const board& b)
   me = b.me;
   opp = b.opp;
   turn = b.turn;
-  passed = b.passed;
   return *this;
 }
 
 inline bool board::operator==(const board& b) const
 {
-  return me==b.me && opp==b.opp && passed==b.passed && turn==b.turn;
+  return me==b.me && opp==b.opp && turn==b.turn;
 }
 
 inline void board::switch_turn()
@@ -284,7 +278,7 @@ inline bool board::operator<(const board& b) const
 
 inline long long unsigned board::hash() const
 {
-  return 3*me + 5*opp + 7*turn + 11*(passed ? 1 : 0);
+  return 3*me + 5*opp + 7*turn;
 }
 
 inline bits64 board::get_empty_fields() const
