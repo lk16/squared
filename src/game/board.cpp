@@ -430,8 +430,8 @@ bits64 board::do_move(int move_id)
   // disabled for testing purposes
   // assert(is_valid_move(move_id));
   
-  // disabled because of bugs!
-  // return (this->*move_funcs[move_id])(); 
+  return (this->*move_funcs[move_id])(); 
+  //return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -577,6 +577,7 @@ board::board(const std::string& in){
     me = opp = 0ull;
     std::cout << "ERROR: invalid board format fed to board(std::string): ";
     std::cout << in << "\n";
+    std::cout << "Exception " << i << '\n';
     return;
     
   }
@@ -667,8 +668,9 @@ bits64 board::do_move_experimental(const int field_id){
   if(field_id/8 < 6){
     line = 0x0101010101010100l << field_id;
     end = find_first_set_64(line & me);
-    if((opp & line) == (bits_before[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_before[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -676,8 +678,9 @@ bits64 board::do_move_experimental(const int field_id){
   if(field_id/8 > 1){
     line = 0x0080808080808080l >> (63-field_id);
     end = find_last_set_64(line & me);
-    if((opp & line) == (bits_after[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_after[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -685,8 +688,9 @@ bits64 board::do_move_experimental(const int field_id){
   if(field_id%8 > 1){
     line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
     end = find_last_set_64(line & me);
-    if((opp & line) == (bits_after[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_after[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -694,8 +698,9 @@ bits64 board::do_move_experimental(const int field_id){
   if(field_id%8 < 6){
     line = (0x00000000000000FEl << field_id) & right_border_mask;
     end = find_first_set_64(line & me);
-    if((opp & line) == (bits_before[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_before[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -703,8 +708,9 @@ bits64 board::do_move_experimental(const int field_id){
   if((field_id%8 < 6) && (field_id/8 < 6)){
     line = (0x0040201008040201 << field_id) & right_border_mask;
     end = find_first_set_64(line & me);
-    if((opp & line) == (bits_before[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_before[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -712,8 +718,9 @@ bits64 board::do_move_experimental(const int field_id){
   if((field_id%8 > 1) && (field_id/8 > 1)){
     line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;
     end = find_last_set_64(line & me);
-      if((opp & line) == (bits_after[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_after[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -726,8 +733,9 @@ bits64 board::do_move_experimental(const int field_id){
       line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
     }
     end = find_last_set_64(line & me);
-     if((opp & line) == (bits_after[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_after[end];
+     if((opp & line) == line){
+      flipped |= line;
     }
   }
   
@@ -740,8 +748,9 @@ bits64 board::do_move_experimental(const int field_id){
       line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
     }
     end = find_first_set_64(line & me);
-    if((opp & line) == (bits_before[end] & line)){
-      flipped |= (opp & line);
+    line &= bits_before[end];
+    if((opp & line) == line){
+      flipped |= line;
     }
   }
   
