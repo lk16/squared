@@ -1,7 +1,6 @@
 #include <gtkmm.h>
 
 #include <map>
-
 #include "gui/main_window.hpp"
 #include "util/testing.hpp"
 #include "util/args.hpp"
