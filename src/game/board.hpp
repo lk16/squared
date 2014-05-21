@@ -69,7 +69,7 @@ struct board{
   
   // represents which player is to move:
   // false means black, true means white
-  bool turn;
+  /// bool turn;
     
   /// does NOTHING; call reset() to initialize
   board();
@@ -80,7 +80,7 @@ struct board{
   /// move ctor
   board(const board&& b);
   
-  /// can be used to create board object from string of board::to_string()
+  /// ctor from string of board::to_string()
   board(const std::string& in);
 
   
@@ -96,13 +96,12 @@ struct board{
   /// resets the board to starting position
   void reset();
   
-  /// switches me and opp and inverses turn
+  /// switches me and opp
   void switch_turn();
   
   /// checks whether for *this and this->turn, field_id is a valid move
   bool is_valid_move(int field_id) const;
-  
-  
+    
   /// out will represent a bitset in which each set bit represents a valid move
   bits64 get_valid_moves() const;
   
@@ -118,7 +117,6 @@ struct board{
   /// returns the number of children, without calculating the actual children
   int count_valid_moves() const;
   
-
   bits64 get_empty_fields() const;
   bits64 get_non_empty_fields() const;
   int count_discs() const;
@@ -227,8 +225,7 @@ struct board{
 
 inline board::board(const board&& b):
   me(std::move(b.me)),
-  opp(std::move(b.opp)),
-  turn(std::move(b.turn))
+  opp(std::move(b.opp))
 {
 }
 
@@ -238,11 +235,8 @@ inline board::board()
 }
 
 inline void board::reset(){
-  
   me = bit[28] | bit[35];
   opp = bit[27] | bit[36];
-  
-  turn = false;
 }
 
 inline board::board(const board& b)
@@ -254,31 +248,27 @@ inline board& board::operator=(const board& b)
 {
   me = b.me;
   opp = b.opp;
-  turn = b.turn;
   return *this;
 }
 
 inline bool board::operator==(const board& b) const
 {
-  return me==b.me && opp==b.opp && turn==b.turn;
+  return me==b.me && opp==b.opp;
 }
 
 inline void board::switch_turn()
 {
-  turn = !turn;
   std::swap<bits64>(me,opp);
 }
-
 
 inline bool board::operator<(const board& b) const
 {
   return this->to_database_string() < b.to_database_string();
 }
 
-
 inline long long unsigned board::hash() const
 {
-  return 3*me + 5*opp + 7*turn;
+  return 3*me + 5*opp;
 }
 
 inline bits64 board::get_empty_fields() const

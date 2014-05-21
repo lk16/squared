@@ -134,27 +134,23 @@ void main_window::on_menu_settings_preferences()
 
 void main_window::update_fields()
 {
-  const board *b;
   std::string imagefile;
+  const board *b = &control.board_state.b;
   
-  b = &control.current;
-  
-  std::bitset<64> white,black;
-  
-  white = (b->turn ? b->me : b->opp);
-  black = (b->turn ? b->opp : b->me);
+  bits64 black = (control.board_state.turn == WHITE ? b->opp : b->me);
+  bits64 white = (control.board_state.turn == WHITE ? b->me : b->opp);
   
   
   
   for(int i=0;i<64;i++){
-    if(white.test(i)){
+    if(white & board::bit[i]){
       imagefile = "white.png";
     }
-    else if(black.test(i)){
+    else if(black & board::bit[i]){
       imagefile = "black.png";
     }
     else if(b->is_valid_move(i)){
-      if(b->turn){
+      if(control.board_state.turn == WHITE){
         imagefile = "move_white.png";
       }
       else{

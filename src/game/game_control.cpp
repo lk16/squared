@@ -4,7 +4,8 @@
 game_control::game_control()
 {
   bot[0] = bot[1] = NULL;
-  current.reset();
+  board_state.b.reset();
+  board_state.turn = BLACK;
 }
 
 
@@ -13,7 +14,7 @@ game_control::game_control(const game_control& gc)
 {
   bot[0] = gc.bot[0];
   bot[1] = gc.bot[1];
-  current = gc.current;
+  board_state = gc.board_state;
   redo_stack = gc.redo_stack;
   undo_stack = gc.undo_stack;
   
@@ -27,14 +28,6 @@ game_control::~game_control()
   remove_bot(WHITE);
 }
 
-
-int game_control::turn() const
-{
-  return (current.turn ? WHITE : BLACK);
-}
-
-
-
 void game_control::on_human_do_move(int field_id)
 {
   if(get_bot_to_move()){
@@ -42,45 +35,47 @@ void game_control::on_human_do_move(int field_id)
   }
 
  
- if(current.is_valid_move(field_id)){
-    undo_stack.push(current);
-    current.do_move(field_id);
+ if(board_state.b.is_valid_move(field_id)){
+    undo_stack.push(board_state);
+    board_state.b.do_move(field_id);
+    
     on_any_move();
   }
 }
 
 void game_control::on_bot_do_move()
 {
-  if(!current.has_valid_moves()){
+  if(!board_state.b.has_valid_moves()){
     return;
   }
   
-  board old = current;
+  board_state_t old = board_state;
   
-  bot[turn()]->do_move(&old,&current);
+  bot[board_state.turn]->do_move(&old.b,&board_state.b);
   undo_stack.push(old);
   on_any_move(); 
 }
 
 void game_control::on_any_move()
 {  
-  std::cout << current.to_string() << std::endl;
+  board_state.switch_turn();
   
-  if(current.count_discs() < book_t::entry_max_discs){
+  std::cout << board_state.b.to_string() << std::endl;
+  
+  if(board_state.b.count_discs() < book_t::entry_max_discs){
     book_t book(BOOK_PATH + "book.csv");
-    book.add_to_book_file(current.to_database_string(),0,0);
+    book.add_to_book_file(board_state.b.to_database_string(),0,0);
   }
-  
-  
   
   
   while(!redo_stack.empty()){
     redo_stack.pop();
   }
   
-  if(!current.has_valid_moves()){
-    current.switch_turn();
-    if(!current.has_valid_moves()){
+  if(!board_state.b.has_valid_moves()){
+    board_state.switch_turn();
+    board_state.b.switch_turn();
+    if(!board_state.b.has_valid_moves()){
       on_game_ended();
     }
   }
@@ -92,8 +87,8 @@ void game_control::on_any_move()
 void game_control::on_undo()
 {
   while(!undo_stack.empty() && bot[(int)(undo_stack.top().turn)]){
-    redo_stack.push(current);
-    current = undo_stack.top();
+    redo_stack.push(board_state);
+    board_state = undo_stack.top();
     undo_stack.pop();
   } 
   
@@ -101,8 +96,8 @@ void game_control::on_undo()
     mw->update_status_bar("Cannot undo");
   }
   else{
-    redo_stack.push(current);
-    current = undo_stack.top();
+    redo_stack.push(board_state);
+    board_state = undo_stack.top();
     undo_stack.pop();
   }
   mw->update_fields();
@@ -111,8 +106,8 @@ void game_control::on_undo()
 void game_control::on_redo()
 { 
   while(!redo_stack.empty() && bot[(int)(redo_stack.top().turn)]){
-    undo_stack.push(current);
-    current = redo_stack.top();
+    undo_stack.push(board_state);
+    board_state = redo_stack.top();
     redo_stack.pop();
   } 
   
@@ -120,8 +115,8 @@ void game_control::on_redo()
     mw->update_status_bar("Cannot redo");
   }
   else{
-    undo_stack.push(current);
-    current = redo_stack.top();
+    undo_stack.push(board_state);
+    board_state = redo_stack.top();
     redo_stack.pop();
   }
   mw->update_fields();
@@ -136,20 +131,21 @@ void game_control::on_new_game()
     undo_stack.pop();
   } 
   
-  current.reset();
+  board_state.b.reset();
+  board_state.turn = BLACK;
   mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
 }
 
 void game_control::on_game_ended()
 {
-  current.show();
-  std::cout << current.to_string() << std::endl;
+  //board_state.b.show();
+  std::cout << board_state.b.to_string() << std::endl;
   
-  int b_count = count_64(current.opp);
-  int w_count = count_64(current.me);
+  int b_count = count_64(board_state.b.opp);
+  int w_count = count_64(board_state.b.me);
   
-  if(!current.turn){ // it's blacks turn
+  if(board_state.turn == BLACK){
     std::swap<int>(b_count,w_count);
   }
   
@@ -163,15 +159,15 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  if(!current.has_valid_moves()){
-    current.switch_turn();
-    if(!current.has_valid_moves()){
-      current.switch_turn();
+  if(!board_state.b.has_valid_moves()){
+    board_state.switch_turn();
+    if(!board_state.b.has_valid_moves()){
+      board_state.switch_turn();
       return true;
     }
-    current.switch_turn();
+    board_state.switch_turn();
   }
-  if(bot[turn()]){
+  if(bot[board_state.turn]){
     on_bot_do_move();  
   }
   return true;
@@ -189,7 +185,7 @@ void game_control::add_bot(int c, int d,int pd)
 
 void game_control::remove_bot(int c)
 {
-  assert(c==0 || c==1);
+  assert(c==WHITE || c==BLACK);
   
   if(bot[c]){
     delete bot[c];
@@ -199,6 +195,6 @@ void game_control::remove_bot(int c)
 
 bot_base* game_control::get_bot_to_move()
 {
-  return bot[turn()];
+  return bot[board_state.turn];
 }
 

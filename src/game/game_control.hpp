@@ -17,9 +17,19 @@ struct game_control{
   bot_base* bot[2]; 
   
   main_window* mw;
-  board current;
   
-  std::stack<board> undo_stack,redo_stack;
+  struct board_state_t{
+    board b;
+    int turn;
+    
+    void switch_turn(){
+      turn = (turn==WHITE ? BLACK : WHITE);  
+    }
+  };
+  
+  board_state_t board_state;
+  
+  std::stack<board_state_t> undo_stack,redo_stack;
   
   game_control();
   game_control(const game_control& gc);
@@ -40,9 +50,7 @@ struct game_control{
   void on_any_move();
   
   bool timeout_handler();
-  
-  int turn() const;
-  
+    
 };
 
 

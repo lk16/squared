@@ -150,11 +150,7 @@ void book_t::remove_obsolete_lines() const
     std::cout << "file \"" << filename << "\" not found." << std::endl;
     return;    
   }
-  
-  int lines_before,lines_after;
-  
-  lines_before = data.size();
-  
+    
   /* create backup file, to prevent losing data */
   std::rename(filename.c_str(),(filename + ".bak").c_str());
 
@@ -168,18 +164,11 @@ void book_t::remove_obsolete_lines() const
     book_line.push_back(tostr<int>(it->second.best_move));
     book_file.append_line(book_line);
   }
-  
-  lines_after = book_file.get_written_lines();
-  
+    
   /* remove backup file */
   std::remove((filename + ".bak").c_str());
   
-  if(lines_after != lines_before){
-    std::cout << "Removed " << (lines_before-lines_after) << " lines." << std::endl;
-    std::cout << "Book succesfully cleaned." << std::endl;
-  }
-  else{
-    std::cout << "Nothing to clean from book." << std::endl;
-  }
+  std::cout << "Successfully cleaned the book." << std::endl;
+  
 }
 

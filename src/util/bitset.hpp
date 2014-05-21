@@ -17,7 +17,7 @@ inline int find_first_set_64(bits64 b){
 
 inline int find_last_set_64(bits64 b){
   if(b == 0ul){
-    // __builtin_clz(0ul) is undefined
+    // __builtin_clz(0ull) is undefined
     return 64;
   }
   return 63 - __builtin_clzl(b);  

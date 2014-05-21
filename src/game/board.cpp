@@ -374,8 +374,8 @@ void board::show() const
   int x,y;
   
   bits64 black,white;
-  black = (turn ? opp : me);
-  white = (turn ? me : opp);
+  black = (true ? opp : me);
+  white = (true ? me : opp);
   
   
   
@@ -431,7 +431,7 @@ bits64 board::do_move(int move_id)
   // assert(is_valid_move(move_id));
   
   // disabled because of bugs!
-  //return (this->*move_funcs[move_id])(); 
+  // return (this->*move_funcs[move_id])(); 
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -515,7 +515,7 @@ bits64 board::do_move(int move_id)
 
 std::string board::to_string() const {
   /* format:
-   * byte 0: '0' + bitset of turn = 0x1
+   * byte 0: '0'
    * byte 1: reserved for rotation purposes
    * byte 2-17: hex notation of me
    * byte 18-33: hex notation of opp
@@ -524,7 +524,7 @@ std::string board::to_string() const {
   char res[35];  
   const char hex[17] = "0123456789abcdef";
   
-  res[0] = '0' + (turn ? 0x1 : 0x0);
+  res[0] = '0';
   res[1] = '0';
   
   for(int i=0;i<16;i++){
@@ -544,8 +544,6 @@ board::board(const std::string& in){
       throw 0;
     }
     
-    turn = ((in[0] - '0') &  0x1);
-
     opp = me = 0ull;
     
     unsigned long long x;

@@ -22,7 +22,7 @@ struct book_t{
   typedef data_type::const_iterator citer;
   typedef data_type::iterator iter;
 
-  static const int min_learn_depth = 10;
+  static const int min_learn_depth = 13;
   static const int entry_max_discs = 24;
 
   data_type data;
@@ -30,7 +30,6 @@ struct book_t{
   
   book_t(const std::string& _filename);
 
-  
   
   int get_move_index(const board* before,const board* after);
   

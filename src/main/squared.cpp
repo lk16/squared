@@ -83,7 +83,7 @@ int squared_arg_t::set_board(){
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;
   }
-  gc.current = board(parser->get_arg(1));
+  gc.board_state.b = board(parser->get_arg(1));
   return 2;
 }
 
@@ -112,7 +112,7 @@ int squared_arg_t::randomize_board()
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;    
   }
-  gc.current = gc.current.do_random_moves(fromstr<int>(parser->get_arg(1)));
+  gc.board_state.b = gc.board_state.b.do_random_moves(fromstr<int>(parser->get_arg(1)));
   return 2;  
 }
 
@@ -154,7 +154,7 @@ int main(int argc,char **argv){
   squared_arg_t arg_data = parser.t;
 
   if(arg_data.show_flag){
-    arg_data.gc.current.show();
+    arg_data.gc.board_state.b.show();
   }
   
   if(arg_data.start_windowed_game){
