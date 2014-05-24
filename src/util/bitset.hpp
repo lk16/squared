@@ -67,25 +67,4 @@ inline bits64 rotate_left(bits64 x){
   return mirror_vertical_line(x);
 }
 
-inline void bits_show(bits64 b){
-  int x,y;
-  
-  std::cout << "+-----------------+\n";
-  
-  /* middle */
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      if(b & (1ull << (y*8+x))){
-          std::cout << "@ ";
-      }
-      else{
-        std::cout << "  ";
-      }
-    }
-    std::cout << "|\n";
-  }
-  
-  /* bottom line */
-  std::cout << "+-----------------+\n";
-}
+void bits_show(bits64 b);

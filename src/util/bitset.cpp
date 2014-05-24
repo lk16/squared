@@ -1,5 +1,29 @@
 #include "util/bitset.hpp"
 
+void bits_show(bits64 b)
+{
+  int x,y;
+  
+  std::cout << "+-----------------+\n";
+  
+  /* middle */
+  for(y=0;y<8;y++){
+    std::cout << "| ";
+    for(x=0;x<8;x++){
+      if(b & (1ull << (y*8+x))){
+          std::cout << "@ ";
+      }
+      else{
+        std::cout << "  ";
+      }
+    }
+    std::cout << "|\n";
+  }
+  
+  /* bottom line */
+  std::cout << "+-----------------+\n";
+}
+
 const int bits_counts[65536] = {
   0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
   1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,

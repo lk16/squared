@@ -430,8 +430,8 @@ bits64 board::do_move(int move_id)
   // disabled for testing purposes
   // assert(is_valid_move(move_id));
   
-  return (this->*move_funcs[move_id])(); 
-  //return do_move_experimental(move_id);
+  //return (this->*move_funcs[move_id])(); 
+  return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -642,7 +642,7 @@ bits64 board::do_move_experimental(const int field_id){
   bits64 left_border_mask,right_border_mask;
   left_border_mask = right_border_mask = 0x0;
   
-  switch(field_id%8){
+  /*switch(field_id%8){
     case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
     case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
     case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
@@ -660,7 +660,9 @@ bits64 board::do_move_experimental(const int field_id){
     case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
     case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
     default: left_border_mask = 0x0; break;
-  }
+  }*/
+  right_border_mask = 0xFEFEFEFEFEFEFEFE;
+  left_border_mask  = 0x7F7F7F7F7F7F7F7F;
   
   
   
