@@ -431,7 +431,7 @@ bits64 board::do_move(int move_id)
   // assert(is_valid_move(move_id));
   
   //return (this->*move_funcs[move_id])(); 
-  return do_move_experimental(move_id);
+  //return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -521,18 +521,16 @@ std::string board::to_string() const {
    * byte 18-33: hex notation of opp
    * byte 34: \0
    */
-  char res[35];  
+  char res[33];  
   const char hex[17] = "0123456789abcdef";
   
-  res[0] = '0';
-  res[1] = '0';
   
   for(int i=0;i<16;i++){
-    res[2+i] = hex[(me >> (4*i)) & 0xF];
-    res[18+i] = hex[(opp >> (4*i)) & 0xF];
+    res[i] = hex[(me >> (4*i)) & 0xF];
+    res[16+i] = hex[(opp >> (4*i)) & 0xF];
   }
   
-  res[34] = '\0';
+  res[32] = '\0';
   
   return std::string(res);  
 }
@@ -540,7 +538,7 @@ std::string board::to_string() const {
 board::board(const std::string& in){
   
   try{
-    if(in.length() != 34){
+    if(in.length() != 32){
       throw 0;
     }
     
@@ -548,11 +546,11 @@ board::board(const std::string& in){
     
     unsigned long long x;
     for(int i=0;i<16;i++){
-      if((in[2+i]>='0') && (in[2+i]<='9')){
-        x = in[2+i]-'0';
+      if((in[i]>='0') && (in[i]<='9')){
+        x = in[i]-'0';
       }
-      else if((in[2+i]>='a') && (in[2+i]<='f')){
-        x = 10 + in[2+i] - 'a';      
+      else if((in[i]>='a') && (in[i]<='f')){
+        x = 10 + in[i] - 'a';      
       }
       else{
         throw 1;
@@ -561,11 +559,11 @@ board::board(const std::string& in){
     }
     
     for(int i=0;i<16;i++){
-      if((in[18+i]>='0') && (in[18+i]<='9')){
-        x = in[18+i]-'0';
+      if((in[16+i]>='0') && (in[16+i]<='9')){
+        x = in[16+i]-'0';
       }
-      else if((in[18+i]>='a') && (in[18+i]<='f')){
-        x = 10 + in[18+i] - 'a';      
+      else if((in[16+i]>='a') && (in[16+i]<='f')){
+        x = 10 + in[16+i] - 'a';      
       }
       else{
         throw 2;

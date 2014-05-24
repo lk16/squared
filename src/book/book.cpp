@@ -135,7 +135,7 @@ int book_t::learn_move(bot_base* bot,const std::string& board_str,int depth,int 
   bot->stats.stop_timer();
   
   std::cout << (int)bot->stats.get_seconds() << " s\t";
-  std::cout << big_number(bot->stats.get_nodes_per_second()) << "n/s\t";
+  std::cout << bot->stats.get_nodes_per_second() << "n/s\t";
   if(n_left != -1){
     std::cout << n_left-1 << " left\t";
   }
