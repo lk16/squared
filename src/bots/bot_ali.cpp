@@ -286,7 +286,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     return heur;
   }
 
-  int move = find_first_set_64(valid_moves);
+  int move = bits64_find_first(valid_moves);
   board backup = inspected;  
   
   inspected.do_move(move);
@@ -299,10 +299,10 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
   if(score >= alpha){
     alpha = score;
   }
-  valid_moves &= board::bit[move];
+  valid_moves &= bits64_reset[move];
   
   while(valid_moves != 0ull){
-    move = find_first_set_64(valid_moves);
+    move = bits64_find_first(valid_moves);
     
     inspected.do_move(move);
     score = -pvs_null_window(-alpha-1);
@@ -319,7 +319,7 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves &= ~board::bit[move];
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
 }
@@ -349,7 +349,7 @@ int bot_ali::pvs_null_window(int alpha)
   }
   
   while(valid_moves != 0ull){
-    int move = find_first_set_64(valid_moves);
+    int move = bits64_find_first(valid_moves);
     bits64 undo_data;
     int score;
     
@@ -363,7 +363,7 @@ int bot_ali::pvs_null_window(int alpha)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves &= ~board::bit[move];
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
   
@@ -395,7 +395,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
   
   while(valid_moves != 0ull){
     
-    int move = find_first_set_64(valid_moves);
+    int move = bits64_find_first(valid_moves);
     bits64 undo_data;
     int score;
     
@@ -424,7 +424,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
       alpha = score;
     }
     null_window = true;
-    valid_moves &= ~board::bit[move];
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
 }

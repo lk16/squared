@@ -19,7 +19,7 @@ void clickable_image::init(main_window* par, int _field_id, const std::string& i
 bool clickable_image::on_button_press_event(GdkEventButton* e)
 {
   (void) e;
-  parent->control.on_human_do_move(field_id);
+  parent->control->on_human_do_move(field_id);
   
   return true;
 }

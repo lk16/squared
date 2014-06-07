@@ -13,11 +13,7 @@ class main_window;
 
 struct game_control{
   
-  /// NULL pointer means human player 
-  bot_base* bot[2]; 
-  
-  main_window* mw;
-  
+
   struct board_state_t{
     board b;
     int turn;
@@ -27,12 +23,23 @@ struct game_control{
     }
   };
   
+  
+  // NULL pointer means human player 
+  bot_base* bot[2]; 
+  
+  // window
+  main_window* mw;
+  
+  // current board state
   board_state_t board_state;
   
+  // undo and redo data
   std::stack<board_state_t> undo_stack,redo_stack;
+ 
+  bool quit_if_game_over;
+  
   
   game_control();
-  game_control(const game_control& gc);
   ~game_control();
   
   void add_bot(int color, int _depth, int _perfect_depth);
@@ -50,6 +57,8 @@ struct game_control{
   void on_any_move();
   
   bool timeout_handler();
+  
+  void connect_timeout_signal();
     
 };
 

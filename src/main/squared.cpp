@@ -34,6 +34,7 @@ struct squared_arg_t
   int set_white_level();
   int set_black_level();
   int compress_book();
+  int minus_q_flag();
   
 };
 
@@ -47,16 +48,18 @@ int squared_arg_t::show_help(){
   "run the testing area, ignoring all other flags\n\n"
   "-b <board>, --board <board>\n"
   "use given board as start position, cannot be used with -r\n\n"
-  "-r <integer>, --random <integer>\n"
-  "use startboard after given amount of random moves, cannot be used with -b\n\n"
-  "-lb <integer>, -lw <integer>\n"
-  "set the level of the black or white bot, -1 is disabled\n\n"
+  "-r <number of moves>, --random <number of moves>\n"
+  "use startboard after a given amount of random moves, cannot be used with -b\n\n"
+  "-lb <search depth> <perfect depth>, -lw <search depth><perfect depth>\n"
+  "set the level of the black or white bot\n\n"
   "-s\n"
   "show given board in human readable format\n\n"
   "-l, --learn\n"
-  "learn/improve the opening book, ignoring all other flags\n\n";
+  "learn/improve the opening book, ignoring all other flags\n\n"
+  "-q\n"
+  "Quit program when game is finished\n\n";
   start_windowed_game = false;
-  return -1;
+  return PARSING_IGNORE_OTHER_ARGS;
 }
 
 int squared_arg_t::show_board(){
@@ -88,22 +91,24 @@ int squared_arg_t::set_board(){
 
 int squared_arg_t::set_black_level()
 {
-  if(!parser->has_enough_args(1)){
+  if(!parser->has_enough_args(2)){
     return PARSING_ERROR;
   }
   int lvl = from_str<int>(parser->get_arg(1));
-  gc.add_bot(BLACK,lvl,max(16,2*lvl));
-  return 2;
+  int perf_lvl = from_str<int>(parser->get_arg(2));
+  gc.add_bot(BLACK,lvl,perf_lvl);
+  return 3;
 }
 
 int squared_arg_t::set_white_level()
 {
-  if(!parser->has_enough_args(1)){
+  if(!parser->has_enough_args(2)){
     return PARSING_ERROR;
   }
   int lvl = from_str<int>(parser->get_arg(1));
-  gc.add_bot(BLACK,lvl,max(16,2*lvl));
-  return 2;
+  int perf_lvl = from_str<int>(parser->get_arg(2));
+  gc.add_bot(WHITE,lvl,perf_lvl);
+  return 3;
 }
 
 int squared_arg_t::randomize_board()
@@ -123,6 +128,11 @@ int squared_arg_t::compress_book()
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
+int squared_arg_t::minus_q_flag()
+{
+  gc.quit_if_game_over = true;
+  return 1;
+}
 
 
 int main(int argc,char **argv){
@@ -144,6 +154,7 @@ int main(int argc,char **argv){
   parser.func_map["-b"] = &squared_arg_t::set_board;
   parser.func_map["--compress-book"] = &squared_arg_t::compress_book;
   parser.func_map["-cb"] = &squared_arg_t::compress_book;
+  parser.func_map["-q"] = &squared_arg_t::minus_q_flag;
   
   
   if(!parser.parse()){
@@ -158,7 +169,12 @@ int main(int argc,char **argv){
   
   if(arg_data.start_windowed_game){
     Gtk::Main kit(argc,argv);
-    main_window window(arg_data.gc);
+     
+    main_window window;
+    arg_data.gc.mw = &window;
+    window.control = &arg_data.gc;
+    window.update_fields();
+    arg_data.gc.connect_timeout_signal();
     Gtk::Main::run(window);
   }
   

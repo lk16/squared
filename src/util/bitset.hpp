@@ -6,16 +6,21 @@ typedef unsigned long long bits64;
 
 extern const int bits_counts[65536];
 
-// returns -1 if ul==0ul, returns least significant bit otherwise
-inline int find_first_set_64(bits64 b){
+extern const bits64 bits64_set[65];
+extern const bits64 bits64_reset[65];
+extern const bits64 bits64_before[65];
+extern const bits64 bits64_after[65];
+
+// returns 64 if b==0ul, returns least significant bit otherwise
+inline int bits64_find_first(bits64 b){
   if(b == 0ul){
     return 64;
   }
   return __builtin_ffsl(b) - 1;
 }
 
-
-inline int find_last_set_64(bits64 b){
+// returns 64 if b==0ull, returns most significant bit otherwise
+inline int bits64_find_last(bits64 b){
   if(b == 0ul){
     // __builtin_clz(0ull) is undefined
     return 64;
@@ -23,6 +28,7 @@ inline int find_last_set_64(bits64 b){
   return 63 - __builtin_clzl(b);  
 }
 
+// returns number of set bits in b
 inline int count_64(bits64 b){
 #if 0
   return __builtin_popcountll(b);

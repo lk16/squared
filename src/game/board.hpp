@@ -27,16 +27,6 @@ struct board{
   // static constants
   static const unsigned int border[64]; // border flags
   
-  // (1 << x) for x in [0,63], 0x0 as hack
-  static const bits64 bit[65];
-  
-  // ((~0ull) << (64-x)) for x in [0,63], 0x0 as hack
-  static const bits64 bits_before[65];
-  
-  // ((~0ull) >> (64-x)) for x in [0,63], 0x0 as hack
-  static const bits64 bits_after[65];
-  
-  
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const bits64 walk_possible[8][7];
@@ -104,6 +94,8 @@ struct board{
     
   /// out will represent a bitset in which each set bit represents a valid move
   bits64 get_valid_moves() const;
+
+  bits64 get_valid_moves_superset() const;
   
   board do_random_moves(int count) const;
   
@@ -235,8 +227,8 @@ inline board::board()
 }
 
 inline void board::reset(){
-  me = bit[28] | bit[35];
-  opp = bit[27] | bit[36];
+  me = bits64_set[28] | bits64_set[35];
+  opp = bits64_set[27] | bits64_set[36];
 }
 
 inline board::board(const board& b)
@@ -293,20 +285,38 @@ inline int board::count_valid_moves() const
 
 inline bool board::is_valid_move(int field_id) const
 { 
-  return (get_valid_moves() & board::bit[field_id]) != 0ull;
+  return (get_valid_moves() & bits64_set[field_id]) != 0ull;
 }
 
 inline void board::undo_move(int field_id,bits64 undo_data)
 {
   switch_turn();
   
-  me &= ~(undo_data | board::bit[field_id]);
+  me &= ~(undo_data | bits64_set[field_id]);
   opp |= (undo_data);  
   
   
   assert((me & undo_data) == 0ull);
   assert((opp & undo_data) == undo_data);
-  assert((get_non_empty_fields() & board::bit[field_id]) == 0ull);
+  assert((get_non_empty_fields() & bits64_set[field_id]) == 0ull);
+}
+
+inline bits64 board::get_valid_moves_superset() const{
+  bits64 res = 0ull;
+  bits64 non_empty = get_non_empty_fields();
+  
+  res |= ((opp << 9) & (non_empty << 18) & 0xFEFEFEFEFEFEFEFE);
+  res |= ((opp << 8) & (non_empty << 16) & 0xFEFEFEFEFEFEFEFE);
+  res |= ((opp << 7) & (non_empty << 14) & 0xFEFEFEFEFEFEFEFE);
+  res |= ((opp << 1) & (non_empty << 1) & 0xFEFEFEFEFEFEFEFE);
+  
+  res |= ((opp >> 9) & (non_empty >> 18) & 0x7F7F7F7F7F7F7F7F);
+  res |= ((opp >> 8) & (non_empty >> 16) & 0x7F7F7F7F7F7F7F7F);
+  res |= ((opp >> 7) & (non_empty >> 14) & 0x7F7F7F7F7F7F7F7F);
+  res |= ((opp >> 1) & (non_empty >> 1) & 0x7F7F7F7F7F7F7F7F);
+  
+  res &= ~non_empty;
+  return res;
 }
 
 inline bits64 board::get_valid_moves() const

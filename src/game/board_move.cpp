@@ -29,62 +29,72 @@ bits64 board::do_move_##field_id(){\
     default: left_border_mask = 0x0; break;\
   }\
   \
+  /*right_border_mask = 0xFEFEFEFEFEFEFEFE;\
+  left_border_mask  = 0x7F7F7F7F7F7F7F7F;\
+  */\
   \
   \
+  /* down */\
   if(field_id/8 < 6){\
     line = 0x0101010101010100l << field_id;\
-    end = find_first_set_64(line & me);\
-    line &= bits_before[end];\
+    end = bits64_find_first(line & me);\
+    line &= bits64_before[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* up */\
   if(field_id/8 > 1){\
     line = 0x0080808080808080l >> (63-field_id);\
-    end = find_last_set_64(line & me);\
-    line &= bits_after[end];\
+    end = bits64_find_last(line & me);\
+    line &= bits64_after[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* left */\
   if(field_id%8 > 1){\
     line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;\
-    end = find_last_set_64(line & me);\
-    line &= bits_after[end];\
+    end = bits64_find_last(line & me);\
+    line &= bits64_after[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* right */\
   if(field_id%8 < 6){\
     line = (0x00000000000000FEl << field_id) & right_border_mask;\
-    end = find_first_set_64(line & me);\
-    line &= bits_before[end];\
+    end = bits64_find_first(line & me);\
+    line &= bits64_before[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* right down */\
   if((field_id%8 < 6) && (field_id/8 < 6)){\
     line = (0x0040201008040201 << field_id) & right_border_mask;\
-    end = find_first_set_64(line & me);\
-    line &= bits_before[end];\
+    end = bits64_find_first(line & me);\
+    line &= bits64_before[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* left up */\
   if((field_id%8 > 1) && (field_id/8 > 1)){\
     line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;\
-    end = find_last_set_64(line & me);\
-    line &= bits_after[end];\
+    end = bits64_find_last(line & me);\
+    line &= bits64_after[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* right up */\
   if((field_id%8 < 6) && (field_id/8 > 1)){\
     if(field_id<=56){\
       line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;\
@@ -92,13 +102,14 @@ bits64 board::do_move_##field_id(){\
     else{\
       line = (0x0002040810204080 << (field_id-56)) & right_border_mask;\
     }\
-    end = find_last_set_64(line & me);\
-    line &= bits_after[end];\
+    end = bits64_find_last(line & me);\
+    line &= bits64_after[end];\
      if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
+  /* left down */\
   if((field_id%8 > 1) && (field_id/8 < 6)){\
     if(field_id>=7){\
       line = (0x0102040810204000 << (field_id-7)) & left_border_mask;\
@@ -106,14 +117,14 @@ bits64 board::do_move_##field_id(){\
     else{\
       line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;\
     }\
-    end = find_first_set_64(line & me);\
-    line &= bits_before[end];\
+    end = bits64_find_first(line & me);\
+    line &= bits64_before[end];\
     if((opp & line) == line){\
       flipped |= line;\
     }\
   }\
   \
-  me |= bit[field_id] | flipped;\
+  me |= bits64_set[field_id] | flipped;\
   opp &= ~me;\
   switch_turn();  \
   return flipped;\

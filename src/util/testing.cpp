@@ -41,7 +41,13 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
 
 void testing_area(){
   
-  std::cout << (1ull << 0) << '\n';
+  for(int i=0;i<64;i++){
+    std::cout << "(1ull << " << i << "),\n";
+  }
+  
+  for(int i=0;i<64;i++){
+    std::cout << "~bits64_reset[" << i << "],\n";
+  }
   
   
 #if 0  
