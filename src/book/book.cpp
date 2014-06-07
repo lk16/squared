@@ -41,7 +41,7 @@ int book_t::get_move_index(const board* before, const board* after)
 {
   std::bitset<64> diff = before->get_non_empty_fields();
   diff ^= after->get_non_empty_fields();
-  return find_first_set_64(diff.to_ulong());
+  return bits64_find_first(diff.to_ulong());
 }
 
 void book_t::print_stats() const
@@ -163,7 +163,10 @@ void book_t::remove_obsolete_lines() const
     book_line.push_back(to_str<int>(it->second.depth));
     book_line.push_back(to_str<int>(it->second.best_move));
     
-    if(board(it->first).is_valid_move(it->second.best_move)){
+    if(
+      board(it->first).is_valid_move(it->second.best_move)
+      && it->first.length() == 32      
+    ){
       book_file.append_line(book_line);
     }
   }

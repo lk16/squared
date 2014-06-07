@@ -97,22 +97,6 @@ const bits64 board::walk_possible[8][7] = {
   }
 };
 
-const bits64 board::bit[65] = {
-  (1ul <<  0),(1ul <<  1),(1ul <<  2),(1ul <<  3),(1ul <<  4),
-  (1ul <<  5),(1ul <<  6),(1ul <<  7),(1ul <<  8),(1ul <<  9),
-  (1ul << 10),(1ul << 11),(1ul << 12),(1ul << 13),(1ul << 14),
-  (1ul << 15),(1ul << 16),(1ul << 17),(1ul << 18),(1ul << 19),
-  (1ul << 20),(1ul << 21),(1ul << 22),(1ul << 23),(1ul << 24),
-  (1ul << 25),(1ul << 26),(1ul << 27),(1ul << 28),(1ul << 29),
-  (1ul << 30),(1ul << 31),(1ul << 32),(1ul << 33),(1ul << 34),
-  (1ul << 35),(1ul << 36),(1ul << 37),(1ul << 38),(1ul << 39),
-  (1ul << 40),(1ul << 41),(1ul << 42),(1ul << 43),(1ul << 44),
-  (1ul << 45),(1ul << 46),(1ul << 47),(1ul << 48),(1ul << 49),
-  (1ul << 50),(1ul << 51),(1ul << 52),(1ul << 53),(1ul << 54),
-  (1ul << 55),(1ul << 56),(1ul << 57),(1ul << 58),(1ul << 59),
-  (1ul << 60),(1ul << 61),(1ul << 62),(1ul << 63), 0x0
-};
-
 bits64 (board::* const move_funcs[65])() = {
   &board::do_move_A1,
   &board::do_move_A2,
@@ -192,156 +176,18 @@ bits64 (board::* const move_funcs[65])() = {
 // 0,1,2,3,3,2,1,0
 
 const bits64 board::location[10] = {
-  /* 0 */ bit[0] | bit[7] | bit[56] | bit[63],
-  /* 1 */ bit[1] | bit[6] | bit[8] | bit[15] | bit[48] | bit[55] | bit[57] | bit[62],
-  /* 2 */ bit[2] | bit[5] | bit[16] | bit[23] | bit[40] | bit[47] | bit[58] | bit[61],
-  /* 3 */ bit[3] | bit[4] | bit[24] | bit[31] | bit[32] | bit[39] | bit[59] | bit[60],
-  /* 4 */ bit[9] | bit[14] | bit[49] | bit[54],
-  /* 5 */ bit[10] | bit[13] | bit[17] | bit[22] | bit[41] | bit[46] | bit[50] | bit[53],
-  /* 6 */ bit[11] | bit[12] | bit[25] | bit[30] | bit[33] | bit[38] | bit[51] | bit[52],
-  /* 7 */ bit[18] | bit[21] | bit[42] | bit[45],
-  /* 8 */ bit[19] | bit[20] | bit[26] | bit[29] | bit[34] | bit[37] | bit[43] | bit[44],
-  /* 9 */ bit[27] | bit[28] | bit[35] | bit[36]
+  /* 0 */ bits64_set[0] | bits64_set[7] | bits64_set[56] | bits64_set[63],
+  /* 1 */ bits64_set[1] | bits64_set[6] | bits64_set[8] | bits64_set[15] | bits64_set[48] | bits64_set[55] | bits64_set[57] | bits64_set[62],
+  /* 2 */ bits64_set[2] | bits64_set[5] | bits64_set[16] | bits64_set[23] | bits64_set[40] | bits64_set[47] | bits64_set[58] | bits64_set[61],
+  /* 3 */ bits64_set[3] | bits64_set[4] | bits64_set[24] | bits64_set[31] | bits64_set[32] | bits64_set[39] | bits64_set[59] | bits64_set[60],
+  /* 4 */ bits64_set[9] | bits64_set[14] | bits64_set[49] | bits64_set[54],
+  /* 5 */ bits64_set[10] | bits64_set[13] | bits64_set[17] | bits64_set[22] | bits64_set[41] | bits64_set[46] | bits64_set[50] | bits64_set[53],
+  /* 6 */ bits64_set[11] | bits64_set[12] | bits64_set[25] | bits64_set[30] | bits64_set[33] | bits64_set[38] | bits64_set[51] | bits64_set[52],
+  /* 7 */ bits64_set[18] | bits64_set[21] | bits64_set[42] | bits64_set[45],
+  /* 8 */ bits64_set[19] | bits64_set[20] | bits64_set[26] | bits64_set[29] | bits64_set[34] | bits64_set[37] | bits64_set[43] | bits64_set[44],
+  /* 9 */ bits64_set[27] | bits64_set[28] | bits64_set[35] | bits64_set[36]
 };
   
-const bits64 board::bits_before[65] = {
-  0x0, // used to prevent warnings
-  (0xFFFFFFFFFFFFFFFF >> 63),
-  (0xFFFFFFFFFFFFFFFF >> 62),
-  (0xFFFFFFFFFFFFFFFF >> 61),
-  (0xFFFFFFFFFFFFFFFF >> 60),
-  (0xFFFFFFFFFFFFFFFF >> 59),
-  (0xFFFFFFFFFFFFFFFF >> 58),
-  (0xFFFFFFFFFFFFFFFF >> 57),
-  (0xFFFFFFFFFFFFFFFF >> 56),   
-  (0xFFFFFFFFFFFFFFFF >> 55),
-  (0xFFFFFFFFFFFFFFFF >> 54),
-  (0xFFFFFFFFFFFFFFFF >> 53),
-  (0xFFFFFFFFFFFFFFFF >> 52),
-  (0xFFFFFFFFFFFFFFFF >> 51),
-  (0xFFFFFFFFFFFFFFFF >> 50),
-  (0xFFFFFFFFFFFFFFFF >> 49),
-  (0xFFFFFFFFFFFFFFFF >> 48),
-  (0xFFFFFFFFFFFFFFFF >> 47),
-  (0xFFFFFFFFFFFFFFFF >> 46),   
-  (0xFFFFFFFFFFFFFFFF >> 45),
-  (0xFFFFFFFFFFFFFFFF >> 44),
-  (0xFFFFFFFFFFFFFFFF >> 43),
-  (0xFFFFFFFFFFFFFFFF >> 42),
-  (0xFFFFFFFFFFFFFFFF >> 41),
-  (0xFFFFFFFFFFFFFFFF >> 40),
-  (0xFFFFFFFFFFFFFFFF >> 39),
-  (0xFFFFFFFFFFFFFFFF >> 38),
-  (0xFFFFFFFFFFFFFFFF >> 37),
-  (0xFFFFFFFFFFFFFFFF >> 36),   
-  (0xFFFFFFFFFFFFFFFF >> 35),
-  (0xFFFFFFFFFFFFFFFF >> 34),
-  (0xFFFFFFFFFFFFFFFF >> 33),
-  (0xFFFFFFFFFFFFFFFF >> 32),
-  (0xFFFFFFFFFFFFFFFF >> 31),
-  (0xFFFFFFFFFFFFFFFF >> 30),
-  (0xFFFFFFFFFFFFFFFF >> 29),
-  (0xFFFFFFFFFFFFFFFF >> 28),
-  (0xFFFFFFFFFFFFFFFF >> 27),
-  (0xFFFFFFFFFFFFFFFF >> 26),   
-  (0xFFFFFFFFFFFFFFFF >> 25),
-  (0xFFFFFFFFFFFFFFFF >> 24),
-  (0xFFFFFFFFFFFFFFFF >> 23),
-  (0xFFFFFFFFFFFFFFFF >> 22),
-  (0xFFFFFFFFFFFFFFFF >> 21),
-  (0xFFFFFFFFFFFFFFFF >> 20),
-  (0xFFFFFFFFFFFFFFFF >> 19),
-  (0xFFFFFFFFFFFFFFFF >> 18),
-  (0xFFFFFFFFFFFFFFFF >> 17),
-  (0xFFFFFFFFFFFFFFFF >> 16),   
-  (0xFFFFFFFFFFFFFFFF >> 15),
-  (0xFFFFFFFFFFFFFFFF >> 14),
-  (0xFFFFFFFFFFFFFFFF >> 13),
-  (0xFFFFFFFFFFFFFFFF >> 12),
-  (0xFFFFFFFFFFFFFFFF >> 11),
-  (0xFFFFFFFFFFFFFFFF >> 10),
-  (0xFFFFFFFFFFFFFFFF >> 9),
-  (0xFFFFFFFFFFFFFFFF >> 8),
-  (0xFFFFFFFFFFFFFFFF >> 7),
-  (0xFFFFFFFFFFFFFFFF >> 6),   
-  (0xFFFFFFFFFFFFFFFF >> 5),
-  (0xFFFFFFFFFFFFFFFF >> 4),
-  (0xFFFFFFFFFFFFFFFF >> 3),
-  (0xFFFFFFFFFFFFFFFF >> 2),
-  (0xFFFFFFFFFFFFFFFF >> 1),
-  0x0 // hack which works with find_first_set_64 and find_last_set_64
-};
-
-const bits64 board::bits_after[65] = {
-  (0xFFFFFFFFFFFFFFFF << 1),
-  (0xFFFFFFFFFFFFFFFF << 2),
-  (0xFFFFFFFFFFFFFFFF << 3),
-  (0xFFFFFFFFFFFFFFFF << 4),
-  (0xFFFFFFFFFFFFFFFF << 5),
-  (0xFFFFFFFFFFFFFFFF << 6),
-  (0xFFFFFFFFFFFFFFFF << 7),
-  (0xFFFFFFFFFFFFFFFF << 8),
-  (0xFFFFFFFFFFFFFFFF << 9),
-  (0xFFFFFFFFFFFFFFFF << 10),
-  (0xFFFFFFFFFFFFFFFF << 11),
-  (0xFFFFFFFFFFFFFFFF << 12),
-  (0xFFFFFFFFFFFFFFFF << 13),
-  (0xFFFFFFFFFFFFFFFF << 14),
-  (0xFFFFFFFFFFFFFFFF << 15),
-  (0xFFFFFFFFFFFFFFFF << 16),
-  (0xFFFFFFFFFFFFFFFF << 17),
-  (0xFFFFFFFFFFFFFFFF << 18),
-  (0xFFFFFFFFFFFFFFFF << 19),
-  (0xFFFFFFFFFFFFFFFF << 20),
-  (0xFFFFFFFFFFFFFFFF << 21),
-  (0xFFFFFFFFFFFFFFFF << 22),
-  (0xFFFFFFFFFFFFFFFF << 23),
-  (0xFFFFFFFFFFFFFFFF << 24),
-  (0xFFFFFFFFFFFFFFFF << 25),
-  (0xFFFFFFFFFFFFFFFF << 26),
-  (0xFFFFFFFFFFFFFFFF << 27),
-  (0xFFFFFFFFFFFFFFFF << 28),
-  (0xFFFFFFFFFFFFFFFF << 29),
-  (0xFFFFFFFFFFFFFFFF << 30),
-  (0xFFFFFFFFFFFFFFFF << 31),
-  (0xFFFFFFFFFFFFFFFF << 32),
-  (0xFFFFFFFFFFFFFFFF << 33),
-  (0xFFFFFFFFFFFFFFFF << 34),
-  (0xFFFFFFFFFFFFFFFF << 35),
-  (0xFFFFFFFFFFFFFFFF << 36),
-  (0xFFFFFFFFFFFFFFFF << 37),
-  (0xFFFFFFFFFFFFFFFF << 38),
-  (0xFFFFFFFFFFFFFFFF << 39),
-  (0xFFFFFFFFFFFFFFFF << 40),
-  (0xFFFFFFFFFFFFFFFF << 41),
-  (0xFFFFFFFFFFFFFFFF << 42),
-  (0xFFFFFFFFFFFFFFFF << 43),
-  (0xFFFFFFFFFFFFFFFF << 44),
-  (0xFFFFFFFFFFFFFFFF << 45),
-  (0xFFFFFFFFFFFFFFFF << 46),
-  (0xFFFFFFFFFFFFFFFF << 47),
-  (0xFFFFFFFFFFFFFFFF << 48),
-  (0xFFFFFFFFFFFFFFFF << 49),
-  (0xFFFFFFFFFFFFFFFF << 50),
-  (0xFFFFFFFFFFFFFFFF << 51),
-  (0xFFFFFFFFFFFFFFFF << 52),
-  (0xFFFFFFFFFFFFFFFF << 53),
-  (0xFFFFFFFFFFFFFFFF << 54),
-  (0xFFFFFFFFFFFFFFFF << 55),
-  (0xFFFFFFFFFFFFFFFF << 56),
-  (0xFFFFFFFFFFFFFFFF << 57),
-  (0xFFFFFFFFFFFFFFFF << 58),
-  (0xFFFFFFFFFFFFFFFF << 59),
-  (0xFFFFFFFFFFFFFFFF << 60),
-  (0xFFFFFFFFFFFFFFFF << 61),
-  (0xFFFFFFFFFFFFFFFF << 62),
-  (0xFFFFFFFFFFFFFFFF << 63),
-  0x0, // used to prevent compiler warnings
-  0x0, // hack which works with find_first_set_64 and find_last_set_64
-};
-
-
-
 
 board* board::get_children(board* out_begin) const
 {
@@ -352,7 +198,7 @@ board* board::get_children(board* out_begin) const
   
   while(true){
     
-    int move_id = find_first_set_64(valid_moves);
+    int move_id = bits64_find_first(valid_moves);
     if(move_id == 64){
       break;
     } 
@@ -361,7 +207,7 @@ board* board::get_children(board* out_begin) const
     out_end->do_move(move_id);
     out_end++;
     
-    valid_moves &= ~board::bit[move_id];
+    valid_moves &= bits64_reset[move_id];
     
   }
   return out_end;
@@ -386,10 +232,10 @@ void board::show() const
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      if(black & board::bit[y*8+x]){
+      if(black & bits64_set[y*8+x]){
           std::cout << "\033[31;1m@\033[0m ";
       }
-      else if(white & board::bit[y*8+x]){
+      else if(white & bits64_set[y*8+x]){
           std::cout << "\033[34;1m@\033[0m ";
       }
       else if(is_valid_move(y*8+x)){
@@ -438,7 +284,7 @@ bits64 board::do_move(int move_id)
   for(int i=0;i<4;++i){
     
     tmp_mask = 0ull;
-    cur_bit = board::bit[move_id];
+    cur_bit = bits64_set[move_id];
     
     
     while(true){
@@ -470,7 +316,7 @@ bits64 board::do_move(int move_id)
   for(int i=4;i<8;++i){
     
     tmp_mask = 0ull;
-    cur_bit = board::bit[move_id];
+    cur_bit = bits64_set[move_id];
     
     
     while(true){
@@ -501,9 +347,9 @@ bits64 board::do_move(int move_id)
   
   assert((me & result) == 0ull);
   assert((opp & result) == result);
-  assert((get_non_empty_fields() & board::bit[move_id]) == 0ull);
+  assert((get_non_empty_fields() & bits64_set[move_id]) == 0ull);
   
-  me |= (result | board::bit[move_id]);
+  me |= (result | bits64_set[move_id]);
   opp &= ~me;
     
   switch_turn();
@@ -640,7 +486,7 @@ bits64 board::do_move_experimental(const int field_id){
   bits64 left_border_mask,right_border_mask;
   left_border_mask = right_border_mask = 0x0;
   
-  /*switch(field_id%8){
+  switch(field_id%8){
     case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
     case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
     case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
@@ -658,73 +504,74 @@ bits64 board::do_move_experimental(const int field_id){
     case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
     case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
     default: left_border_mask = 0x0; break;
-  }*/
-  right_border_mask = 0xFEFEFEFEFEFEFEFE;
+  }
+  
+  /*right_border_mask = 0xFEFEFEFEFEFEFEFE;
   left_border_mask  = 0x7F7F7F7F7F7F7F7F;
+  */
   
   
-  
-  // down
+  /* down */
   if(field_id/8 < 6){
     line = 0x0101010101010100l << field_id;
-    end = find_first_set_64(line & me);
-    line &= bits_before[end];
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // up
+  /* up */
   if(field_id/8 > 1){
     line = 0x0080808080808080l >> (63-field_id);
-    end = find_last_set_64(line & me);
-    line &= bits_after[end];
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // left
+  /* left */
   if(field_id%8 > 1){
     line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
-    end = find_last_set_64(line & me);
-    line &= bits_after[end];
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // right
+  /* right */
   if(field_id%8 < 6){
     line = (0x00000000000000FEl << field_id) & right_border_mask;
-    end = find_first_set_64(line & me);
-    line &= bits_before[end];
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // right down
+  /* right down */
   if((field_id%8 < 6) && (field_id/8 < 6)){
     line = (0x0040201008040201 << field_id) & right_border_mask;
-    end = find_first_set_64(line & me);
-    line &= bits_before[end];
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // left up
+  /* left up */
   if((field_id%8 > 1) && (field_id/8 > 1)){
     line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;
-    end = find_last_set_64(line & me);
-    line &= bits_after[end];
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // right up
+  /* right up */
   if((field_id%8 < 6) && (field_id/8 > 1)){
     if(field_id<=56){
       line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;
@@ -732,14 +579,14 @@ bits64 board::do_move_experimental(const int field_id){
     else{
       line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
     }
-    end = find_last_set_64(line & me);
-    line &= bits_after[end];
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
      if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  // left down
+  /* left down */
   if((field_id%8 > 1) && (field_id/8 < 6)){
     if(field_id>=7){
       line = (0x0102040810204000 << (field_id-7)) & left_border_mask;
@@ -747,14 +594,14 @@ bits64 board::do_move_experimental(const int field_id){
     else{
       line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
     }
-    end = find_first_set_64(line & me);
-    line &= bits_before[end];
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
     if((opp & line) == line){
       flipped |= line;
     }
   }
   
-  me |= bit[field_id] | flipped;
+  me |= bits64_set[field_id] | flipped;
   opp &= ~me;
   switch_turn();  
   return flipped;

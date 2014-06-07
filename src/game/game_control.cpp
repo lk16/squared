@@ -6,27 +6,23 @@ game_control::game_control()
   bot[0] = bot[1] = NULL;
   board_state.b.reset();
   board_state.turn = BLACK;
+  quit_if_game_over = false;
+
 }
 
 
-
-game_control::game_control(const game_control& gc)
-{
-  bot[0] = gc.bot[0];
-  bot[1] = gc.bot[1];
-  board_state = gc.board_state;
-  redo_stack = gc.redo_stack;
-  undo_stack = gc.undo_stack;
-  
-  
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
-}
 
 game_control::~game_control()
 {
   remove_bot(BLACK);
   remove_bot(WHITE);
 }
+
+void game_control::connect_timeout_signal()
+{
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
+}
+
 
 void game_control::on_human_do_move(int field_id)
 {
@@ -61,6 +57,7 @@ void game_control::on_any_move()
   board_state.switch_turn();
   
   std::cout << board_state.b.to_string() << std::endl;
+  
   
   if(board_state.b.count_discs() < book_t::entry_max_discs){
     book_t book(BOOK_PATH + "book.csv");
@@ -155,6 +152,12 @@ void game_control::on_game_ended()
   
   std::cout << text << std::endl;
   mw->update_status_bar(text);
+  
+  if(quit_if_game_over){
+    board_state.b.show();
+    mw->hide();
+    exit(0);
+  }
 }
 
 bool game_control::timeout_handler()

@@ -36,7 +36,7 @@ public:
   void update_status_bar(const std::string& text);
   
   /* public members */
-  game_control control;
+  game_control *control;
   
 protected:  
   
