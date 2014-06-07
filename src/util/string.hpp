@@ -1,18 +1,20 @@
 #pragma once
 
+
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include <vector>
 
 template<class T>
-inline std::string tostr(T x){
+inline std::string to_str(T x){
   std::stringstream buff;
   buff << x;
   return buff.str();
 }
 
 template<class T>
-inline T fromstr(std::string x){
+inline T from_str(std::string x){
   std::stringstream buff(x);
   T temp;
   buff >> temp;

@@ -91,7 +91,7 @@ int squared_arg_t::set_black_level()
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;
   }
-  int lvl = fromstr<int>(parser->get_arg(1));
+  int lvl = from_str<int>(parser->get_arg(1));
   gc.add_bot(BLACK,lvl,max(16,2*lvl));
   return 2;
 }
@@ -101,7 +101,7 @@ int squared_arg_t::set_white_level()
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;
   }
-  int lvl = fromstr<int>(parser->get_arg(1));
+  int lvl = from_str<int>(parser->get_arg(1));
   gc.add_bot(BLACK,lvl,max(16,2*lvl));
   return 2;
 }
@@ -111,7 +111,7 @@ int squared_arg_t::randomize_board()
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;    
   }
-  gc.board_state.b = gc.board_state.b.do_random_moves(fromstr<int>(parser->get_arg(1)));
+  gc.board_state.b = gc.board_state.b.do_random_moves(from_str<int>(parser->get_arg(1)));
   return 2;  
 }
 

@@ -22,8 +22,8 @@ book_t::book_t(const std::string& _filename):
       continue;
     }
     book_t::value bv;
-    bv.depth = fromstr<int>(line[1]);
-    bv.best_move = fromstr<int>(line[2]);
+    bv.depth = from_str<int>(line[1]);
+    bv.best_move = from_str<int>(line[2]);
     data[line[0]] = bv;
   }
   
@@ -115,8 +115,8 @@ void book_t::add_to_book_file(const std::string& b, int depth, int move)
   
   csv::line_t book_line;
   book_line.push_back(b);
-  book_line.push_back(tostr<int>(depth));
-  book_line.push_back(tostr<int>(move));
+  book_line.push_back(to_str<int>(depth));
+  book_line.push_back(to_str<int>(move));
   book_file.append_line(book_line);
 }
 
@@ -160,9 +160,12 @@ void book_t::remove_obsolete_lines() const
   for(citer it=data.begin();it!=data.end();it++){
     csv::line_t book_line;
     book_line.push_back(it->first);
-    book_line.push_back(tostr<int>(it->second.depth));
-    book_line.push_back(tostr<int>(it->second.best_move));
-    book_file.append_line(book_line);
+    book_line.push_back(to_str<int>(it->second.depth));
+    book_line.push_back(to_str<int>(it->second.best_move));
+    
+    if(board(it->first).is_valid_move(it->second.best_move)){
+      book_file.append_line(book_line);
+    }
   }
     
   /* remove backup file */

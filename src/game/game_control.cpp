@@ -150,8 +150,8 @@ void game_control::on_game_ended()
   }
   
   
-  std::string text = "Game has ended. White (" + tostr<int>(w_count) + ") - Black (";
-  text += tostr<int>(b_count)+ ")";
+  std::string text = "Game has ended. White (" + to_str<int>(w_count) + ") - Black (";
+  text += to_str<int>(b_count)+ ")";
   
   std::cout << text << std::endl;
   mw->update_status_bar(text);
