@@ -17,24 +17,59 @@ book_t::book_t(const std::string& _filename):
     if(book_file.get_file()->fail()){
       break; 
     }
-    if(line.size() < 3){
+    if(line.size() < value::NEEDED_COLUMNS){
       errors++;
       continue;
     }
-    book_t::value bv;
-    bv.depth = from_str<int>(line[1]);
-    bv.best_move = from_str<int>(line[2]);
+    book_t::value bv(line);
+    
+    if(!is_correct_entry(line[0],bv)){
+      errors++;
+      continue;
+    }
     data[line[0]] = bv;
   }
   
   if(errors > 0){
-    std::cout << "There were " << errors;
-    std::cout << " lines skipped. Please fix the bookfile ";
+    std::cout << "Found " << errors;
+    std::cout << " incorrect entries in ";
     std::cout << '\"' << _filename << '\"' << std::endl;
   }
   
 }
 
+bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) const
+{
+  if(out_bounds<int>(bv.depth,0,60) || out_bounds<int>(bv.best_move,0,63)){
+    return false;
+  }
+  if(bs.length() != 32){
+    return false;
+  }
+  
+  board b(bs);
+  if((b.me ^ b.opp) != 0ull){
+    return false;
+  }
+  
+  if(!b.is_valid_move(bv.best_move)){
+    return false;
+  }
+    
+  return true;
+}
+
+book_t::value::value(const csv::line_t& line)
+{
+  depth = from_str<int>(line[1]);
+  best_move = from_str<int>(line[2]);
+}
+
+book_t::value::value(int bm, int d)
+{
+  best_move = bm;
+  depth = d;
+}
 
 
 int book_t::get_move_index(const board* before, const board* after)

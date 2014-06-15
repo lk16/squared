@@ -15,6 +15,12 @@
 struct book_t{
 
   struct value{
+    static const unsigned NEEDED_COLUMNS = 3;
+    
+    value(const csv::line_t&);
+    value(int bm,int d);
+    value(){} // needed by STL
+    
     int best_move,depth;
   };
   
@@ -29,7 +35,6 @@ struct book_t{
   std::string filename;
   
   book_t(const std::string& _filename);
-
   
   int get_move_index(const board* before,const board* after);
   
@@ -42,4 +47,6 @@ struct book_t{
   void print_stats() const;
   
   void remove_obsolete_lines() const;
+  
+  bool is_correct_entry(const std::string& bs,const book_t::value& bv) const;
 };

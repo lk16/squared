@@ -118,20 +118,23 @@ void bot_ali::do_move(const board* b,board* res)
         }
       }
       *res = children[best_id];
-      /*if(use_book 
-        && (b->get_non_empty_fields().size() < (unsigned)book_t::entry_max_discs)
+      if(use_book 
+        && (b->count_discs() < book_t::entry_max_discs)
         && (search_depth>=book_t::min_learn_depth)
       ){
-        int move = book.get_move_index(b,res);
         book_t::citer it = book.data.find(b->to_database_string());
-        if(it == book.data.end() || search_depth>it->second.depth){
-          book_t::value bv;
-          bv.best_move = move;
-          bv.depth = search_depth;
-          book.data[b->to_database_string()] = bv;      
+        if(it == book.data.end() || search_depth > it->second.depth){
+          int move = book.get_move_index(b,res);
+          board res_normalized(res->to_database_string());
+          int rot = res->get_rotation(&res_normalized);
+          board ugly;
+          ugly.me = bits64_set[move];
+          ugly.rotate(rot);
+          move = bits64_find_first(ugly.me);
+          book.data[b->to_database_string()] = book_t::value(move,search_depth); 
+          book.add_to_book_file(b->to_database_string(),search_depth,move);     
         }
-        book.add_to_book_file(b->to_database_string(),search_depth,move);
-      }*/
+      }
       break;
     case PERFECT_MODE:
       best_heur = MIN_PERFECT_HEURISTIC;
@@ -155,7 +158,8 @@ void bot_ali::do_move(const board* b,board* res)
         int rot = res->get_rotation(b);
         res->do_move(it->second.best_move);
         *res = res->rotate(rot);
-        std::cout << "move found in book at depth " << it->second.depth << '\n';
+        std::cout << "best move (" << it->second.best_move;
+        std::cout << ") found in book at depth " << it->second.depth << '\n';
       }
       break;
     case ONE_MOVE_MODE:
