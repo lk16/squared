@@ -9,12 +9,12 @@ CROSS=i686-pc-mingw32
 GXX=$MXE_ROOT/usr/bin/$CROSS-g++
 PKG_CONFIG=$MXE_ROOT/usr/bin/$CROSS-pkg-config
 
-
 FLAGS="-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 
-LIBS=`$PKG_CONFIG --libs --cflags gtkmm-2.4 glibmm-2.4 gdk-pixbuf-2.0`
-
-$GXX -I ./src $(find ./src -name *.cpp) $FLAGS $LIBS -o squared.exe
+LIBS="gtkmm-2.4 glibmm-2.4 gdk-pixbuf-2.0"
 
 
+LIB_FLAGS=`$PKG_CONFIG --libs $LIBS`
+C_FLAGS=`$PKG_CONFIG --cflags $LIBS`
 
+$GXX $FLAGS $C_FLAGS -I ./src $(find ./src -name *.cpp) $LIB_FLAGS -o squared.exe
