@@ -12,17 +12,8 @@
 #include "util/macros.hpp"
 #include "util/math.hpp"
 
-  
-struct board;
-//typedef bits64(board::*move_func_t)();
-
-extern bits64 (board::* const move_funcs[65])();
-
-
 
 struct board{
-  
-  
   
   // static constants
   static const unsigned int border[64]; // border flags
@@ -204,6 +195,9 @@ struct board{
   
   /// returns string representation modulo rotation
   std::string to_database_string() const;
+  
+  /// returns *this modulo rotation
+  board to_database_board() const;
   
   /// rotate/mirror the board, 0 <= n <= 7
   board rotate(int n) const;

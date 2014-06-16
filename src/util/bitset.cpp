@@ -1,6 +1,6 @@
 #include "util/bitset.hpp"
 
-void bits_show(bits64 b)
+void bits64_show(bits64 b)
 {
   int x,y;
   
@@ -10,7 +10,7 @@ void bits_show(bits64 b)
   for(y=0;y<8;y++){
     std::cout << "| ";
     for(x=0;x<8;x++){
-      if(b & (1ull << (y*8+x))){
+      if(b & bits64_set[y*8+x]){
           std::cout << "@ ";
       }
       else{

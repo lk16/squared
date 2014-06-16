@@ -73,4 +73,18 @@ inline bits64 rotate_left(bits64 x){
   return mirror_vertical_line(x);
 }
 
-void bits_show(bits64 b);
+inline bits64 bits64_rotate(bits64 x,int n)
+{
+  if(n & 4){
+    x = mirror_vertical_line(x);
+  }
+  
+  for(int i=0;i<(n & 3);i++){
+    x = rotate_left(x);
+  }
+  
+  return x;
+}
+
+
+void bits64_show(bits64 b);

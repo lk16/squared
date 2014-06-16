@@ -39,7 +39,7 @@ public:
   void set_content(const content_t & x);
   
   // returns file
-  const std::fstream* get_file() const;
+  std::fstream* get_file();
 
   int get_read_lines() const;
   int get_written_lines() const;

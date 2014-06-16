@@ -54,16 +54,10 @@ void game_control::on_bot_do_move()
 
 void game_control::on_any_move()
 {  
-  board_state.switch_turn();
   
   std::cout << board_state.b.to_string() << std::endl;
   
-  
-  if(board_state.b.count_discs() < book_t::entry_max_discs){
-    book_t book(BOOK_PATH + "book.csv");
-    book.add_to_book_file(board_state.b.to_database_string(),0,0);
-  }
-  
+  board_state.switch_turn();
   
   while(!redo_stack.empty()){
     redo_stack.pop();

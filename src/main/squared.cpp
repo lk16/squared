@@ -123,7 +123,7 @@ int squared_arg_t::randomize_board()
 int squared_arg_t::compress_book()
 {
   book_t book(BOOK_PATH + "book.csv");
-  book.remove_obsolete_lines();
+  book.clean();
   start_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;
 }
