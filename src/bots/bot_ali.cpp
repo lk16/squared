@@ -52,14 +52,14 @@ void bot_ali::do_move(const board* b,board* res)
   
 
   
-  book_t::citer it = book.data.find(b->to_database_string());
+  book_t::value lookup = book.lookup(b,search_depth);
   
  
   if(child_count == 1){
     mode = ONE_MOVE_MODE;
   }  
   else if(empty_fields > perfect_depth){
-    if(use_book && (it != book.data.end()) && (it->second.depth >= search_depth)){
+    if(use_book && (lookup.best_move != book_t::NOT_FOUND)){
       mode = BOOK_MODE;
     }
     else{
@@ -80,9 +80,8 @@ void bot_ali::do_move(const board* b,board* res)
     }
 
 
-    // is used for small negamax search, to sort moves before big search
-    search_max_discs = 
-        b->count_discs() + search_depth - 4;
+    // is used for small search, to sort moves before big search
+    search_max_discs = b->count_discs() + search_depth - 4;
 
 
     
@@ -95,7 +94,7 @@ void bot_ali::do_move(const board* b,board* res)
       sort_children(children,heurs,child_count);
     }
 
-    // is used for big negamax search
+    // is used for big search
     search_max_discs += 4;
 
   }
@@ -118,20 +117,9 @@ void bot_ali::do_move(const board* b,board* res)
         }
       }
       *res = children[best_id];
-      /*if(use_book 
-        && (b->get_non_empty_fields().size() < (unsigned)book_t::entry_max_discs)
-        && (search_depth>=book_t::min_learn_depth)
-      ){
-        int move = book.get_move_index(b,res);
-        book_t::citer it = book.data.find(b->to_database_string());
-        if(it == book.data.end() || search_depth>it->second.depth){
-          book_t::value bv;
-          bv.best_move = move;
-          bv.depth = search_depth;
-          book.data[b->to_database_string()] = bv;      
-        }
-        book.add_to_book_file(b->to_database_string(),search_depth,move);
-      }*/
+      if(use_book){        
+        book.add(b,res,search_depth);     
+      }
       break;
     case PERFECT_MODE:
       best_heur = MIN_PERFECT_HEURISTIC;
@@ -151,11 +139,12 @@ void bot_ali::do_move(const board* b,board* res)
       break;
     case BOOK_MODE:
       {
-        *res = board(b->to_database_string());
-        int rot = res->get_rotation(b);
-        res->do_move(it->second.best_move);
-        *res = res->rotate(rot);
-        std::cout << "move found in book at depth " << it->second.depth << '\n';
+        *res = *b;
+        res->do_move(lookup.best_move);
+        if(shell_output){
+          std::cout << "best move (" << lookup.best_move;
+          std::cout << ") found in book at depth " << lookup.depth << '\n';
+        }
       }
       break;
     case ONE_MOVE_MODE:

@@ -448,21 +448,8 @@ board board::rotate(int n) const
 {
   board b(*this);
   
-  if(n>7){
-    std::cout << "WARNING: invalid n (" << n << ") fed to board::rotate!\n";
-    return b;
-  }
-  
-  if(n>=4){
-    b.me = mirror_vertical_line(b.me);
-    b.opp = mirror_vertical_line(b.opp);
-    n -= 4;
-  }
-  
-  for(int i=0;i<n;i++){
-    b.me = rotate_left(b.me);
-    b.opp = rotate_left(b.opp);
-  }
+  b.me = bits64_rotate(b.me,n);
+  b.opp = bits64_rotate(b.opp,n);
   
   return b;
 }
@@ -478,6 +465,12 @@ std::string board::to_database_string() const
   
   return min_str; 
 }
+
+board board::to_database_board() const
+{
+  return board(to_database_string());
+}
+
 
 bits64 board::do_move_experimental(const int field_id){
   bits64 line,flipped = 0ull;

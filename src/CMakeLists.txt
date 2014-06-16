@@ -38,8 +38,7 @@ include_directories(${GDK_PIXBUF_LIBRARY_DIRS})
 include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
 
 
-
-set(objects
+add_executable(../squared
   bots/bot_ali.cpp
   book/book.cpp
   game/board.cpp
@@ -53,11 +52,6 @@ set(objects
   util/csv.cpp
   util/testing.cpp
   util/string.cpp
-)
-
-
-add_executable(../squared
-  ${objects}
 )
 
 target_link_libraries(../squared

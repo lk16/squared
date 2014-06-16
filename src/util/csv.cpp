@@ -58,7 +58,7 @@ csv::line_t csv::get_line()
   return str_explode(std::string(line_buff),',');
 }
 
-const std::fstream* csv::get_file() const
+std::fstream* csv::get_file()
 {
   return &file;
 }
