@@ -208,6 +208,9 @@ struct board{
   
 };
 
+inline unsigned long long board_hasher(const board b){
+  return b.me ^ ((b.opp << 32) | (b.opp >> 32));
+}
 
 inline board::board(const board&& b):
   me(std::move(b.me)),

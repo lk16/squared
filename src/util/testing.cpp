@@ -1,6 +1,7 @@
 #include "testing.hpp"
 #include "bots/bot_ali.hpp"
 #include "util/csv.hpp"
+#include "util/hash_table.hpp"
 
 #include <future>
 #include <vector>
@@ -37,10 +38,12 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
   return res;
 }
 
-
-
 void testing_area(){
- 
-  std::cout << "This is the testing area!" << std::endl;
+
+  const int a[5] = {1,2*a[0],3*a[0],4*a[0],5*a[0]};
+  for(int i=0;i<5;i++){
+    std::cout << a[i] << '\n';
+  }
   
+  std::cin.get();
 }

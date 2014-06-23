@@ -50,8 +50,8 @@ add_executable(../squared
   main/squared.cpp
   util/bitset.cpp
   util/csv.cpp
-  util/testing.cpp
   util/string.cpp
+  util/testing.cpp
 )
 
 target_link_libraries(../squared

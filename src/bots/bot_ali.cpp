@@ -6,7 +6,8 @@ const int bot_ali::location_values[10] =
 
 bot_ali::bot_ali(int sd, int pd):
   bot_base(sd,pd),
-  book(BOOK_PATH + "book.csv")
+  book(BOOK_PATH + "book.csv"),
+  tpt(&board_hasher)
 {
   name = "bot_ali";
   shell_output = use_book = true;
@@ -106,7 +107,11 @@ void bot_ali::do_move(const board* b,board* res)
       best_heur = MIN_HEURISTIC;
       for(int id=0;id<child_count;++id){
         inspected = children[id];
+#if !BOT_ALI_USE_MTDF
         int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
+#else
+        int cur_heur = -id_mtdf(search_depth);
+#endif
         if(cur_heur > best_heur){
           best_heur = cur_heur;
           best_id = id;
@@ -125,7 +130,11 @@ void bot_ali::do_move(const board* b,board* res)
       best_heur = MIN_PERFECT_HEURISTIC;
       for(int id=0;id<child_count;++id){
         inspected = children[id];
+#if !BOT_ALI_USE_MTDF
         int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
+#else
+        int cur_heur = -id_mtdf_exact();
+#endif
         if(cur_heur > best_heur){
           best_heur = cur_heur;
           best_id = id;
@@ -435,25 +444,73 @@ void bot_ali::sort_children(board *boards,int* heurs, int count)
   }while(loop);
 }
 
+int bot_ali::id_mtdf(int max_depth)
+{
+  int heur = 0;
+  for(int d=1;d<max_depth;d++){
+    heur = mtdf(heur,d);
+  }
+  return heur;
+}
 
+int bot_ali::id_mtdf_exact()
+{
+  int max_depth = inspected.get_empty_fields();
+  int heur = 0;
+  for(int d=1;d<max_depth;d++){
+    heur = mtdf_exact(heur,d);
+  }
+  return heur;
+}
 
+int bot_ali::mtdf(int f,int depth){
 
+  search_max_discs = inspected.count_discs() + depth;
+  
+  int g = f;
+  int upper_bound = MAX_HEURISTIC;
+  int lower_bound = MIN_HEURISTIC;
+  while(lower_bound < upper_bound){
+    
+    int beta = ((g == lower_bound) ? g+1 : g);
+    
+    g = pvs_null_window_with_memory(beta-1);
+    
+    if(g < beta){
+      upper_bound = g;
+    }
+    else{
+      lower_bound = g;
+    }
+  }
+  return g;
+}
 
+int bot_ali::mtdf_exact(int f,int depth){
+
+  search_max_discs = inspected.count_discs() + depth;
+  
+  int g = f;
+  int upper_bound = MAX_HEURISTIC;
+  int lower_bound = MIN_HEURISTIC;
+  while(lower_bound < upper_bound){
+    
+    int beta = ((g == lower_bound) ? g+1 : g);
+    
+    g = pvs_null_window_with_memory_exact(beta-1);
+    
+    if(g < beta){
+      upper_bound = g;
+    }
+    else{
+      lower_bound = g;
+    }
+  }
+  return g;
+}
 
 int bot_ali::heuristic()
 {
-
-  /*int res = 0;
-  
-  for(int i=9;i>=0;--i){
-    res += bot_ali::location_values[i] * (
-       (inspected.me & board::location[i]).count()
-       -(inspected.opp & board::location[i]).count()
-    );
-  }  
-  
-  return res;*/
-  
   
 #define LOCATION_HEUR(i) \
   bot_ali::location_values[i] * ( \
@@ -477,3 +534,128 @@ int bot_ali::heuristic()
 }
 
 bot_ali::~bot_ali(){}
+
+void bot_ali::on_new_game()
+{
+  if(use_book){
+    book.reload();
+  }
+}
+
+int bot_ali::pvs_null_window_with_memory(int alpha)
+{
+  int beta = alpha+1;
+  
+  if(tpt_value* n = tpt.lookup(inspected)){
+    
+    // TODO use n->best_move
+    
+    if(n->lower_bound >= beta){
+      return n->lower_bound;
+    }
+    if(n->upper_bound <= alpha){
+      return n->upper_bound;
+    }
+    //alpha = max<int>(alpha,n->lower_bound); // this has no effect EVER
+  }
+  
+  stats.inc_nodes();
+  
+  if(inspected.count_discs() == search_max_discs){
+    return heuristic();
+  }
+
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_null_window_with_memory(1-alpha);
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+  
+  int g = MIN_HEURISTIC;
+  int a = alpha;
+  
+  while((g < beta) && (valid_moves != 0ull)){
+    int move = bits64_find_first(valid_moves);
+    
+    bits64 undo_data = inspected.do_move(move);
+    g = max<int>(g,-pvs_null_window_with_memory(1-alpha));
+    a = max<int>(a,g);
+    inspected.undo_move(move,undo_data);
+    
+    valid_moves &= bits64_reset[move];
+  }
+  
+  if(g <= alpha){
+    tpt.add(inspected,tpt_value(MIN_HEURISTIC,g,-1));
+  }
+  if(g >= beta){
+    tpt.add(inspected,tpt_value(g,MAX_HEURISTIC,-1));
+  }
+  return g;
+}
+
+int bot_ali::pvs_null_window_with_memory_exact(int alpha)
+{
+  int beta = alpha+1;
+  
+  if(tpt_value* n = tpt.lookup(inspected)){
+    
+    // TODO use n->best_move
+    
+    if(n->lower_bound >= beta){
+      return n->lower_bound;
+    }
+    if(n->upper_bound <= alpha){
+      return n->upper_bound;
+    }
+    //alpha = max<int>(alpha,n->lower_bound); // this has no effect EVER
+  }
+  
+  stats.inc_nodes();
+  
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_null_window_with_memory(1-alpha);
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+  
+  int g = MIN_HEURISTIC;
+  int a = alpha;
+  
+  while((g < beta) && (valid_moves != 0ull)){
+    int move = bits64_find_first(valid_moves);
+    
+    bits64 undo_data = inspected.do_move(move);
+    g = max<int>(g,-pvs_null_window_with_memory(1-alpha));
+    a = max<int>(a,g);
+    inspected.undo_move(move,undo_data);
+    
+    valid_moves &= bits64_reset[move];
+  }
+  
+  if(g <= alpha){
+    tpt.add(inspected,tpt_value(MIN_HEURISTIC,g,-1));
+  }
+  if(g >= beta){
+    tpt.add(inspected,tpt_value(g,MAX_HEURISTIC,-1));
+  }
+  return g;
+}

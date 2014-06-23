@@ -36,7 +36,6 @@ public:
 private:
   
   data_type data;
-  std::string filename;
   csv csv_file;
 
 public:
@@ -50,6 +49,11 @@ public:
   void learn(bot_base* bot);
 
   value lookup(const board* b,int min_depth);
+  
+  void reload();
+  
+  std::string get_filename() const;
+  
 private:
   
   int get_move_index(const board* before,const board* after);
@@ -59,4 +63,6 @@ private:
   void print_stats() const;
   
   bool is_correct_entry(const std::string& bs,const book_t::value& bv) const;
+  
+  void load();
 };

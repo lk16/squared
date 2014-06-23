@@ -13,6 +13,7 @@ struct squared_arg_t
   game_control gc;
   bool show_flag;
   bool start_windowed_game;
+  bool use_book;
   
   squared_arg_t():
     gc()
@@ -20,10 +21,9 @@ struct squared_arg_t
     show_flag = false;
     start_windowed_game = true;
     parser = NULL;
+    use_book = true;
   }
-  
-  void fill_func_map();
-  
+    
   // modifiers
   int show_help();
   int show_board();
@@ -35,8 +35,20 @@ struct squared_arg_t
   int set_black_level();
   int compress_book();
   int minus_q_flag();
+  int no_book();
   
 };
+
+int squared_arg_t::no_book()
+{
+  use_book = false;
+  for(int i=0;i<2;i++){
+    if(gc.bot[i]){
+      gc.bot[i]->disable_book();
+    }
+  }
+  return 1;
+}
 
 
 int squared_arg_t::show_help(){
@@ -97,6 +109,9 @@ int squared_arg_t::set_black_level()
   int lvl = from_str<int>(parser->get_arg(1));
   int perf_lvl = from_str<int>(parser->get_arg(2));
   gc.add_bot(BLACK,lvl,perf_lvl);
+  if(!use_book){
+    gc.bot[BLACK]->disable_book();
+  }
   return 3;
 }
 
@@ -108,6 +123,9 @@ int squared_arg_t::set_white_level()
   int lvl = from_str<int>(parser->get_arg(1));
   int perf_lvl = from_str<int>(parser->get_arg(2));
   gc.add_bot(WHITE,lvl,perf_lvl);
+  if(!use_book){
+    gc.bot[WHITE]->disable_book();
+  }
   return 3;
 }
 
@@ -155,6 +173,7 @@ int main(int argc,char **argv){
   parser.func_map["--compress-book"] = &squared_arg_t::compress_book;
   parser.func_map["-cb"] = &squared_arg_t::compress_book;
   parser.func_map["-q"] = &squared_arg_t::minus_q_flag;
+  parser.func_map["-nb"] = &squared_arg_t::no_book;
   
   
   if(!parser.parse()){
