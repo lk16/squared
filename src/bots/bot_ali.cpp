@@ -1,13 +1,14 @@
 #include "bot_ali.hpp"
 #include "book/book.hpp"
 
-const int bot_ali::location_values[10] =
-{347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+#include <fstream>
+#include <algorithm>
 
 bot_ali::bot_ali(int sd, int pd):
   bot_base(sd,pd),
   book(BOOK_PATH + "book.csv"),
-  tpt(&board_hasher)
+  tpt(&board_hasher),
+  location_values{347,-39,-23,-40,-119,-35,-33,-10,-7,-5}
 {
   name = "bot_ali";
   shell_output = use_book = true;
@@ -507,6 +508,25 @@ int bot_ali::mtdf_exact(int f,int depth){
     }
   }
   return g;
+}
+
+bool bot_ali::set_location_values_from_file(const std::string& fname){
+  std::fstream f(fname);
+  const size_t location_values_size=sizeof(location_values)/sizeof(location_values[0]);
+  int location_values_copy[location_values_size];
+  
+  if(!f.is_open()) return false;
+
+  int i;
+  for(i=0;i<location_values_size && f >> location_values_copy[i];i++){}
+
+  if(i<location_values_size){
+    return false;
+  }
+
+  std::copy(location_values_copy, location_values_copy+location_values_size, location_values);
+
+  return true;
 }
 
 int bot_ali::heuristic()
