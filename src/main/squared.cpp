@@ -49,7 +49,7 @@ int squared_arg_t::show_help(){
   "use given board as start position, cannot be used with -r\n\n"
   "-r <number of moves>, --random <number of moves>\n"
   "use startboard after a given amount of random moves, cannot be used with -b\n\n"
-  "-lb <search depth> <perfect depth>, -lw <search depth><perfect depth>\n"
+  "-lb <search depth> <perfect depth>, -lw <search depth> <perfect depth>\n"
   "set the level of the black or white bot\n\n"
   "-s\n"
   "show given board in human readable format\n\n"
