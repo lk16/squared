@@ -43,7 +43,6 @@ int squared_arg_t::show_help(){
   std::cout << 
   "-h, --help\n"
   "show this help\n\n"
-  "Invalid argument syntax, try one of these:  \n\n"
   "--testing:\n"
   "run the testing area, ignoring all other flags\n\n"
   "-b <board>, --board <board>\n"
