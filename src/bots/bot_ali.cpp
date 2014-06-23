@@ -517,7 +517,7 @@ bool bot_ali::set_location_values_from_file(const std::string& fname){
   
   if(!f.is_open()) return false;
 
-  int i;
+  size_t i;
   for(i=0;i<location_values_size && f >> location_values_copy[i];i++){}
 
   if(i<location_values_size){
