@@ -36,7 +36,9 @@ struct squared_arg_t
   int compress_book();
   int minus_q_flag();
   int no_book();
-  
+  int set_valuation(int color);
+  int set_white_valuation();
+  int set_black_valuation();
 };
 
 int squared_arg_t::no_book()
@@ -67,6 +69,9 @@ int squared_arg_t::show_help(){
   "show given board in human readable format\n\n"
   "-l, --learn\n"
   "learn/improve the opening book, ignoring all other flags\n\n"
+  "--set-[white|black]-valuation-file <file>\n"
+  "Read field valuation information for specified bot from specified file.\n"
+  "This can only be used after the appropriate -l[w|b] has been used.\n\n"
   "-q\n"
   "Quit program when game is finished\n\n";
   start_windowed_game = false;
@@ -145,6 +150,29 @@ int squared_arg_t::compress_book()
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
+int squared_arg_t::set_valuation(int color){
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
+  }
+
+  bot_ali* ali = dynamic_cast<bot_ali*>(gc.bot[color]);
+  if(ali==0) return PARSING_ERROR;
+
+  if( !ali->set_location_values_from_file(parser->get_arg(1))){
+    return PARSING_ERROR;
+  } else {
+    ali->disable_book();
+    return 2;
+  }
+}
+
+int squared_arg_t::set_white_valuation(){
+  return set_valuation(WHITE);
+}
+int squared_arg_t::set_black_valuation(){
+  return set_valuation(BLACK);
+}
+
 int squared_arg_t::minus_q_flag()
 {
   gc.quit_if_game_over = true;
@@ -166,6 +194,8 @@ int main(int argc,char **argv){
   parser.func_map["--randomize"] = &squared_arg_t::randomize_board;
   parser.func_map["-r"] = &squared_arg_t::randomize_board;
   parser.func_map["-lb"] = &squared_arg_t::set_black_level;
+  parser.func_map["--set-white-valuation-file"] = &squared_arg_t::set_white_valuation;
+  parser.func_map["--set-black-valuation-file"] = &squared_arg_t::set_black_valuation;
   parser.func_map["-lw"] = &squared_arg_t::set_white_level;
   parser.func_map["--board"] = &squared_arg_t::set_board;
   parser.func_map["-b"] = &squared_arg_t::set_board;

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <string.h>
 #include <functional>
+#include <string>
 
 #include "util/const.hpp"
 #include "util/csv.hpp"
@@ -20,7 +21,6 @@ class bot_ali:
   public bot_base
 {
   
-  static const int location_values[10];
   static const int search_max_sort_depth = 6;
   
   enum eval_mode{
@@ -59,6 +59,11 @@ class bot_ali:
   };
   
   hash_table<board,tpt_value,1000001> tpt;
+
+  /// This strongly influences the behaviour of ali, should be constant
+  /// during the entire game, but can be changed from default before the
+  /// game starts with set_location_values_from_file
+  int location_values[10];
   
   
 public:
@@ -106,6 +111,6 @@ public:
   void sort_children(board *boards,int* heurs, int count);
   
   
-  
+  bool set_location_values_from_file(const std::string& file);
 };
 
