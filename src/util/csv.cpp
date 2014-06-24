@@ -73,3 +73,7 @@ int csv::get_written_lines() const
   return written_lines;
 }
 
+std::string csv::get_name() const
+{
+  return filename;
+}

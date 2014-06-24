@@ -3,42 +3,16 @@
 
 
 book_t::book_t(const std::string& _filename):
-  filename(_filename),
   csv_file(_filename)
 {
-  
-  /* book format:
-   * board in database format,depth,best_move index (0 .. 63)
-   */
-  
-  int errors = 0;
-  while(true){
-    csv::line_t line = csv_file.get_line();
-    if(csv_file.get_file()->fail()){
-      break; 
-    }
-    if(line.size() < value::NEEDED_COLUMNS){
-      errors++;
-      continue;
-    }
-    book_t::value bv(line);
-    
-    if(!is_correct_entry(line[0],bv)){
-      errors++;
-      continue;
-    }
-    data[line[0]] = bv;
-  }
-  
-  csv_file.get_file()->clear();
-  
-  if(errors > 0){
-    std::cout << "Found " << errors;
-    std::cout << " incorrect entries in ";
-    std::cout << '\"' << _filename << '\"' << std::endl;
-  }
-  
+  load();
 }
+
+std::string book_t::get_filename() const
+{
+  return csv_file.get_name();
+}
+
 
 bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) const
 {
@@ -160,6 +134,8 @@ void book_t::add(const board* before,const board* after,int depth)
     book_line.push_back(to_str<int>(move));
     
     csv_file.append_line(book_line);
+    
+    data[str] = value(move,depth);
   }
 }
 
@@ -189,16 +165,16 @@ board book_t::learn_move(bot_base* bot,const board* b,int depth,int n_left){
 void book_t::clean() const
 {
   /* test if file exists, return if not */
-  if(access(filename.c_str(), F_OK) == -1){
-    std::cout << "file \"" << filename << "\" not found." << std::endl;
+  if(access(get_filename().c_str(), F_OK) == -1){
+    std::cout << "file \"" << get_filename() << "\" not found." << std::endl;
     return;    
   }
     
   /* create backup file, to prevent losing data */
-  std::rename(filename.c_str(),(filename + ".bak").c_str());
+  std::rename(get_filename().c_str(),(get_filename() + ".bak").c_str());
 
   /* fill new file with data */
-  csv new_book_file(filename);  
+  csv new_book_file(get_filename());  
   
   for(auto it: data){
     if(is_correct_entry(it.first,it.second)){
@@ -211,12 +187,12 @@ void book_t::clean() const
   }
     
   /* remove backup file */
-  std::remove((filename + ".bak").c_str());
+  std::remove((get_filename() + ".bak").c_str());
   
   std::cout << "Successfully cleaned the book." << std::endl;
   
 }
-
+auto f= [] (int k){ return k; };
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
   value res(NOT_FOUND,0);
@@ -230,4 +206,41 @@ book_t::value book_t::lookup(const board* b,int min_depth)
   int rot = b->to_database_board().get_rotation(b);
   res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
   return res;
+}
+
+void book_t::reload()
+{
+  data.clear();
+  csv_file.get_file()->seekg(std::ios_base::beg);
+  load();
+}
+
+void book_t::load()
+{
+  int errors = 0;
+  while(true){
+    csv::line_t line = csv_file.get_line();
+    if(csv_file.get_file()->fail()){
+      break; 
+    }
+    if(line.size() < value::NEEDED_COLUMNS){
+      errors++;
+      continue;
+    }
+    book_t::value bv(line);
+    
+    if(!is_correct_entry(line[0],bv)){
+      errors++;
+      continue;
+    }
+    data[line[0]] = bv;
+  }
+  
+  csv_file.get_file()->clear();
+  
+  if(errors > 0){
+    std::cout << "Found " << errors;
+    std::cout << " incorrect entries in ";
+    std::cout << '\"' << get_filename() << '\"' << std::endl;
+  }
 }

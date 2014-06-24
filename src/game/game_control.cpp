@@ -126,6 +126,12 @@ void game_control::on_new_game()
   board_state.turn = BLACK;
   mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
+  
+  for(int i=0;i<2;i++){
+    if(bot[i]){
+      bot[i]->on_new_game();
+    }
+  }
 }
 
 void game_control::on_game_ended()

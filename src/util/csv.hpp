@@ -44,4 +44,5 @@ public:
   int get_read_lines() const;
   int get_written_lines() const;
 
+  std::string get_name() const;
 };
