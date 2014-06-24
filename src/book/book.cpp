@@ -192,7 +192,7 @@ void book_t::clean() const
   std::cout << "Successfully cleaned the book." << std::endl;
   
 }
-
+auto f= [] (int k){ return k; };
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
   value res(NOT_FOUND,0);

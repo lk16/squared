@@ -112,5 +112,9 @@ public:
   
   
   bool set_location_values_from_file(const std::string& file);
+  void set_location_values(const int* v);
+
+  const int* get_location_values() const;
+  
 };
 

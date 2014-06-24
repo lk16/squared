@@ -38,12 +38,18 @@ std::set<board> generate_all_boards_at_depth(int depth,board start){
   return res;
 }
 
-void testing_area(){
-
-  const int a[5] = {1,2*a[0],3*a[0],4*a[0],5*a[0]};
-  for(int i=0;i<5;i++){
-    std::cout << a[i] << '\n';
+board from_move_sequence(std::string in){
+  board b;
+  b.reset();
+  for(int i=0;i<(int)in.size()/2;i++){
+    int move = (in[2*i] - 'a') + (8 * (in[(2*i)+1] - '1'));
+    b.do_move(move);
   }
-  
-  std::cin.get();
+  return b;
+}
+
+
+void testing_area(){
+ 
+    
 }

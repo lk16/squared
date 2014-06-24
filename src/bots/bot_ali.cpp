@@ -7,11 +7,14 @@
 bot_ali::bot_ali(int sd, int pd):
   bot_base(sd,pd),
   book(BOOK_PATH + "book.csv"),
-  tpt(&board_hasher),
-  location_values{347,-39,-23,-40,-119,-35,-33,-10,-7,-5}
+  tpt(&board_hasher)
+  
 {
   name = "bot_ali";
   shell_output = use_book = true;
+  int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+  std::copy(tmp,tmp+10,location_values);
+  
   
   /*
   0,1,2,3,3,2,1,0,
@@ -512,22 +515,30 @@ int bot_ali::mtdf_exact(int f,int depth){
 
 bool bot_ali::set_location_values_from_file(const std::string& fname){
   std::fstream f(fname);
-  const size_t location_values_size=sizeof(location_values)/sizeof(location_values[0]);
-  int location_values_copy[location_values_size];
+  int location_values_copy[10];
   
-  if(!f.is_open()) return false;
-
-  int i;
-  for(i=0;i<location_values_size && f >> location_values_copy[i];i++){}
-
-  if(i<location_values_size){
+  if(!f.is_open()){
     return false;
   }
+  
+  for(int i=0;i<10;i++){
+    if(!(f >> location_values_copy[i])){
+      return false;
+    }
+  }
 
-  std::copy(location_values_copy, location_values_copy+location_values_size, location_values);
+  set_location_values(location_values_copy);
 
   return true;
 }
+
+void bot_ali::set_location_values(const int* v)
+{
+  std::copy(v, v+10, location_values);
+}
+
+
+
 
 int bot_ali::heuristic()
 {
@@ -678,4 +689,9 @@ int bot_ali::pvs_null_window_with_memory_exact(int alpha)
     tpt.add(inspected,tpt_value(g,MAX_HEURISTIC,-1));
   }
   return g;
+}
+
+const int* bot_ali::get_location_values() const
+{
+  return location_values;
 }

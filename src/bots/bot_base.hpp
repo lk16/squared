@@ -42,7 +42,7 @@ struct bot_base{
   
   virtual void disable_shell_output() = 0;
   virtual void disable_book() = 0;
-  virtual void on_new_game() = 0;
+  virtual void on_new_game() = 0                        ;
   
   int get_search_depth() const;
   int get_perfect_depth() const;
