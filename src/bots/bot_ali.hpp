@@ -15,11 +15,13 @@
 #include "bots/bot_base.hpp"
 #include "book/book.hpp"
 
+
 #define BOT_ALI_USE_MTDF 0
 
 class bot_ali:
   public bot_base
 {
+  friend class bot_ali_trainer;
   
   static const int search_max_sort_depth = 6;
   
