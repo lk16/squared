@@ -7,22 +7,8 @@ main_window::main_window():
   ui_file(UI_PATH + "menus.xml")
 {
   init_ui();
-  control.on_new_game();
   show_all_children(); 
 }
-
-main_window::main_window(const game_control& gc):
-  control(gc),
-  table(8,8),
-  aspect_frame("",0.5,0.5,1),
-  ui_file(UI_PATH + "menus.xml")
-{
-  control.mw = this;
-  init_ui();
-  update_fields();
-  show_all_children(); 
-}
-
 
 void main_window::init_ui(){
     
@@ -104,8 +90,8 @@ void main_window::on_menu_settings_preferences()
 {
   int input_level[2],output_level[2];
   
-  input_level[BLACK] = control.bot[BLACK] ? control.bot[BLACK]->get_search_depth() : -1;
-  input_level[WHITE] = control.bot[WHITE] ? control.bot[WHITE]->get_search_depth() : -1;
+  input_level[BLACK] = control->bot[BLACK] ? control->bot[BLACK]->get_search_depth() : -1;
+  input_level[WHITE] = control->bot[WHITE] ? control->bot[WHITE]->get_search_depth() : -1;
   
   
   preferences_dialog sd(*this,input_level[BLACK],input_level[WHITE]);
@@ -115,18 +101,18 @@ void main_window::on_menu_settings_preferences()
     sd.collect_data(&output_level[BLACK],&output_level[WHITE]);
     
     if(output_level[BLACK]==-1){
-      control.remove_bot(BLACK);
+      control->remove_bot(BLACK);
     }
     else{
       int x = output_level[BLACK];
-      control.add_bot(BLACK,x,max(2*x,16));
+      control->add_bot(BLACK,x,max(2*x,16));
     }
     if(output_level[WHITE]==-1){
-      control.remove_bot(WHITE);
+      control->remove_bot(WHITE);
     }
     else{
       int x = output_level[WHITE];
-      control.add_bot(WHITE,x,max(2*x,16));
+      control->add_bot(WHITE,x,max(2*x,16));
     }
   
   }
@@ -134,27 +120,23 @@ void main_window::on_menu_settings_preferences()
 
 void main_window::update_fields()
 {
-  const board *b;
   std::string imagefile;
+  const board *b = &control->board_state.b;
   
-  b = &control.current;
-  
-  std::bitset<64> white,black;
-  
-  white = (b->turn ? b->me : b->opp);
-  black = (b->turn ? b->opp : b->me);
+  bits64 black = (control->board_state.turn == WHITE ? b->opp : b->me);
+  bits64 white = (control->board_state.turn == WHITE ? b->me : b->opp);
   
   
   
   for(int i=0;i<64;i++){
-    if(white.test(i)){
+    if(white & bits64_set[i]){
       imagefile = "white.png";
     }
-    else if(black.test(i)){
+    else if(black & bits64_set[i]){
       imagefile = "black.png";
     }
     else if(b->is_valid_move(i)){
-      if(b->turn){
+      if(control->board_state.turn == WHITE){
         imagefile = "move_white.png";
       }
       else{
@@ -175,16 +157,16 @@ void main_window::update_status_bar(const std::string& text)
 
 void main_window::on_new_game()
 {
-  control.on_new_game();
+  control->on_new_game();
 }
 
 void main_window::on_redo()
 {
-  control.on_redo();
+  control->on_redo();
 }
 
 void main_window::on_undo()
 {
-  control.on_undo();
+  control->on_undo();
 }
 

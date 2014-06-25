@@ -30,4 +30,3 @@ static const int PARSING_ERROR = -2;
 // player colors
 const int BLACK = 0;
 const int WHITE = 1;
-const int COLOR_UNDEFINED = 2;

@@ -1,15 +1,20 @@
 #include "bot_ali.hpp"
 #include "book/book.hpp"
 
-const int bot_ali::location_values[10] =
-{347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+#include <fstream>
+#include <algorithm>
 
 bot_ali::bot_ali(int sd, int pd):
   bot_base(sd,pd),
-  book(BOOK_PATH + "book.csv")
+  book(BOOK_PATH + "book.csv"),
+  tpt(&board_hasher)
+  
 {
   name = "bot_ali";
   shell_output = use_book = true;
+  int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+  std::copy(tmp,tmp+10,location_values);
+  
   
   /*
   0,1,2,3,3,2,1,0,
@@ -38,32 +43,28 @@ void bot_ali::disable_book()
 void bot_ali::do_move(const board* b,board* res)
 {
   
-  struct timeval start;
   eval_mode mode;
   int child_count;
   board children[32];
   
   
-  int empty_fields = b->get_empty_fields().count();
+  int empty_fields = b->count_empty_fields();
   
-  if(shell_output){
-    nodes = 0;
-    gettimeofday(&start,NULL);
-  }
+  stats.start_timer();
   
   child_count = b->get_children(children) - children;
   assert(child_count != 0);
   
 
   
-  book_t::citer it = book.data.find(b->to_database_string());
+  book_t::value lookup = book.lookup(b,search_depth);
   
  
   if(child_count == 1){
     mode = ONE_MOVE_MODE;
   }  
   else if(empty_fields > perfect_depth){
-    if(use_book && (it != book.data.end()) && (it->second.depth >= search_depth)){
+    if(use_book && (lookup.best_move != book_t::NOT_FOUND)){
       mode = BOOK_MODE;
     }
     else{
@@ -84,9 +85,8 @@ void bot_ali::do_move(const board* b,board* res)
     }
 
 
-    // is used for small negamax search, to sort moves before big search
-    search_max_discs = 
-        b->count_discs() + search_depth - 4;
+    // is used for small search, to sort moves before big search
+    search_max_discs = b->count_discs() + search_depth - 4;
 
 
     
@@ -99,7 +99,7 @@ void bot_ali::do_move(const board* b,board* res)
       sort_children(children,heurs,child_count);
     }
 
-    // is used for big negamax search
+    // is used for big search
     search_max_discs += 4;
 
   }
@@ -111,7 +111,11 @@ void bot_ali::do_move(const board* b,board* res)
       best_heur = MIN_HEURISTIC;
       for(int id=0;id<child_count;++id){
         inspected = children[id];
+#if !BOT_ALI_USE_MTDF
         int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
+#else
+        int cur_heur = -id_mtdf(search_depth);
+#endif
         if(cur_heur > best_heur){
           best_heur = cur_heur;
           best_id = id;
@@ -122,26 +126,19 @@ void bot_ali::do_move(const board* b,board* res)
         }
       }
       *res = children[best_id];
-      /*if(use_book 
-        && (b->get_non_empty_fields().size() < (unsigned)book_t::entry_max_discs)
-        && (search_depth>=book_t::min_learn_depth)
-      ){
-        int move = book.get_move_index(b,res);
-        book_t::citer it = book.data.find(b->to_database_string());
-        if(it == book.data.end() || search_depth>it->second.depth){
-          book_t::value bv;
-          bv.best_move = move;
-          bv.depth = search_depth;
-          book.data[b->to_database_string()] = bv;      
-        }
-        book.add_to_book_file(b->to_database_string(),search_depth,move);
-      }*/
+      if(use_book){        
+        book.add(b,res,search_depth);     
+      }
       break;
     case PERFECT_MODE:
       best_heur = MIN_PERFECT_HEURISTIC;
       for(int id=0;id<child_count;++id){
         inspected = children[id];
+#if !BOT_ALI_USE_MTDF
         int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
+#else
+        int cur_heur = -id_mtdf_exact();
+#endif
         if(cur_heur > best_heur){
           best_heur = cur_heur;
           best_id = id;
@@ -155,11 +152,12 @@ void bot_ali::do_move(const board* b,board* res)
       break;
     case BOOK_MODE:
       {
-        *res = board(b->to_database_string());
-        int rot = res->get_rotation(b);
-        res->do_move(it->second.best_move);
-        *res = res->rotate(rot);
-        std::cout << "move found in book at depth " << it->second.depth << '\n';
+        *res = *b;
+        res->do_move(lookup.best_move);
+        if(shell_output){
+          std::cout << "best move (" << lookup.best_move;
+          std::cout << ") found in book at depth " << lookup.depth << '\n';
+        }
       }
       break;
     case ONE_MOVE_MODE:
@@ -171,19 +169,17 @@ void bot_ali::do_move(const board* b,board* res)
   }
   
   if(shell_output && (mode==NORMAL_MODE || mode==PERFECT_MODE)){
-    struct timeval end;
-    gettimeofday(&end,NULL);
-    double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
-    (start.tv_sec + (start.tv_usec / 1000000.0));
-
-    std::cout << big_number(nodes) << " nodes in " << time_diff << " seconds: ";
-    std::cout << big_number((long)(nodes/(time_diff<0.000001 ? 1 : time_diff))) << " nodes / sec\n";
+    stats.stop_timer();
+    
+    std::cout << big_number(stats.get_nodes()) << " nodes in ";
+    std::cout << stats.get_seconds() << " seconds: ";
+    std::cout << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
   }
 }
 
 int bot_ali::pvs_sorted(int alpha, int beta)
 {
-  nodes++;
+  stats.inc_nodes();
   
   int depth_left = 
     (int)inspected.count_discs() - search_max_discs;
@@ -198,18 +194,17 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   
   std::bitset<64> valid_moves = inspected.get_valid_moves();
   
-  if(valid_moves.none()){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_sorted(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_unsorted(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
     
   board children[32]; 
@@ -272,33 +267,28 @@ int bot_ali::pvs_sorted(int alpha, int beta)
 
 int bot_ali::pvs_unsorted(int alpha, int beta)
 {
- 
-  nodes++;
-  
-  int depth_left = 
-    (int)inspected.count_discs() - search_max_discs;
-  
-  if(depth_left == 0){
+  stats.inc_nodes();
+    
+  if(inspected.count_discs() == search_max_discs){
     return heuristic();
   }
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
-  
-  if(valid_moves.none()){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_unsorted(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_unsorted(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
-  
-  int move = find_first_set_64(valid_moves.to_ulong());
+
+  int move = bits64_find_first(valid_moves);
   board backup = inspected;  
   
   inspected.do_move(move);
@@ -311,10 +301,10 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
   if(score >= alpha){
     alpha = score;
   }
-  valid_moves.reset(move);
+  valid_moves &= bits64_reset[move];
   
-  while(valid_moves.any()){
-    move = find_first_set_64(valid_moves.to_ulong());
+  while(valid_moves != 0ull){
+    move = bits64_find_first(valid_moves);
     
     inspected.do_move(move);
     score = -pvs_null_window(-alpha-1);
@@ -331,44 +321,38 @@ int bot_ali::pvs_unsorted(int alpha, int beta)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves.reset(move);
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
 }
 
 int bot_ali::pvs_null_window(int alpha)
 {
-  nodes++;
+  stats.inc_nodes();
   
-  int depth_left = 
-  (int)inspected.count_discs() - search_max_discs;
-  
-  if(depth_left == 0){
+  if(inspected.count_discs() == search_max_discs){
     return heuristic();
   }
 
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
-  
-  if(valid_moves.none()){
-    if(inspected.passed){
-      return EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_null_window(-(alpha+1));
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_null_window(-(alpha+1));
     }
+    inspected.switch_turn();
+    return heur;
   }
   
-  
-  
-  while(valid_moves.any()){
-    int move = find_first_set_64(valid_moves.to_ulong());
-    std::bitset<64> undo_data;
+  while(valid_moves != 0ull){
+    int move = bits64_find_first(valid_moves);
+    bits64 undo_data;
     int score;
     
     undo_data = inspected.do_move(move);
@@ -381,7 +365,7 @@ int bot_ali::pvs_null_window(int alpha)
     if(score >= alpha){
       alpha = score;
     }
-    valid_moves.reset(move);
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
   
@@ -392,32 +376,29 @@ int bot_ali::pvs_null_window(int alpha)
 int bot_ali::pvs_exact(int alpha, int beta)
 {
   
-  nodes++;
+  stats.inc_nodes();
   
-  std::bitset<64> valid_moves = inspected.get_valid_moves();
-  
-  if(valid_moves.none()){
-    if(inspected.passed){
-      return inspected.get_disc_diff();    
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -inspected.get_disc_diff();    
     }
     else{
-      inspected.passed = true;
-      inspected.switch_turn();
-      int heur = -pvs_exact(-beta,-alpha);
-      inspected.switch_turn();
-      inspected.passed = false;
-      return heur;
+      heur = -pvs_exact(-beta,-alpha);
     }
+    inspected.switch_turn();
+    return heur;
   }
-  
-  
-  
+
   bool null_window = false;
   
-  while(valid_moves.any()){
+  while(valid_moves != 0ull){
     
-    int move = find_first_set_64(valid_moves.to_ulong());
-    std::bitset<64> undo_data;
+    int move = bits64_find_first(valid_moves);
+    bits64 undo_data;
     int score;
     
     
@@ -445,7 +426,7 @@ int bot_ali::pvs_exact(int alpha, int beta)
       alpha = score;
     }
     null_window = true;
-    valid_moves.reset(move);
+    valid_moves &= bits64_reset[move];
   }
   return alpha;
 }
@@ -467,30 +448,105 @@ void bot_ali::sort_children(board *boards,int* heurs, int count)
   }while(loop);
 }
 
+int bot_ali::id_mtdf(int max_depth)
+{
+  int heur = 0;
+  for(int d=1;d<max_depth;d++){
+    heur = mtdf(heur,d);
+  }
+  return heur;
+}
 
+int bot_ali::id_mtdf_exact()
+{
+  int max_depth = inspected.get_empty_fields();
+  int heur = 0;
+  for(int d=1;d<max_depth;d++){
+    heur = mtdf_exact(heur,d);
+  }
+  return heur;
+}
+
+int bot_ali::mtdf(int f,int depth){
+
+  search_max_discs = inspected.count_discs() + depth;
+  
+  int g = f;
+  int upper_bound = MAX_HEURISTIC;
+  int lower_bound = MIN_HEURISTIC;
+  while(lower_bound < upper_bound){
+    
+    int beta = ((g == lower_bound) ? g+1 : g);
+    
+    g = pvs_null_window_with_memory(beta-1);
+    
+    if(g < beta){
+      upper_bound = g;
+    }
+    else{
+      lower_bound = g;
+    }
+  }
+  return g;
+}
+
+int bot_ali::mtdf_exact(int f,int depth){
+
+  search_max_discs = inspected.count_discs() + depth;
+  
+  int g = f;
+  int upper_bound = MAX_HEURISTIC;
+  int lower_bound = MIN_HEURISTIC;
+  while(lower_bound < upper_bound){
+    
+    int beta = ((g == lower_bound) ? g+1 : g);
+    
+    g = pvs_null_window_with_memory_exact(beta-1);
+    
+    if(g < beta){
+      upper_bound = g;
+    }
+    else{
+      lower_bound = g;
+    }
+  }
+  return g;
+}
+
+bool bot_ali::set_location_values_from_file(const std::string& fname){
+  std::fstream f(fname);
+  int location_values_copy[10];
+  
+  if(!f.is_open()){
+    return false;
+  }
+  
+  for(int i=0;i<10;i++){
+    if(!(f >> location_values_copy[i])){
+      return false;
+    }
+  }
+
+  set_location_values(location_values_copy);
+
+  return true;
+}
+
+void bot_ali::set_location_values(const int* v)
+{
+  std::copy(v, v+10, location_values);
+}
 
 
 
 
 int bot_ali::heuristic()
 {
-
-  /*int res = 0;
-  
-  for(int i=9;i>=0;--i){
-    res += bot_ali::location_values[i] * (
-       (inspected.me & board::location[i]).count()
-       -(inspected.opp & board::location[i]).count()
-    );
-  }  
-  
-  return res;*/
-  
   
 #define LOCATION_HEUR(i) \
   bot_ali::location_values[i] * ( \
-    (inspected.me & board::location[i]).count() \
-    -(inspected.opp & board::location[i]).count() \
+    count_64(inspected.me & board::location[i]) \
+    - count_64(inspected.opp & board::location[i]) \
   )
   
   return
@@ -509,3 +565,133 @@ int bot_ali::heuristic()
 }
 
 bot_ali::~bot_ali(){}
+
+void bot_ali::on_new_game()
+{
+  if(use_book){
+    book.reload();
+  }
+}
+
+int bot_ali::pvs_null_window_with_memory(int alpha)
+{
+  int beta = alpha+1;
+  
+  if(tpt_value* n = tpt.lookup(inspected)){
+    
+    // TODO use n->best_move
+    
+    if(n->lower_bound >= beta){
+      return n->lower_bound;
+    }
+    if(n->upper_bound <= alpha){
+      return n->upper_bound;
+    }
+    //alpha = max<int>(alpha,n->lower_bound); // this has no effect EVER
+  }
+  
+  stats.inc_nodes();
+  
+  if(inspected.count_discs() == search_max_discs){
+    return heuristic();
+  }
+
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_null_window_with_memory(1-alpha);
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+  
+  int g = MIN_HEURISTIC;
+  int a = alpha;
+  
+  while((g < beta) && (valid_moves != 0ull)){
+    int move = bits64_find_first(valid_moves);
+    
+    bits64 undo_data = inspected.do_move(move);
+    g = max<int>(g,-pvs_null_window_with_memory(1-alpha));
+    a = max<int>(a,g);
+    inspected.undo_move(move,undo_data);
+    
+    valid_moves &= bits64_reset[move];
+  }
+  
+  if(g <= alpha){
+    tpt.add(inspected,tpt_value(MIN_HEURISTIC,g,-1));
+  }
+  if(g >= beta){
+    tpt.add(inspected,tpt_value(g,MAX_HEURISTIC,-1));
+  }
+  return g;
+}
+
+int bot_ali::pvs_null_window_with_memory_exact(int alpha)
+{
+  int beta = alpha+1;
+  
+  if(tpt_value* n = tpt.lookup(inspected)){
+    
+    // TODO use n->best_move
+    
+    if(n->lower_bound >= beta){
+      return n->lower_bound;
+    }
+    if(n->upper_bound <= alpha){
+      return n->upper_bound;
+    }
+    //alpha = max<int>(alpha,n->lower_bound); // this has no effect EVER
+  }
+  
+  stats.inc_nodes();
+  
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_null_window_with_memory(1-alpha);
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+  
+  int g = MIN_HEURISTIC;
+  int a = alpha;
+  
+  while((g < beta) && (valid_moves != 0ull)){
+    int move = bits64_find_first(valid_moves);
+    
+    bits64 undo_data = inspected.do_move(move);
+    g = max<int>(g,-pvs_null_window_with_memory(1-alpha));
+    a = max<int>(a,g);
+    inspected.undo_move(move,undo_data);
+    
+    valid_moves &= bits64_reset[move];
+  }
+  
+  if(g <= alpha){
+    tpt.add(inspected,tpt_value(MIN_HEURISTIC,g,-1));
+  }
+  if(g >= beta){
+    tpt.add(inspected,tpt_value(g,MAX_HEURISTIC,-1));
+  }
+  return g;
+}
+
+const int* bot_ali::get_location_values() const
+{
+  return location_values;
+}

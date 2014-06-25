@@ -3,33 +3,47 @@
 
 
 book_t::book_t(const std::string& _filename):
-  filename(_filename)
+  csv_file(_filename)
 {
-  
-  /* book format:
-   * board in database format,depth,best_move index (0 .. 63)
-   */
-  
-  csv book_file(_filename);
-  while(true){
-    csv::line_t line = book_file.get_line();
-    if(book_file.get_file()->fail()){
-      break; 
-    }
-    book_t::value bv;
-    bv.depth = fromstr<int>(line[1]);
-    bv.best_move = fromstr<int>(line[2]);
-    data[line[0]] = bv;
-  }
+  load();
 }
 
+std::string book_t::get_filename() const
+{
+  return csv_file.get_name();
+}
+
+
+bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) const
+{
+  board b(bs);
+  
+  return true
+    && in_bounds<int>(bv.depth,0,60) 
+    && in_bounds<int>(bv.best_move,0,63)
+    && (bs.length() == 32)
+    && ((b.me & b.opp) == 0ull)
+    && (((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)
+    && b.is_valid_move(bv.best_move)
+    && (b == board(b.to_database_string()));
+}
+
+book_t::value::value(const csv::line_t& line)
+{
+  depth = from_str<int>(line[1]);
+  best_move = from_str<int>(line[2]);
+}
+
+book_t::value::value(int bm, int d)
+{
+  best_move = bm;
+  depth = d;
+}
 
 
 int book_t::get_move_index(const board* before, const board* after)
 {
-  std::bitset<64> diff = before->get_non_empty_fields();
-  diff ^= after->get_non_empty_fields();
-  return find_first_set_64(diff.to_ulong());
+  return bits64_find_first(before->get_non_empty_fields() ^ after->get_non_empty_fields());
 }
 
 void book_t::print_stats() const
@@ -47,18 +61,16 @@ void book_t::print_stats() const
     }
   }
   
-  for(std::map<int,int>::const_iterator it=book_stats.begin();it!=book_stats.end();it++){
-    std::cout << "Book contains " << it->second << " boards at depth ";
-    std::cout << it->first << std::endl;
+  for(auto it: book_stats){
+    std::cout << "Book contains " << it.second << " boards at depth ";
+    std::cout << it.first << std::endl;
   }
 }
 
 
 void book_t::learn(bot_base* bot)
 {
-  int learn_level = min_learn_depth;
-
-  csv book_file(filename);
+  int learn_level = MIN_LEARN_DEPTH;
    
   citer book_citer;
   
@@ -81,11 +93,13 @@ void book_t::learn(bot_base* bot)
      
       if(book_iter->second.depth < learn_level){
      
-        int index = learn_move(bot,book_iter->first,learn_level,n_left);
+        board before(book_iter->first);
         
-        add_to_book_file(book_iter->first,learn_level,index);
+        board after = learn_move(bot,&before,learn_level,n_left);
         
-        book_iter->second.best_move = index;
+        add(&before,&after,learn_level);
+        
+        book_iter->second.best_move = get_move_index(&before,&after);
         book_iter->second.depth = learn_level;
         
         n_left--;
@@ -97,64 +111,136 @@ void book_t::learn(bot_base* bot)
   
 }
 
-void book_t::add_to_book_file(const std::string& b, int depth, int move)
+void book_t::add(const board* before,const board* after,int depth)
 {
-  csv book_file(filename);
+  std::string str = before->to_database_string();
+  board before_normalized(str);
+  int rot = before->get_rotation(&before_normalized);
+  board after_normalized = after->rotate(rot);
   
-  csv::line_t book_line;
-  book_line.push_back(b);
-  book_line.push_back(tostr<int>(depth));
-  book_line.push_back(tostr<int>(move));
-  book_file.append_line(book_line);
+  
+  citer it = data.find(str);
+  if(true 
+    && (before->count_discs() < ENTRY_MAX_DISCS)
+    && (depth >= MIN_LEARN_DEPTH)
+    && ((it == data.end()) || (depth > it->second.depth))
+  ){
+    
+    csv::line_t book_line;
+    int move = get_move_index(&before_normalized,&after_normalized);
+        
+    book_line.push_back(str);
+    book_line.push_back(to_str<int>(depth));
+    book_line.push_back(to_str<int>(move));
+    
+    csv_file.append_line(book_line);
+    
+    data[str] = value(move,depth);
+  }
 }
 
 
 
 
-int book_t::learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left){
-  timeval start,end;
-  board after,before(board_str);
-  std::cout << "learning " << board_str;
-  std::cout << " at depth " << depth << " ... ";
+board book_t::learn_move(bot_base* bot,const board* b,int depth,int n_left){
+  board after;
+  std::cout << b->to_database_string() << " at depth " << depth << '\t';
   std::cout.flush();
-  gettimeofday(&start,NULL);
-  bot->do_move(&before,&after);
-  gettimeofday(&end,NULL);
   
-  double time_diff = (end.tv_sec + (end.tv_usec / 1000000.0)) -
-  (start.tv_sec + (start.tv_usec / 1000000.0)); 
+  bot->stats.start_timer();
   
+  bot->do_move(b,&after);
   
-  std::cout << "Took " << std::setw(5) << time_diff;
-  std::cout << " seconds!";
+  bot->stats.stop_timer();
+  
+  std::cout << (int)bot->stats.get_seconds() << " s\t";
+  std::cout << bot->stats.get_nodes_per_second() << "n/s\t";
   if(n_left != -1){
-    std::cout << " (" << n_left-1 << " left)";
+    std::cout << n_left-1 << " left\t";
   }
   std::cout << std::endl << std::flush;
-  return get_move_index(&before,&after);
+  return after;
 }
 
-void book_t::remove_obsolete_lines() const
+void book_t::clean() const
 {
   /* test if file exists, return if not */
-  if(access(filename.c_str(), F_OK) == -1){
+  if(access(get_filename().c_str(), F_OK) == -1){
+    std::cout << "file \"" << get_filename() << "\" not found." << std::endl;
     return;    
   }
-  
+    
   /* create backup file, to prevent losing data */
-  std::rename(filename.c_str(),(filename + ".bak").c_str());
+  std::rename(get_filename().c_str(),(get_filename() + ".bak").c_str());
 
   /* fill new file with data */
-  csv book_file(filename);  
-  for(citer it=data.begin();it!=data.end();it++){
-    csv::line_t book_line;
-    book_line.push_back(it->first);
-    book_line.push_back(tostr<int>(it->second.depth));
-    book_line.push_back(tostr<int>(it->second.best_move));
-    book_file.append_line(book_line);
-  }
+  csv new_book_file(get_filename());  
   
+  for(auto it: data){
+    if(is_correct_entry(it.first,it.second)){
+      csv::line_t book_line;
+      book_line.push_back(it.first);
+      book_line.push_back(to_str<int>(it.second.depth));
+      book_line.push_back(to_str<int>(it.second.best_move));
+      new_book_file.append_line(book_line);
+    }
+  }
+    
   /* remove backup file */
-  std::remove((filename + ".bak").c_str());
+  std::remove((get_filename() + ".bak").c_str());
+  
+  std::cout << "Successfully cleaned the book." << std::endl;
+  
+}
+auto f= [] (int k){ return k; };
+book_t::value book_t::lookup(const board* b,int min_depth)
+{
+  value res(NOT_FOUND,0);
+  std::string key = b->to_database_string();
+  citer it = data.find(key);
+  if(it == data.end() || (it->second.depth < min_depth)){
+    return res;
+  }
+  res = it->second;
+  bits64 move_bit = bits64_set[res.best_move];
+  int rot = b->to_database_board().get_rotation(b);
+  res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
+  return res;
 }
 
+void book_t::reload()
+{
+  data.clear();
+  csv_file.get_file()->seekg(std::ios_base::beg);
+  load();
+}
+
+void book_t::load()
+{
+  int errors = 0;
+  while(true){
+    csv::line_t line = csv_file.get_line();
+    if(csv_file.get_file()->fail()){
+      break; 
+    }
+    if(line.size() < value::NEEDED_COLUMNS){
+      errors++;
+      continue;
+    }
+    book_t::value bv(line);
+    
+    if(!is_correct_entry(line[0],bv)){
+      errors++;
+      continue;
+    }
+    data[line[0]] = bv;
+  }
+  
+  csv_file.get_file()->clear();
+  
+  if(errors > 0){
+    std::cout << "Found " << errors;
+    std::cout << " incorrect entries in ";
+    std::cout << '\"' << get_filename() << '\"' << std::endl;
+  }
+}

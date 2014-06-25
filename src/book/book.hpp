@@ -12,9 +12,16 @@
 #include "bots/bot_base.hpp"
 #include "util/csv.hpp"
 
-struct book_t{
+class book_t{
 
+public:
   struct value{
+    static const unsigned NEEDED_COLUMNS = 3;
+    
+    value(const csv::line_t&);
+    value(int bm,int d);
+    value(){} // needed by STL
+    
     int best_move,depth;
   };
   
@@ -22,25 +29,40 @@ struct book_t{
   typedef data_type::const_iterator citer;
   typedef data_type::iterator iter;
 
-  static const int min_learn_depth = 10;
-  static const int entry_max_discs = 24;
+  static const int MIN_LEARN_DEPTH = 9;
+  static const int ENTRY_MAX_DISCS = 24;
+  static const int NOT_FOUND = -1;
 
+private:
+  
   data_type data;
-  std::string filename;
+  csv csv_file;
+
+public:
   
   book_t(const std::string& _filename);
 
-  
-  
-  int get_move_index(const board* before,const board* after);
+  void add(const board* before,const board* after,int depth);
+
+  void clean() const;
   
   void learn(bot_base* bot);
 
-  int learn_move(bot_base* bot,const std::string& board_str,int depth,int n_left);
-
-  void add_to_book_file(const std::string& b,int depth,int move);
+  value lookup(const board* b,int min_depth);
+  
+  void reload();
+  
+  std::string get_filename() const;
+  
+private:
+  
+  int get_move_index(const board* before,const board* after);
+  
+  board learn_move(bot_base* bot,const board* b,int depth,int n_left);
   
   void print_stats() const;
   
-  void remove_obsolete_lines() const;
+  bool is_correct_entry(const std::string& bs,const book_t::value& bv) const;
+  
+  void load();
 };
