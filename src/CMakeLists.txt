@@ -4,6 +4,7 @@ find_package(PkgConfig)
 
 pkg_check_modules(GTKMM gtkmm-3.0)
 pkg_check_modules(GLIBMM glibmm-2.4)
+pkg_check_modules(GTK_PLUS gtk+-2.0)
 pkg_check_modules(GDK_PIXBUF gdk-pixbuf-2.0)
 
 
@@ -37,6 +38,8 @@ include_directories(${GLIBMM_INCLUDE_DIRS})
 include_directories(${GDK_PIXBUF_LIBRARY_DIRS})
 include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
 
+include_directories(${GTK_PLUS_LIBRARY_DIRS})
+include_directories(${GTK_PLUS_INCLUDE_DIRS})
 
 add_executable(../squared
   bots/bot_ali.cpp
