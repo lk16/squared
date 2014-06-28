@@ -17,7 +17,7 @@ struct bot_ali_trainer{
     ali->disable_book();
     ali->disable_shell_output();
     
-    csv op("sample");
+    csv op("openings");
     while(true){
       csv::line_t line = op.get_line();
       if(op.get_file()->fail()){
