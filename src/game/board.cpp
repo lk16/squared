@@ -456,19 +456,19 @@ board board::rotate(int n) const
 
 std::string board::to_database_string() const
 {
-  std::string min_str = to_string();
-  
-  for(int i=1;i<8;i++){
-    std::string str = rotate(i).to_string();
-    min_str = (str < min_str) ? str : min_str;
-  }
-  
-  return min_str; 
+  return to_database_board().to_string(); 
 }
 
 board board::to_database_board() const
 {
-  return board(to_database_string());
+  board min = *this;
+  
+  for(int i=1;i<8;i++){
+    board x = rotate(i);
+    min = ((x.me == me) ? (x.opp < opp) : (x.me < me)) ? x : min;
+  }
+  
+  return min; 
 }
 
 
