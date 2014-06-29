@@ -44,6 +44,7 @@ include_directories(${GTK_PLUS_INCLUDE_DIRS})
 add_executable(../squared
   bots/bot_ali.cpp
   bots/bot_ali_trainer.cpp
+  bots/bot_register.cpp
   book/book.cpp
   game/board.cpp
   game/board_move.cpp

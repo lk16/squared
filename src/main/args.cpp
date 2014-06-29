@@ -7,6 +7,7 @@ squared_arg_t::squared_arg_t():
   start_windowed_game = true;
   parser = NULL;
   use_book = true;
+  bot_type = "ali";
 }
 
 void squared_arg_t::init_map()
@@ -30,7 +31,30 @@ void squared_arg_t::init_map()
   parser->func_map["-q"] = &squared_arg_t::minus_q_flag;
   parser->func_map["-nb"] = &squared_arg_t::no_book;
   parser->func_map["-tb"] = &squared_arg_t::train_bot_ali;
+  parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
 }
+
+int squared_arg_t::set_bot_type()
+{
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
+  }
+  std::string name = parser->get_arg(1);
+  auto map = &bot_registration::bots();
+  if(map->find(name) == map->end()){
+    std::cout << "ERROR: no bot \"" << name << "\" found.\n";
+    std::cout << "Found bots: ";
+    for(auto it: *map){
+      std::cout << it.first << " ";
+    }
+    std::cout << '\n';
+    return PARSING_ERROR;
+  } 
+  bot_type = name;
+  return 2;
+}
+
+
 
 int squared_arg_t::train_bot_ali()
 {

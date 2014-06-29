@@ -5,6 +5,9 @@
 template<class K,class V,int size>
 class hash_table{
 
+  std::pair<K,V>* data;
+  int collisions;
+  
 public:
 
   typedef unsigned long long(*hasher_t)(const K);
@@ -14,6 +17,7 @@ public:
   hash_table(hasher_t h){
     data = new std::pair<K,V>[size];
     hasher = h;
+    collisions = 0;
   }
   
   ~hash_table(){
@@ -32,12 +36,5 @@ public:
     }
     return NULL;
   }
-  
-  
-  
-private:
-  std::pair<K,V>* data;
-  
-  
   
 };

@@ -49,7 +49,16 @@ board from_move_sequence(std::string in){
 }
 
 
-void testing_area(){
- 
-    
+void testing_area(){  
+  
+  for(int i=0;i<10;i++){
+    board b;
+    b.reset();
+    std::set<board> a = generate_all_boards_at_depth(i,b);
+    std::set<int> h;
+    for(board x: a){
+      h.insert(board_hasher(x) % 5000001);
+    }
+    std::cout << a.size() << '\t' << h.size() << '\n';
+  }
 }
