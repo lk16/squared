@@ -10,8 +10,7 @@ struct bot_ali_trainer{
   bot_ali *start,*best,test;
   std::vector<board> openings;
   
-  bot_ali_trainer(bot_ali* ali):
-    test(0,0)
+  bot_ali_trainer(bot_ali* ali)
   {
     start = best = ali;
     ali->disable_book();

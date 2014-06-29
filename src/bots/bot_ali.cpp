@@ -11,27 +11,12 @@ bot_ali::bot_ali():
   book(BOOK_PATH + "book.csv"),
   tpt(&board_hasher)
 {
-  init();
-}
-
-
-
-
-bot_ali::bot_ali(int sd, int pd):
-  bot_base(sd,pd),
-  book(BOOK_PATH + "book.csv"),
-  tpt(&board_hasher)
-{
-  init();
-}
-
-void bot_ali::init()
-{
   name = "ali";
   shell_output = use_book = true;
   int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
   std::copy(tmp,tmp+10,location_values);
 }
+
 
 
 

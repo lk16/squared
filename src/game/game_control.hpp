@@ -38,6 +38,8 @@ struct game_control{
  
   bool quit_if_game_over;
   
+  std::string bot_type;
+  
   
   game_control();
   ~game_control();

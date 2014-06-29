@@ -14,7 +14,6 @@ struct squared_arg_t
   bool show_flag;
   bool start_windowed_game;
   bool use_book;
-  std::string bot_type;
   
   squared_arg_t();
   
@@ -22,6 +21,7 @@ struct squared_arg_t
   
   
   int set_valuation(int color);
+  int set_level(int color);
   
   // modifiers
   int show_help();
