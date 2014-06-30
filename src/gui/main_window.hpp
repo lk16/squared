@@ -6,7 +6,6 @@
 #include <gtkmm.h>
 #include <gtkmm/stock.h>
 
-#include "bots/bot_ali.hpp"
 #include "game/game_control.hpp"
 #include "game/board.hpp"
 #include "gui/clickable_image.hpp"

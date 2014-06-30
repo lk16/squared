@@ -272,12 +272,10 @@ int board::get_disc_diff() const
 
 
 bits64 board::do_move(int move_id)
-{
-  // disabled for testing purposes
-  // assert(is_valid_move(move_id));
-  
-  //return (this->*move_funcs[move_id])(); 
-  //return do_move_experimental(move_id);
+{  
+  return (this->*move_funcs[move_id])(); 
+#if 0  
+  return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -355,6 +353,7 @@ bits64 board::do_move(int move_id)
   switch_turn();
   
   return result;
+#endif
 }
 
 
@@ -499,11 +498,6 @@ bits64 board::do_move_experimental(const int field_id){
     default: left_border_mask = 0x0; break;
   }
   
-  /*right_border_mask = 0xFEFEFEFEFEFEFEFE;
-  left_border_mask  = 0x7F7F7F7F7F7F7F7F;
-  */
-  
-  
   /* down */
   if(field_id/8 < 6){
     line = 0x0101010101010100l << field_id;
@@ -546,7 +540,7 @@ bits64 board::do_move_experimental(const int field_id){
   
   /* right down */
   if((field_id%8 < 6) && (field_id/8 < 6)){
-    line = (0x0040201008040201 << field_id) & right_border_mask;
+    line = (0x8040201008040200 << field_id) & right_border_mask;
     end = bits64_find_first(line & me);
     line &= bits64_before[end];
     if((opp & line) == line){

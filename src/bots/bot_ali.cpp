@@ -7,7 +7,7 @@
 REGISTER_BOT(ali);
 
 bot_ali::bot_ali():
-  bot_base(1,1),
+  bot_base(),
   book(BOOK_PATH + "book.csv"),
   tpt(&board_hasher)
 {

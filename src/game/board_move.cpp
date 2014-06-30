@@ -1,6 +1,5 @@
 #include "game/board.hpp"
 
-
 #define BOARD_MOVE_FIELD_BODY(field_id) \
 bits64 board::do_move_##field_id(){\
   bits64 line,flipped = 0ull;\
@@ -28,11 +27,6 @@ bits64 board::do_move_##field_id(){\
     case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;\
     default: left_border_mask = 0x0; break;\
   }\
-  \
-  /*right_border_mask = 0xFEFEFEFEFEFEFEFE;\
-  left_border_mask  = 0x7F7F7F7F7F7F7F7F;\
-  */\
-  \
   \
   /* down */\
   if(field_id/8 < 6){\
@@ -76,7 +70,7 @@ bits64 board::do_move_##field_id(){\
   \
   /* right down */\
   if((field_id%8 < 6) && (field_id/8 < 6)){\
-    line = (0x0040201008040201 << field_id) & right_border_mask;\
+    line = (0x8040201008040200 << field_id) & right_border_mask;\
     end = bits64_find_first(line & me);\
     line &= bits64_before[end];\
     if((opp & line) == line){\
@@ -129,7 +123,6 @@ bits64 board::do_move_##field_id(){\
   switch_turn();  \
   return flipped;\
 }
-
 
 
 BOARD_MOVE_FIELD_BODY(A1);
@@ -196,7 +189,6 @@ BOARD_MOVE_FIELD_BODY(H5);
 BOARD_MOVE_FIELD_BODY(H6);
 BOARD_MOVE_FIELD_BODY(H7);
 BOARD_MOVE_FIELD_BODY(H8);
-
 
 
 

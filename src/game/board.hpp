@@ -70,6 +70,7 @@ struct board{
   
   /// checks for board equality
   bool operator==(const board& b) const;
+  bool operator!=(const board& b) const;
   
   /// checks for ordering
   bool operator<(const board& b) const;
@@ -104,10 +105,7 @@ struct board{
   bits64 get_non_empty_fields() const;
   int count_discs() const;
   int count_empty_fields() const;
-  
-  /// get hash
-  long long unsigned hash() const;
-  
+    
   /// prints this to standard output, mark moves for current turn with '.'
   void show() const;
   
@@ -245,6 +243,12 @@ inline bool board::operator==(const board& b) const
   return me==b.me && opp==b.opp;
 }
 
+inline bool board::operator!=(const board& b) const
+{
+  return !(b == *this);
+}
+
+
 inline void board::switch_turn()
 {
   std::swap<bits64>(me,opp);
@@ -253,11 +257,6 @@ inline void board::switch_turn()
 inline bool board::operator<(const board& b) const
 {
   return this->to_database_string() < b.to_database_string();
-}
-
-inline long long unsigned board::hash() const
-{
-  return 3*me + 5*opp;
 }
 
 inline bits64 board::get_empty_fields() const
@@ -272,7 +271,7 @@ inline bits64 board::get_non_empty_fields() const
 
 inline bool board::has_valid_moves() const
 {
-  return get_valid_moves() != 0;
+  return get_valid_moves() != 0ull;
 }
 
 inline int board::count_valid_moves() const

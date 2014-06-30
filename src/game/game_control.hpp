@@ -6,7 +6,6 @@
 
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
-#include "bots/bot_ali.hpp"
 #include "util/csv.hpp"
 
 class main_window;
