@@ -45,6 +45,7 @@ add_executable(../squared
   bots/bot_ali.cpp
   bots/bot_ali_trainer.cpp
   bots/bot_random.cpp
+  bots/bot_moves.cpp    
   bots/bot_register.cpp
   book/book.cpp
   game/board.cpp

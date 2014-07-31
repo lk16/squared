@@ -1,6 +1,10 @@
 #include "book/book.hpp"
 #include "bots/bot_ali.hpp"
 
+book_t::book_t():
+  csv_file("")
+{ 
+}
 
 book_t::book_t(const std::string& _filename):
   csv_file(_filename)
@@ -11,6 +15,11 @@ book_t::book_t(const std::string& _filename):
 std::string book_t::get_filename() const
 {
   return csv_file.get_name();
+}
+
+void book_t::set_csv_file(const std::string& filename)
+{
+  csv_file.set_file(filename);
 }
 
 
@@ -25,7 +34,7 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
     && ((b.me & b.opp) == 0ull)
     && (((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)
     && b.is_valid_move(bv.best_move)
-    && (b == board(b.to_database_string()));
+    && (b == b.to_database_board());
 }
 
 book_t::value::value(const csv::line_t& line)
@@ -39,6 +48,23 @@ book_t::value::value(int bm, int d)
   best_move = bm;
   depth = d;
 }
+
+std::vector<book_t*> book_t::split(int n) const
+{
+  std::vector<book_t*> res;
+  int i;
+  for(i=0;i<n;i++){
+    res.push_back(new book_t());
+    res.back()->set_csv_file(csv_file.get_name());
+  }
+  i = 0;  
+  for(auto it: data){
+    res[i]->add_entry(it.first,it.second);
+    i = (i+1) % n;
+  }
+  return res;
+}
+
 
 
 int book_t::get_move_index(const board* before, const board* after)
@@ -62,10 +88,18 @@ void book_t::print_stats() const
   }
   
   for(auto it: book_stats){
-    std::cout << "Book contains " << it.second << " boards at depth ";
-    std::cout << it.first << std::endl;
+    std::cout << "Boards found at depth " << it.first << ": ";
+    std::cout << it.second << std::endl;
   }
 }
+
+void book_t::learn_parallel(bot_base* bot, int threads)
+{
+  (void)bot;
+  (void)threads;
+  std::cout << "This is not implemented yet!\n";
+}
+
 
 
 void book_t::learn(bot_base* bot)
@@ -113,10 +147,10 @@ void book_t::learn(bot_base* bot)
 
 void book_t::add(const board* before,const board* after,int depth)
 {
-  std::string str = before->to_database_string();
-  board before_normalized(str);
+  board before_normalized = before->to_database_board();
   int rot = before->get_rotation(&before_normalized);
   board after_normalized = after->rotate(rot);
+  std::string str = after_normalized.to_string();
   
   
   citer it = data.find(str);
@@ -128,14 +162,23 @@ void book_t::add(const board* before,const board* after,int depth)
     
     csv::line_t book_line;
     int move = get_move_index(&before_normalized,&after_normalized);
-        
+    
+    
+    value v(move,depth);
+    
+    if(!is_correct_entry(str,v)){
+      std::cout << "WARNING: attempting to add invalid value to book!\n";
+      return;
+    }
+    
+    
     book_line.push_back(str);
     book_line.push_back(to_str<int>(depth));
     book_line.push_back(to_str<int>(move));
     
     csv_file.append_line(book_line);
     
-    data[str] = value(move,depth);
+    data[str] = v;
   }
 }
 
@@ -192,7 +235,7 @@ void book_t::clean() const
   std::cout << "Successfully cleaned the book." << std::endl;
   
 }
-auto f= [] (int k){ return k; };
+
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
   value res(NOT_FOUND,0);
@@ -215,6 +258,17 @@ void book_t::reload()
   load();
 }
 
+bool book_t::add_entry(const std::string& bs, const book_t::value& bv)
+{
+  if(is_correct_entry(bs,bv)){
+    data[bs] = bv;
+    return true;
+  }
+  return false;
+}
+
+
+
 void book_t::load()
 {
   int errors = 0;
@@ -229,11 +283,10 @@ void book_t::load()
     }
     book_t::value bv(line);
     
-    if(!is_correct_entry(line[0],bv)){
+    if(!add_entry(line[0],bv)){
       errors++;
       continue;
     }
-    data[line[0]] = bv;
   }
   
   csv_file.get_file()->clear();

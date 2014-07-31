@@ -31,6 +31,7 @@ void squared_arg_t::init_map()
   parser->func_map["-nb"] = &squared_arg_t::no_book;
   parser->func_map["-tb"] = &squared_arg_t::train_bot_ali;
   parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
+  parser->func_map["--loop"] = &squared_arg_t::loop_game;
 }
 
 int squared_arg_t::set_bot_type()
@@ -53,6 +54,11 @@ int squared_arg_t::set_bot_type()
   return 2;
 }
 
+int squared_arg_t::loop_game()
+{
+  gc.loop_game = true;
+  return 1;
+}
 
 
 int squared_arg_t::train_bot_ali()

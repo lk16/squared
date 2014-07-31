@@ -39,4 +39,5 @@ struct squared_arg_t
   int set_black_valuation();
   int train_bot_ali();
   int set_bot_type();
+  int loop_game();
 };

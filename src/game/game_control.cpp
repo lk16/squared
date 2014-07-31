@@ -7,6 +7,7 @@ game_control::game_control()
   board_state.b.reset();
   board_state.turn = BLACK;
   quit_if_game_over = false;
+  loop_game = false;
   bot_type = "ali";
 }
 
@@ -157,6 +158,9 @@ void game_control::on_game_ended()
     board_state.b.show();
     mw->hide();
     exit(0);
+  }
+  if(loop_game){
+    on_new_game();
   }
 }
 

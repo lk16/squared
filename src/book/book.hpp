@@ -39,7 +39,7 @@ private:
   csv csv_file;
 
 public:
-  
+  book_t();
   book_t(const std::string& _filename);
 
   void add(const board* before,const board* after,int depth);
@@ -48,12 +48,19 @@ public:
   
   void learn(bot_base* bot);
 
+  void learn_parallel(bot_base* bot,int threads);
+  
   value lookup(const board* b,int min_depth);
   
   void reload();
   
   std::string get_filename() const;
   
+  std::vector<book_t*> split(int n) const;
+  
+  void set_csv_file(const std::string& filename);
+  
+  bool add_entry(const std::string& bs,const book_t::value& bv);
 private:
   
   int get_move_index(const board* before,const board* after);
