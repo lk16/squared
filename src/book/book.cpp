@@ -152,11 +152,6 @@ void book_t::add(const board* before,const board* after,int depth)
   board after_normalized = after->rotate(rot);
   std::string str = after_normalized.to_string();
   
-  before->show();
-  before_normalized.show();
-  after->show();
-  after_normalized.show();
-  
   
   citer it = data.find(str);
   if(true 
@@ -168,7 +163,6 @@ void book_t::add(const board* before,const board* after,int depth)
     csv::line_t book_line;
     int move = get_move_index(&before_normalized,&after_normalized);
     
-    bits64_show(bits64_set[move]);
     
     value v(move,depth);
     

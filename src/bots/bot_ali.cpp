@@ -71,7 +71,7 @@ void bot_ali::do_move(const board* b,board* res)
   
     if(shell_output){
       
-      std::cout << name << " searching at depth ";
+      std::cout << name << " searching " << (mode==NORMAL_MODE ? "" : "perfectly " ) << "at depth ";
       std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
     }
 
