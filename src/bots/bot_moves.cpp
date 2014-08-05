@@ -12,7 +12,7 @@ bot_moves::~bot_moves(){
 
 int bot_moves::heuristic(const board* b)
 {
-  int x,y;
+  int x,y,z;
   x = b->count_valid_moves();
   board copy = *b;
   copy.switch_turn();
@@ -20,11 +20,17 @@ int bot_moves::heuristic(const board* b)
   if(x==0 && y==0){
     return EXACT_SCORE_FACTOR * b->get_disc_diff();
   }
-  return x-y;
+  
+  z = count_64(b->me & board::location[0]) - count_64(b->opp & board::location[0]);
+  
+  z *= 3;
+  
+  return x-y+z;
 }
 
 int bot_moves::alpha_beta(const board* b, int alpha, int beta)
 {
+  stats.inc_nodes();
   if(b->count_discs() >= search_max_discs){
     return heuristic(b);
   }
@@ -54,6 +60,7 @@ int bot_moves::alpha_beta(const board* b, int alpha, int beta)
 }
 
 void bot_moves::do_move(const board* in,board* out){
+  stats.start_timer();
   if(64 - in->count_discs() <= perfect_depth){
     search_max_discs = 64;
   }
@@ -64,13 +71,16 @@ void bot_moves::do_move(const board* in,board* out){
   std::cout << "bot_moves searching at depth " << (search_max_discs-in->count_discs()) << '\n';
   
   int best_heur = MIN_HEURISTIC;
-  int best_index = -1;
+  
+  // do the first move if we cannot prevent losing everything
+  int best_index = 0;
   
   board children[32];
   board* children_end = in->get_children(children);
   
   if(children + 1 == children_end){
     *out = children[0];
+    std::cout << "Only one move found, evaluation skipped.\n";
     return;
   }
   
@@ -82,9 +92,15 @@ void bot_moves::do_move(const board* in,board* out){
       best_heur = heur;
     }
     std::cout << "move " << (it - children + 1) << "/" << (children_end-children);
-    std::cout << ": " << (heur / (search_max_discs==64 ? EXACT_SCORE_FACTOR : 1)) << '\n';
+    std::cout << ": " << (best_heur / (search_max_discs==64 ? EXACT_SCORE_FACTOR : 1)) << '\n';
   }
   
+  stats.stop_timer();
+
+  std::cout << big_number(stats.get_nodes()) << " nodes in ";
+  std::cout << stats.get_seconds() << " seconds: ";
+  std::cout << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
+
   *out = children[best_index];
 }
   
