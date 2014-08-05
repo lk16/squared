@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/bitset.hpp"
+#include "util/string.hpp"
 #include "bots/bot_base.hpp"
 
 struct bot_moves:
