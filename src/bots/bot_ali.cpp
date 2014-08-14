@@ -11,25 +11,10 @@ bot_ali::bot_ali():
   book(BOOK_PATH + "book.csv"),
   tpt(&board_hasher)
 {
-  name = "ali";
-  shell_output = use_book = true;
+  set_name("ali");
   int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
   std::copy(tmp,tmp+10,location_values);
 }
-
-
-
-
-void bot_ali::disable_shell_output()
-{
-  shell_output = false;
-}
-
-void bot_ali::disable_book()
-{
-  use_book = false;
-}
-
 
 void bot_ali::do_move(const board* b,board* res)
 {
@@ -48,14 +33,14 @@ void bot_ali::do_move(const board* b,board* res)
   
 
   
-  book_t::value lookup = book.lookup(b,search_depth);
+  book_t::value lookup = book.lookup(b,get_search_depth());
   
  
   if(child_count == 1){
     mode = ONE_MOVE_MODE;
   }  
-  else if(empty_fields > perfect_depth){
-    if(use_book && (lookup.best_move != book_t::NOT_FOUND)){
+  else if(empty_fields > get_perfect_depth()){
+    if(get_use_book() && (lookup.best_move != book_t::NOT_FOUND)){
       mode = BOOK_MODE;
     }
     else{
@@ -69,25 +54,23 @@ void bot_ali::do_move(const board* b,board* res)
 
   if(mode==NORMAL_MODE || mode==PERFECT_MODE){
   
-    if(shell_output){
-      
-      std::cout << name << " searching " << (mode==NORMAL_MODE ? "" : "perfectly " ) << "at depth ";
-      std::cout << ((mode==NORMAL_MODE) ? search_depth : empty_fields) << '\n';
-    }
-
+    output() << get_name() << " searching ";
+    output() << (mode==NORMAL_MODE ? "" : "perfectly " ) << "at depth ";
+    output() << ((mode==NORMAL_MODE) ? get_search_depth() : empty_fields) << '\n';
+    
 
     // is used for small search, to sort moves before big search
-    search_max_discs = b->count_discs() + search_depth - 4;
+    search_max_discs = b->count_discs() + get_search_depth() - 4;
 
 
     
-    if(search_depth > search_max_sort_depth){
+    if(get_search_depth() > search_max_sort_depth){
       int heurs[32];
       for(int i=0;i<child_count;i++){
         inspected = children[i];
         heurs[i] = -pvs_sorted(MIN_HEURISTIC,MAX_HEURISTIC);
       }
-      sort_children(children,heurs,child_count);
+      ugly_sort<board>(children,heurs,child_count);
     }
 
     // is used for big search
@@ -111,14 +94,13 @@ void bot_ali::do_move(const board* b,board* res)
           best_heur = cur_heur;
           best_id = id;
         }
-        if(shell_output){
-          std::cout << "move " << (id+1) << "/" << (child_count);
-          std::cout << ": " << best_heur << std::endl;
-        }
+        output() << "move " << (id+1) << "/" << (child_count);
+        output() << ": " << best_heur << std::endl;
+        
       }
       *res = children[best_id];
-      if(use_book){        
-        book.add(b,res,search_depth);     
+      if(get_use_book()){        
+        book.add(b,res,get_search_depth());     
       }
       break;
     case PERFECT_MODE:
@@ -134,10 +116,8 @@ void bot_ali::do_move(const board* b,board* res)
           best_heur = cur_heur;
           best_id = id;
         }
-        if(shell_output){
-          std::cout << "move " << (id+1) << "/" << (child_count);
-          std::cout << ": " << best_heur << std::endl;
-        }
+        output() << "move " << (id+1) << "/" << (child_count);
+        output() << ": " << best_heur << std::endl;
       }
       *res = children[best_id];
       break;
@@ -145,26 +125,22 @@ void bot_ali::do_move(const board* b,board* res)
       {
         *res = *b;
         res->do_move(lookup.best_move);
-        if(shell_output){
-          std::cout << "best move (" << lookup.best_move;
-          std::cout << ") found in book at depth " << lookup.depth << '\n';
-        }
+        output() << "best move (" << lookup.best_move;
+        output() << ") found in book at depth " << lookup.depth << '\n';
       }
       break;
     case ONE_MOVE_MODE:
       *res = children[0];
-      if(shell_output){
-        std::cout << "only one valid move found, evaluation skipped.\n";
-      }
+      output() << "only one valid move found, evaluation skipped.\n";
       break;
   }
   
-  if(shell_output && (mode==NORMAL_MODE || mode==PERFECT_MODE)){
+  if(mode==NORMAL_MODE || mode==PERFECT_MODE){
     stats.stop_timer();
     
-    std::cout << big_number(stats.get_nodes()) << " nodes in ";
-    std::cout << stats.get_seconds() << " seconds: ";
-    std::cout << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
+    output() << big_number(stats.get_nodes()) << " nodes in ";
+    output() << stats.get_seconds() << " seconds: ";
+    output() << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
   }
 }
 
@@ -214,7 +190,7 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   
   std::swap(tmp_search_max_discs,search_max_discs);
   
-  sort_children(children,heur,child_count);
+  ugly_sort<board>(children,heur,child_count);
   
   
   
@@ -223,7 +199,7 @@ int bot_ali::pvs_sorted(int alpha, int beta)
   std::swap<board>(inspected,children[0]);
   
   if(score >= beta){
-      return beta;
+    return beta;
   }
   if(score >= alpha){
     alpha = score;
@@ -422,23 +398,6 @@ int bot_ali::pvs_exact(int alpha, int beta)
   return alpha;
 }
 
-
-
-void bot_ali::sort_children(board *boards,int* heurs, int count)
-{
-  bool loop;
-  do{
-    loop = false;
-    for(int i=1;i<count;++i){
-      if(heurs[i-1] < heurs[i]){
-        std::swap(heurs[i-1],heurs[i]);
-        std::swap(boards[i-1],boards[i]);
-        loop = true;
-      }
-    }
-  }while(loop);
-}
-
 int bot_ali::id_mtdf(int max_depth)
 {
   int heur = 0;
@@ -559,7 +518,7 @@ bot_ali::~bot_ali(){}
 
 void bot_ali::on_new_game()
 {
-  if(use_book){
+  if(get_use_book()){
     book.reload();
   }
 }

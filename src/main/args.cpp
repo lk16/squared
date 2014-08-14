@@ -32,6 +32,7 @@ void squared_arg_t::init_map()
   parser->func_map["-tb"] = &squared_arg_t::train_bot_ali;
   parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
   parser->func_map["--loop"] = &squared_arg_t::loop_game;
+  parser->func_map["--speed-test"] = &squared_arg_t::speed_test;
 }
 
 int squared_arg_t::set_bot_type()
@@ -209,4 +210,27 @@ int squared_arg_t::minus_q_flag()
 {
   gc.quit_if_game_over = true;
   return 1;
+}
+
+int squared_arg_t::speed_test()
+{
+  bot_base* bot = bot_registration::bots()[gc.bot_type]();
+  bot->disable_shell_output();
+  bot->disable_book();
+  std::cout << "testing speed of bot_" << gc.bot_type << " on this board:\n";
+  gc.board_state.b.show();
+  for(int i=1;i<=60;i++){
+    board b,dummy;
+    b = gc.board_state.b;
+    bot->set_search_depth(i,i);
+    bot->do_move(&b,&dummy);
+    long long speed = bot->stats.get_nodes_per_second();
+    std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
+    std::cout << "\ttook " << bot->stats.get_seconds() << " seconds.\n";
+    if(bot->stats.get_seconds() > 10.0){
+      break;
+    }
+  }
+  start_windowed_game = false;
+  return PARSING_IGNORE_OTHER_ARGS;
 }

@@ -39,9 +39,6 @@ class bot_ali:
   
   book_t book;
   
-    
-  bool shell_output,use_book;
-  
   /// transposition table
   
   struct tpt_value{
@@ -73,8 +70,6 @@ public:
   /// picks a move!
   virtual void do_move(const board* b,board* res);
   
-  virtual void disable_shell_output();
-  virtual void disable_book();
   virtual void on_new_game();
   
   /// calculates the heuristic for this->inspected
@@ -105,10 +100,6 @@ public:
   
   int pvs_null_window_with_memory_exact(int alpha);
   
-  
-  
-  /// sort boards descending according to heurs
-  void sort_children(board *boards,int* heurs, int count);
   
   
   bool set_location_values_from_file(const std::string& file);

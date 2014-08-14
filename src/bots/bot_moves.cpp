@@ -61,14 +61,14 @@ int bot_moves::alpha_beta(const board* b, int alpha, int beta)
 
 void bot_moves::do_move(const board* in,board* out){
   stats.start_timer();
-  if(64 - in->count_discs() <= perfect_depth){
+  if(64 - in->count_discs() <= get_perfect_depth()){
     search_max_discs = 64;
   }
   else{
-    search_max_discs = in->count_discs() + search_depth;
+    search_max_discs = in->count_discs() + get_search_depth();
   }
   
-  std::cout << "bot_moves searching at depth " << (search_max_discs-in->count_discs()) << '\n';
+  output() << "bot_moves searching at depth " << (search_max_discs-in->count_discs()) << '\n';
   
   int best_heur = MIN_HEURISTIC;
   
@@ -80,7 +80,7 @@ void bot_moves::do_move(const board* in,board* out){
   
   if(children + 1 == children_end){
     *out = children[0];
-    std::cout << "Only one move found, evaluation skipped.\n";
+    output() << "Only one move found, evaluation skipped.\n";
     return;
   }
   
@@ -91,15 +91,15 @@ void bot_moves::do_move(const board* in,board* out){
       best_index = it - children;
       best_heur = heur;
     }
-    std::cout << "move " << (it - children + 1) << "/" << (children_end-children);
-    std::cout << ": " << (best_heur / (search_max_discs==64 ? EXACT_SCORE_FACTOR : 1)) << '\n';
+    output() << "move " << (it - children + 1) << "/" << (children_end-children);
+    output() << ": " << (best_heur / (search_max_discs==64 ? EXACT_SCORE_FACTOR : 1)) << '\n';
   }
   
   stats.stop_timer();
 
-  std::cout << big_number(stats.get_nodes()) << " nodes in ";
-  std::cout << stats.get_seconds() << " seconds: ";
-  std::cout << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
+  output() << big_number(stats.get_nodes()) << " nodes in ";
+  output() << stats.get_seconds() << " seconds: ";
+  output() << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
 
   *out = children[best_index];
 }

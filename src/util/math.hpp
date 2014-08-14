@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdlib>
 
 template<class T>
@@ -31,4 +32,20 @@ inline bool in_bounds(T x,T min,T max){
 template<class T>
 inline bool out_bounds(T x,T min,T max){
   return x<min || x>max;        
+}
+
+template<class T>
+void ugly_sort(T *t,int* heurs, int count)
+{
+  bool loop;
+  do{
+    loop = false;
+    for(int i=1;i<count;++i){
+      if(heurs[i-1] < heurs[i]){
+        std::swap(heurs[i-1],heurs[i]);
+        std::swap(t[i-1],t[i]);
+        loop = true;
+      }
+    }
+  }while(loop);
 }

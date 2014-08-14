@@ -7,6 +7,7 @@
 
 #include "util/const.hpp"
 #include "util/math.hpp"
+#include "util/dummystream.hpp"
 #include "game/board.hpp"
 #include "bots/bot_register.hpp"
 
@@ -15,7 +16,7 @@
 
 
 
-struct bot_base{
+class bot_base{
 
   class stat_t{
     timeval start_time,stop_time;
@@ -31,11 +32,17 @@ struct bot_base{
     void inc_nodes();
   };
   
+  
+  
   std::string name;
-  int search_depth,perfect_depth;
+  int search_depth;
+  int perfect_depth;
+  bool use_book;
+  std::ostream* output_stream;
+  
+public: 
+  
   stat_t stats;
-  
-  
   
   /// ctor
   bot_base();
@@ -46,14 +53,20 @@ struct bot_base{
   /// calculate best move of b and put it in res
   virtual void do_move(const board* in,board* out);
   
-  virtual void disable_shell_output() = 0;
-  virtual void disable_book() = 0;
+  
   virtual void on_new_game() = 0;
   
   int get_search_depth() const;
   int get_perfect_depth() const;
+  bool get_use_book() const;
+  std::string get_name() const;
+  
+  std::ostream& output();
   
   void set_search_depth(int _search_depth,int _perfect_depth);
+  void set_name(const std::string& _name);
+  void disable_book();
+  void disable_shell_output();
   
 };
 
@@ -62,7 +75,8 @@ inline bot_base::~bot_base()
 
 
 inline bot_base::bot_base():
-  name("base")
+  name("base"),
+  output_stream(&std::cout)
 {
 }
 
@@ -80,7 +94,6 @@ inline int bot_base::get_perfect_depth() const
 inline void bot_base::do_move(const board* b,board* res){
   (void) b;
   (void) res;
-  CRASH;
 }
 
 
@@ -130,6 +143,37 @@ inline void bot_base::stat_t::inc_nodes()
 {
   nodes++;
 }
+
+inline void bot_base::disable_book()
+{
+  use_book = false;
+}
+
+inline void bot_base::disable_shell_output()
+{
+  output_stream = new dummystream;
+}
+
+inline void bot_base::set_name(const std::string& _name)
+{
+  name = _name;
+}
+
+inline std::string bot_base::get_name() const
+{
+  return name;
+}
+
+inline std::ostream& bot_base::output()
+{
+  return *output_stream;
+}
+
+inline bool bot_base::get_use_book() const
+{
+  return use_book;
+}
+
 
 
 
