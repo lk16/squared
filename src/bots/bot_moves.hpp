@@ -11,8 +11,6 @@ struct bot_moves:
   
   virtual void do_move(const board* in, board* out);
   virtual void on_new_game();
-  virtual void disable_book();
-  virtual void disable_shell_output();
   virtual ~bot_moves();
   
   int alpha_beta(const board* b,int alpha,int beta);

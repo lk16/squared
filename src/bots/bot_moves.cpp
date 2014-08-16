@@ -70,6 +70,7 @@ void bot_moves::do_move(const board* in,board* out){
   
   output() << "bot_moves searching at depth " << (search_max_discs-in->count_discs()) << '\n';
   
+ 
   int best_heur = MIN_HEURISTIC;
   
   // do the first move if we cannot prevent losing everything
@@ -83,6 +84,20 @@ void bot_moves::do_move(const board* in,board* out){
     output() << "Only one move found, evaluation skipped.\n";
     return;
   }
+
+    
+  if(get_search_depth() > 7){
+    search_max_discs -= 4;
+    
+    int heurs[32];
+    for(int i=0;i<(children_end-children);i++){
+      heurs[i] = -alpha_beta(children+i,MIN_HEURISTIC,MAX_HEURISTIC);
+    }
+    ugly_sort<board>(children,heurs,children_end-children);
+  
+    search_max_discs += 4;
+  }
+  
   
   
   for(board* it=children;it!=children_end;it++){
@@ -105,10 +120,4 @@ void bot_moves::do_move(const board* in,board* out){
 }
   
 void bot_moves::on_new_game(){
-}
-
-void bot_moves::disable_book(){
-}
-
-void bot_moves::disable_shell_output(){
 }

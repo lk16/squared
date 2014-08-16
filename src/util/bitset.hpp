@@ -42,27 +42,25 @@ inline int count_64(bits64 b){
 
 
 
-// thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
 inline bits64 mirror_vertical_line(bits64 x){
   
+  // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
   bits64 y;
-  
-  // reflect x against vertical center line
   y = (x ^ (x >>  7)) & 0x0101010101010101; x ^= y ^ (y <<  7);
   y = (x ^ (x >>  5)) & 0x0202020202020202; x ^= y ^ (y <<  5);
   y = (x ^ (x >>  3)) & 0x0404040404040404; x ^= y ^ (y <<  3);
   y = (x ^ (x >>  1)) & 0x0808080808080808; x ^= y ^ (y <<  1);
-  
+
+
   
   return x; 
 }
 
-// thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
 inline bits64 rotate_left(bits64 x){
   
   bits64 y;
   
-  // reflect x against diagonal line going through bits 1<<7 and 1<<56
+  // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
   y = (x ^ (x >> 63)) & 0x0000000000000001; x ^= y ^ (y << 63);
   y = (x ^ (x >> 54)) & 0x0000000000000102; x ^= y ^ (y << 54);
   y = (x ^ (x >> 45)) & 0x0000000000010204; x ^= y ^ (y << 45);

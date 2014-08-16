@@ -11,11 +11,6 @@
 #include "game/board.hpp"
 #include "bots/bot_register.hpp"
 
-
-  
-
-
-
 class bot_base{
 
   class stat_t{
@@ -51,7 +46,7 @@ public:
   virtual ~bot_base();
 
   /// calculate best move of b and put it in res
-  virtual void do_move(const board* in,board* out);
+  virtual void do_move(const board* in,board* out) = 0;
   
   
   virtual void on_new_game() = 0;
@@ -89,13 +84,6 @@ inline int bot_base::get_perfect_depth() const
 {
   return perfect_depth;
 }
-
-
-inline void bot_base::do_move(const board* b,board* res){
-  (void) b;
-  (void) res;
-}
-
 
 inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
 {       

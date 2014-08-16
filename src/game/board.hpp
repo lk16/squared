@@ -286,12 +286,14 @@ inline bool board::is_valid_move(int field_id) const
 
 inline void board::undo_move(int field_id,bits64 undo_data)
 {
-  switch_turn();
+  //switch_turn();
+  //me &= ~(undo_data | bits64_set[field_id]);
+  //opp |= (undo_data);  
   
-  me &= ~(undo_data | bits64_set[field_id]);
-  opp |= (undo_data);  
-  
-  
+  bits64 tmp = me;
+  me = opp & ~(undo_data | bits64_set[field_id]);
+  opp = tmp | undo_data;
+ 
   assert((me & undo_data) == 0ull);
   assert((opp & undo_data) == undo_data);
   assert((get_non_empty_fields() & bits64_set[field_id]) == 0ull);
