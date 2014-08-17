@@ -326,20 +326,6 @@ void testing_area(){
   b = demo_rotate_left(&b);
   b.show();*/
   
-  board b;
-  while(true){
-    b.reset();
-    b = b.do_random_moves(9);
-    if(b.to_database_board() != b.to_database_board().to_database_board()){
-      std::cout << b.to_string() << '\n';
-      b.show();
-      b.to_database_board().show();
-      b.to_database_board().to_database_board().show();
-      return;
-    }
-    else{
-      std::cout << '.' << std::flush;
-    }
-  }
+  bits64_show(0x7e8181818181817e);
   
 }

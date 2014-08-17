@@ -278,8 +278,8 @@ bool bot_pvs::do_move_book(const board* b, board* res)
     if(lookup.best_move != book_t::NOT_FOUND){
       *res = *b;
       res->do_move(lookup.best_move);
-      output() << "best move (" << lookup.best_move;
-      output() << ") found in book at depth " << lookup.depth << '\n';
+      output() << "bot_" << get_name() << " found best move (" << lookup.best_move;
+      output() << ") in book at depth " << lookup.depth << '\n';
       return true;
     }
   }
