@@ -1,13 +1,30 @@
 #include "util/csv.hpp"
 
-csv::csv(const std::string& _filename):
-  filename(_filename),
+csv::csv():
   line_buff_size(10240),
-  line_buff(new char[line_buff_size]),
-  file(_filename,std::fstream::in | std::fstream::out | std::fstream::app),
-  read_lines(0),
-  written_lines(0)
-{}
+  line_buff(new char[line_buff_size])
+{
+  set_file("");
+  file.setstate(std::ios::failbit);
+}
+
+
+csv::csv(const std::string& _filename):
+  line_buff_size(10240),
+  line_buff(new char[line_buff_size])
+{
+  set_file(_filename);
+}
+
+void csv::set_file(const std::string& _filename)
+{
+  filename = _filename;
+  file.open(_filename,open_mode);
+  read_lines = written_lines = 0;
+}
+
+
+
 
 csv::~csv()
 {
@@ -41,9 +58,9 @@ void csv::set_content(const content_t& content)
 {
   file.close();
   file.open(filename,
-            std::fstream::in | 
-            std::fstream::out | 
-            std::fstream::trunc
+    std::fstream::in | 
+    std::fstream::out | 
+    std::fstream::trunc
   );
   
   for(line_t line: content){

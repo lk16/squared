@@ -4,30 +4,21 @@
 #include <fstream>
 #include <algorithm>
 
-bot_ali::bot_ali(int sd, int pd):
-  bot_base(sd,pd),
+REGISTER_BOT(ali);
+
+bot_ali::bot_ali():
+  bot_base(),
   book(BOOK_PATH + "book.csv"),
   tpt(&board_hasher)
-  
 {
-  name = "bot_ali";
+  name = "ali";
   shell_output = use_book = true;
   int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
   std::copy(tmp,tmp+10,location_values);
-  
-  
-  /*
-  0,1,2,3,3,2,1,0,
-  1,4,5,6,6,5,4,1,
-  2,5,7,8,8,7,5,2
-  3,6,8,9,9,8,6,3,
-  3,6,8,9,9,8,6,3,
-  2,5,7,8,8,7,5,2
-  1,4,5,6,6,5,4,1,
-  0,1,2,3,3,2,1,0
-  */
-  
 }
+
+
+
 
 void bot_ali::disable_shell_output()
 {

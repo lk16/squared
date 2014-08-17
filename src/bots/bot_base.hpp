@@ -8,6 +8,12 @@
 #include "util/const.hpp"
 #include "util/math.hpp"
 #include "game/board.hpp"
+#include "bots/bot_register.hpp"
+
+
+  
+
+
 
 struct bot_base{
 
@@ -32,7 +38,7 @@ struct bot_base{
   
   
   /// ctor
-  bot_base(int _search_depth,int _perfect_depth);
+  bot_base();
   
   /// dtor
   virtual ~bot_base();
@@ -55,10 +61,9 @@ inline bot_base::~bot_base()
 {}
 
 
-inline bot_base::bot_base(int _search_depth,int _perfect_depth):
-  name("bot_base")
+inline bot_base::bot_base():
+  name("base")
 {
-  set_search_depth(_search_depth,_perfect_depth);
 }
 
 inline int bot_base::get_search_depth() const

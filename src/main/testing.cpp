@@ -50,6 +50,9 @@ board from_move_sequence(std::string in){
 
 
 void testing_area(){
- 
-    
+  for(bits64 i=0;i<256;i++){
+    std::cout << std::showbase << std::hex << rotate_left(i) << '\n';
+  }
+  
+  
 }

@@ -6,7 +6,6 @@
 
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
-#include "bots/bot_ali.hpp"
 #include "util/csv.hpp"
 
 class main_window;
@@ -37,6 +36,9 @@ struct game_control{
   std::stack<board_state_t> undo_stack,redo_stack;
  
   bool quit_if_game_over;
+  bool loop_game;
+  
+  std::string bot_type;
   
   
   game_control();

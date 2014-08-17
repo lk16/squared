@@ -30,17 +30,45 @@ void squared_arg_t::init_map()
   parser->func_map["-q"] = &squared_arg_t::minus_q_flag;
   parser->func_map["-nb"] = &squared_arg_t::no_book;
   parser->func_map["-tb"] = &squared_arg_t::train_bot_ali;
+  parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
+  parser->func_map["--loop"] = &squared_arg_t::loop_game;
 }
+
+int squared_arg_t::set_bot_type()
+{
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
+  }
+  std::string name = parser->get_arg(1);
+  auto map = &bot_registration::bots();
+  if(map->find(name) == map->end()){
+    std::cout << "ERROR: no bot \"" << name << "\" found.\n";
+    std::cout << "Found bots: ";
+    for(auto it: *map){
+      std::cout << it.first << " ";
+    }
+    std::cout << '\n';
+    return PARSING_ERROR;
+  } 
+  gc.bot_type = name;
+  return 2;
+}
+
+int squared_arg_t::loop_game()
+{
+  gc.loop_game = true;
+  return 1;
+}
+
 
 int squared_arg_t::train_bot_ali()
 {
   start_windowed_game = false;
-  bot_ali ali(6,12);
-  int v[] = //{347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
-  {347,-47,-24,-33,-119,-35,-26,-23,-7,3};
+  bot_ali ali;
+  ali.set_search_depth(6,12);
+  int v[] = {347,-47,-24,-33,-119,-35,-26,-23,-7,3};
   ali.set_location_values(v);
-  bot_ali_trainer t(&ali);
-  t.run();
+  bot_ali_trainer(&ali).run();
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -96,7 +124,7 @@ int squared_arg_t::testing_area_mask(){
 
 int squared_arg_t::learn(){
   book_t book(BOOK_PATH + "book.csv");
-  bot_ali bot(-1,-1); 
+  bot_ali bot; 
   book.learn(&bot);
   return PARSING_IGNORE_OTHER_ARGS;
 }
@@ -109,32 +137,29 @@ int squared_arg_t::set_board(){
   return 2;
 }
 
-int squared_arg_t::set_black_level()
+int squared_arg_t::set_level(int color)
 {
   if(!parser->has_enough_args(2)){
     return PARSING_ERROR;
   }
   int lvl = from_str<int>(parser->get_arg(1));
   int perf_lvl = from_str<int>(parser->get_arg(2));
-  gc.add_bot(BLACK,lvl,perf_lvl);
+  gc.add_bot(color,lvl,perf_lvl);
   if(!use_book){
-    gc.bot[BLACK]->disable_book();
+    gc.bot[color]->disable_book();
   }
   return 3;
 }
 
+
+int squared_arg_t::set_black_level()
+{
+  return set_level(BLACK);
+}
+
 int squared_arg_t::set_white_level()
 {
-  if(!parser->has_enough_args(2)){
-    return PARSING_ERROR;
-  }
-  int lvl = from_str<int>(parser->get_arg(1));
-  int perf_lvl = from_str<int>(parser->get_arg(2));
-  gc.add_bot(WHITE,lvl,perf_lvl);
-  if(!use_book){
-    gc.bot[WHITE]->disable_book();
-  }
-  return 3;
+  return set_level(WHITE);
 }
 
 int squared_arg_t::randomize_board()
@@ -142,7 +167,9 @@ int squared_arg_t::randomize_board()
   if(!parser->has_enough_args(1)){
     return PARSING_ERROR;    
   }
-  gc.board_state.b = gc.board_state.b.do_random_moves(from_str<int>(parser->get_arg(1)));
+  board* b = &gc.board_state.b;
+  int move_count = from_str<int>(parser->get_arg(1));
+  *b = b->do_random_moves(move_count);
   return 2;  
 }
 

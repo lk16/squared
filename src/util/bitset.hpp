@@ -86,5 +86,4 @@ inline bits64 bits64_rotate(bits64 x,int n)
   return x;
 }
 
-
 void bits64_show(bits64 b);

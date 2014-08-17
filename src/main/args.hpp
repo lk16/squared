@@ -19,6 +19,10 @@ struct squared_arg_t
   
   void init_map();
   
+  
+  int set_valuation(int color);
+  int set_level(int color);
+  
   // modifiers
   int show_help();
   int show_board();
@@ -31,8 +35,9 @@ struct squared_arg_t
   int compress_book();
   int minus_q_flag();
   int no_book();
-  int set_valuation(int color);
   int set_white_valuation();
   int set_black_valuation();
   int train_bot_ali();
+  int set_bot_type();
+  int loop_game();
 };

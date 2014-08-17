@@ -32,3 +32,4 @@ template<class T>
 inline bool out_bounds(T x,T min,T max){
   return x<min || x>max;        
 }
+

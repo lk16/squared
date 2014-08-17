@@ -272,12 +272,10 @@ int board::get_disc_diff() const
 
 
 bits64 board::do_move(int move_id)
-{
-  // disabled for testing purposes
-  // assert(is_valid_move(move_id));
-  
-  //return (this->*move_funcs[move_id])(); 
-  //return do_move_experimental(move_id);
+{  
+  return (this->*move_funcs[move_id])(); 
+#if 0  
+  return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
   
@@ -355,17 +353,16 @@ bits64 board::do_move(int move_id)
   switch_turn();
   
   return result;
+#endif
 }
 
 
 
 std::string board::to_string() const {
   /* format:
-   * byte 0: '0'
-   * byte 1: reserved for rotation purposes
-   * byte 2-17: hex notation of me
-   * byte 18-33: hex notation of opp
-   * byte 34: \0
+   * byte 0-15: hex notation of me
+   * byte 16-31: hex notation of opp
+   * byte 32: \0
    */
   char res[33];  
   const char hex[17] = "0123456789abcdef";
@@ -456,19 +453,19 @@ board board::rotate(int n) const
 
 std::string board::to_database_string() const
 {
-  std::string min_str = to_string();
-  
-  for(int i=1;i<8;i++){
-    std::string str = rotate(i).to_string();
-    min_str = (str < min_str) ? str : min_str;
-  }
-  
-  return min_str; 
+  return to_database_board().to_string(); 
 }
 
 board board::to_database_board() const
 {
-  return board(to_database_string());
+  board min = *this;
+  
+  for(int i=1;i<8;i++){
+    board x = rotate(i);
+    min = ((x.me == me) ? (x.opp < opp) : (x.me < me)) ? x : min;
+  }
+  
+  return min; 
 }
 
 
@@ -498,11 +495,6 @@ bits64 board::do_move_experimental(const int field_id){
     case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
     default: left_border_mask = 0x0; break;
   }
-  
-  /*right_border_mask = 0xFEFEFEFEFEFEFEFE;
-  left_border_mask  = 0x7F7F7F7F7F7F7F7F;
-  */
-  
   
   /* down */
   if(field_id/8 < 6){
@@ -546,7 +538,7 @@ bits64 board::do_move_experimental(const int field_id){
   
   /* right down */
   if((field_id%8 < 6) && (field_id/8 < 6)){
-    line = (0x0040201008040201 << field_id) & right_border_mask;
+    line = (0x8040201008040200 << field_id) & right_border_mask;
     end = bits64_find_first(line & me);
     line &= bits64_before[end];
     if((opp & line) == line){

@@ -7,7 +7,8 @@ game_control::game_control()
   board_state.b.reset();
   board_state.turn = BLACK;
   quit_if_game_over = false;
-
+  loop_game = false;
+  bot_type = "ali";
 }
 
 
@@ -158,6 +159,9 @@ void game_control::on_game_ended()
     mw->hide();
     exit(0);
   }
+  if(loop_game){
+    on_new_game();
+  }
 }
 
 bool game_control::timeout_handler()
@@ -183,7 +187,8 @@ void game_control::add_bot(int c, int d,int pd)
   if(bot[c]){
     delete bot[c];
   }
-  bot[c] = new bot_ali(d,pd);
+  bot[c] = bot_registration::bots()[bot_type](); 
+  bot[c]->set_search_depth(d,pd);
 }
 
 void game_control::remove_bot(int c)

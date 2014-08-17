@@ -67,7 +67,7 @@ class bot_ali:
   
   
 public:
-  bot_ali(int _search_depth,int _perfect_depth);
+  bot_ali();  
   ~bot_ali();
   
   /// picks a move!
