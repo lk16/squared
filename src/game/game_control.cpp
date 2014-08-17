@@ -72,6 +72,9 @@ void game_control::on_any_move()
     }
   }
   mw->update_fields();
+  if(bot[BLACK] && bot[WHITE]){
+    board_state.b.show();
+  }
 }
 
 
