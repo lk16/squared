@@ -276,7 +276,7 @@ inline bool board::has_valid_moves() const
 
 inline int board::count_valid_moves() const
 {
-  return count_64(get_valid_moves());  
+  return bits64_count(get_valid_moves());  
 }
 
 inline bool board::is_valid_move(int field_id) const
@@ -436,11 +436,11 @@ inline int board::get_rotation(const board* b) const
 
 inline int board::count_discs() const
 {
-  return count_64(get_non_empty_fields());
+  return bits64_count(get_non_empty_fields());
 }
 
 inline int board::count_empty_fields() const
 {
-  return count_64(get_empty_fields());
+  return bits64_count(get_empty_fields());
 }
 

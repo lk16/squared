@@ -1,20 +1,19 @@
-#include "bots/bot_moves.hpp"
+#include "bots/bot_test.hpp"
 
-REGISTER_BOT(moves);
+REGISTER_BOT(test);
 
-bot_moves::bot_moves(){
-  set_name("moves");
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
+bot_test::bot_test(){
+  set_name("test");
 }
 
 
-bot_moves::~bot_moves(){  
+bot_test::~bot_test(){  
 }
 
-int bot_moves::heuristic()
+int bot_test::heuristic()
 {
   int res = inspected.count_valid_moves();
-  board copy = inspected; 
+  board copy = inspected;
   copy.switch_turn();
   int opp_move_count = copy.count_valid_moves();
   if(res==0 && opp_move_count==0){
@@ -22,7 +21,7 @@ int bot_moves::heuristic()
   }
   res -= opp_move_count;
   
-  res += 3 *(
+  res += 2 *(
       bits64_count(inspected.me & board::location[0]) 
       - bits64_count(inspected.opp & board::location[0])
   );
@@ -32,8 +31,5 @@ int bot_moves::heuristic()
 }
 
   
-void bot_moves::on_new_game(){
-  if(get_use_book()){
-    book->reload();
-  }
+void bot_test::on_new_game(){
 }

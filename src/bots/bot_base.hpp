@@ -5,11 +5,12 @@
 #include <string>
 #include <sys/time.h>
 
+#include "bots/bot_register.hpp"
+#include "book/book.hpp"
+#include "game/board.hpp"
 #include "util/const.hpp"
 #include "util/math.hpp"
 #include "util/dummystream.hpp"
-#include "game/board.hpp"
-#include "bots/bot_register.hpp"
 
 class bot_base{
 
@@ -32,16 +33,17 @@ class bot_base{
   std::string name;
   int search_depth;
   int perfect_depth;
-  bool use_book;
   std::ostream* output_stream;
   
 public: 
   
   stat_t stats;
+  book_t* book;
+  
   
   /// ctor
   bot_base();
-  
+    
   /// dtor
   virtual ~bot_base();
 
@@ -68,10 +70,10 @@ public:
 inline bot_base::~bot_base()
 {}
 
-
 inline bot_base::bot_base():
   name("base"),
-  output_stream(&std::cout)
+  output_stream(&std::cout),
+  book(nullptr)
 {
 }
 
@@ -134,7 +136,10 @@ inline void bot_base::stat_t::inc_nodes()
 
 inline void bot_base::disable_book()
 {
-  use_book = false;
+  if(book){
+    delete book;
+    book = nullptr;
+  }
 }
 
 inline void bot_base::disable_shell_output()
@@ -159,7 +164,7 @@ inline std::ostream& bot_base::output()
 
 inline bool bot_base::get_use_book() const
 {
-  return use_book;
+  return book!=nullptr;
 }
 
 

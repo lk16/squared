@@ -140,8 +140,8 @@ void game_control::on_game_ended()
   //board_state.b.show();
   std::cout << board_state.b.to_string() << std::endl;
   
-  int b_count = count_64(board_state.b.opp);
-  int w_count = count_64(board_state.b.me);
+  int b_count = bits64_count(board_state.b.opp);
+  int w_count = bits64_count(board_state.b.me);
   
   if(board_state.turn == BLACK){
     std::swap<int>(b_count,w_count);

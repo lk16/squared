@@ -27,14 +27,21 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
 {
   board b(bs);
   
-  return true
-    && in_bounds<int>(bv.depth,0,60) 
-    && in_bounds<int>(bv.best_move,0,63)
-    && (bs.length() == 32)
-    && ((b.me & b.opp) == 0ull)
-    && (((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)
-    && b.is_valid_move(bv.best_move)
-    && (b == b.to_database_board());
+  if(!in_bounds<int>(bv.depth,0,60)){
+    return false; } 
+  if(!in_bounds<int>(bv.best_move,0,63)){ 
+    return false; } 
+  if(!(bs.length() == 32)){ 
+    return false; } 
+  if(!((b.me & b.opp) == 0ull)){ 
+    return false; } 
+  if(!(((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)){ 
+    return false; } 
+  if(!(b.is_valid_move(bv.best_move))){ 
+    return false; } 
+  if(!(b == b.to_database_board())){ 
+    return false; }
+  return true;
 }
 
 book_t::value::value(const csv::line_t& line)
@@ -145,12 +152,12 @@ void book_t::learn(bot_base* bot)
   
 }
 
-void book_t::add(const board* before,const board* after,int depth)
+bool book_t::add(const board* before,const board* after,int depth)
 {
   board before_normalized = before->to_database_board();
   int rot = before->get_rotation(&before_normalized);
   board after_normalized = after->rotate(rot);
-  std::string str = after_normalized.to_string();
+  std::string str = before_normalized.to_string();
   
   
   citer it = data.find(str);
@@ -168,7 +175,7 @@ void book_t::add(const board* before,const board* after,int depth)
     
     if(!is_correct_entry(str,v)){
       std::cout << "WARNING: attempting to add invalid value to book!\n";
-      return;
+      return false;
     }
     
     
@@ -179,7 +186,10 @@ void book_t::add(const board* before,const board* after,int depth)
     csv_file.append_line(book_line);
     
     data[str] = v;
+    
+    return true;
   }
+  return false;
 }
 
 
@@ -232,7 +242,7 @@ void book_t::clean() const
   /* remove backup file */
   std::remove((get_filename() + ".bak").c_str());
   
-  std::cout << "Successfully cleaned the book." << std::endl;
+  std::cout << "Successfully cleaned \"" << get_filename() << "\"" << std::endl;
   
 }
 

@@ -4,11 +4,11 @@
 #include "util/string.hpp"
 #include "bots/bot_pvs.hpp"
 
-struct bot_moves:
+struct bot_test:
   public bot_pvs
 {
-  bot_moves();  
-  virtual ~bot_moves();
+  bot_test();  
+  virtual ~bot_test();
   
   virtual void on_new_game();
   virtual int heuristic();

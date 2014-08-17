@@ -124,9 +124,10 @@ int squared_arg_t::testing_area_mask(){
 }
 
 int squared_arg_t::learn(){
-  book_t book(BOOK_PATH + "book.csv");
-  bot_ali bot; 
-  book.learn(&bot);
+  bot_base* bot = bot_registration::bots()[gc.bot_type]();
+  book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
+  book.learn(bot);
+  delete bot;
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -176,7 +177,7 @@ int squared_arg_t::randomize_board()
 
 int squared_arg_t::compress_book()
 {
-  book_t book(BOOK_PATH + "book.csv");
+  book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
   book.clean();
   start_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;

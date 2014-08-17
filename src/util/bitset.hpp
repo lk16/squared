@@ -29,7 +29,7 @@ inline int bits64_find_last(bits64 b){
 }
 
 // returns number of set bits in b
-inline int count_64(bits64 b){
+inline int bits64_count(bits64 b){
 #if 0
   return __builtin_popcountll(b);
 #else

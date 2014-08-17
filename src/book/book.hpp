@@ -9,8 +9,9 @@
 #include <unistd.h>
 
 #include "game/board.hpp"
-#include "bots/bot_base.hpp"
 #include "util/csv.hpp"
+
+struct bot_base;
 
 class book_t{
 
@@ -42,7 +43,7 @@ public:
   book_t();
   book_t(const std::string& _filename);
 
-  void add(const board* before,const board* after,int depth);
+  bool add(const board* before,const board* after,int depth);
 
   void clean() const;
   

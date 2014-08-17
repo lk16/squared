@@ -311,7 +311,7 @@ board demo_rotate_left(const board* b){
 }
 
 void testing_area(){
-  for(int i=0;i<256;i++){
+  /*for(int i=0;i<256;i++){
     std::cout << "0x";
     std::cout.fill('0');
     std::cout.width(16);
@@ -324,6 +324,22 @@ void testing_area(){
   b = b.do_random_moves(9);
   b.show();
   b = demo_rotate_left(&b);
-  b.show();
+  b.show();*/
+  
+  board b;
+  while(true){
+    b.reset();
+    b = b.do_random_moves(9);
+    if(b.to_database_board() != b.to_database_board().to_database_board()){
+      std::cout << b.to_string() << '\n';
+      b.show();
+      b.to_database_board().show();
+      b.to_database_board().to_database_board().show();
+      return;
+    }
+    else{
+      std::cout << '.' << std::flush;
+    }
+  }
   
 }

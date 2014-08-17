@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+
 project(squared)
 
 find_package(PkgConfig)
@@ -41,25 +43,13 @@ include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
 include_directories(${GTK_PLUS_LIBRARY_DIRS})
 include_directories(${GTK_PLUS_INCLUDE_DIRS})
 
+file(GLOB SOURCE_FILES
+    "*.cpp"
+    "*/*.cpp"
+)
+
 add_executable(../squared
-  bots/bot_ali.cpp
-  bots/bot_ali_trainer.cpp
-  bots/bot_random.cpp
-  bots/bot_moves.cpp    
-  bots/bot_register.cpp
-  book/book.cpp
-  game/board.cpp
-  game/board_move.cpp
-  game/game_control.cpp
-  gui/main_window.cpp
-  gui/preferences_dialog.cpp
-  gui/clickable_image.cpp
-  main/args.cpp
-  main/squared.cpp
-  main/testing.cpp
-  util/bitset.cpp
-  util/csv.cpp
-  util/string.cpp
+  ${SOURCE_FILES}
 )
 
 target_link_libraries(../squared
