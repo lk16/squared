@@ -4,7 +4,7 @@ std::string big_number(long long x){
   std::stringstream ss;
   if(x>10000000000l){
     x /= 1000000000l;
-    ss << x << 'G';
+    ss << x << 'G'; 
   }
   else if(x>10000000l){
     x /= 1000000l;

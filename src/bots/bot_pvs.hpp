@@ -1,0 +1,60 @@
+#pragma once
+
+#include "bots/bot_base.hpp"
+
+class bot_pvs:
+  public bot_base
+{
+  
+  enum eval_mode{
+    ONE_MOVE_MODE,
+    NORMAL_MODE,
+    PERFECT_MODE,
+    BOOK_MODE
+  };
+  
+  int search_max_sort_depth;
+  int search_max_discs;
+  
+public:
+  board inspected;
+  
+  
+  bot_pvs();  
+  
+  ~bot_pvs();
+  
+  // picks a move!
+  virtual void do_move(const board* b,board* res);
+  
+  // does the only move, no evaluation necessary
+  void do_move_one_possibility(const board* b,board* res);
+
+  // evaluates and performs a move normally
+  void do_move_normally(const board* b,board* res);
+  
+  // evaluates and performs the perfect move
+  void do_move_perfectly(const board* b,board* res);
+  
+  // attempts to board is in book, returns whether successful
+  bool do_move_book(const board* b,board* res);
+  
+  // does something when a new game starts
+  virtual void on_new_game() = 0;
+  
+  // calculates the heuristic for this->inspected
+  virtual int heuristic() = 0;
+  
+  // performs principle variation search, unsorted
+  int pvs_unsorted(int alpha, int beta);
+  
+  // performs principle variation search, sorted
+  int pvs_sorted(int alpha,int beta);
+  
+  // performs null window search
+  int pvs_null_window(int alpha);
+  
+  // calculates the result for perfect play of this->inspected
+  int pvs_exact(int alpha, int beta);
+  
+};

@@ -2,7 +2,7 @@
 
 void bot_ali_trainer::modify_ali(const bot_ali* origin, bot_ali* target)
 {
-  target->set_search_depth(origin->search_depth,origin->perfect_depth);
+  target->set_search_depth(origin->get_search_depth(),origin->get_perfect_depth());
   const int* tmp = origin->get_location_values();
   int v[10];
   std::copy(tmp,tmp+10,v);

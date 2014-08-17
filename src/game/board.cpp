@@ -256,8 +256,8 @@ int board::get_disc_diff() const
 {
   int count[2];
   
-  count[0] = count_64(me);
-  count[1] = count_64(opp);
+  count[0] = bits64_count(me);
+  count[1] = bits64_count(opp);
   
   if(count[0] > count[1]){ /* I win */
     return 64 - (2*count[1]);
@@ -462,7 +462,14 @@ board board::to_database_board() const
   
   for(int i=1;i<8;i++){
     board x = rotate(i);
-    min = ((x.me == me) ? (x.opp < opp) : (x.me < me)) ? x : min;
+    if(x.me == min.me){
+      if(x.opp < min.opp){
+        min = x;
+      }
+    }
+    else if(x.me < min.me){
+      min = x;
+    }
   }
   
   return min; 
