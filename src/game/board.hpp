@@ -29,7 +29,21 @@ struct board{
   // location on board, for table see source file 
   static const bits64 location[10];    
   
-
+  // 0,1,2,3,3,2,1,0,
+  // 1,4,5,6,6,5,4,1,
+  // 2,5,7,8,8,7,5,2,
+  // 3,6,8,9,9,8,6,3,
+  // 3,6,8,9,9,8,6,3,
+  // 2,5,7,8,8,7,5,2,
+  // 1,4,5,6,6,5,4,1,
+  // 0,1,2,3,3,2,1,0
+  
+  enum square_names{
+    X_SQUARES = 0,
+    C_SQUARES = 1,
+    B_SQUARES = 2,
+    A_SQUARES = 3
+  };
   
   enum fields{
     A1,A2,A3,A4,A5,A6,A7,A8,
