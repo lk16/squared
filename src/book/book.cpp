@@ -159,7 +159,6 @@ bool book_t::add(const board* before,const board* after,int depth)
   board after_normalized = after->rotate(rot);
   std::string str = before_normalized.to_string();
   
-  
   citer it = data.find(str);
   if(true 
     && (before->count_discs() < ENTRY_MAX_DISCS)
@@ -169,8 +168,7 @@ bool book_t::add(const board* before,const board* after,int depth)
     
     csv::line_t book_line;
     int move = get_move_index(&before_normalized,&after_normalized);
-    
-    
+
     value v(move,depth);
     
     if(!is_correct_entry(str,v)){

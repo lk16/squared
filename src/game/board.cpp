@@ -360,11 +360,9 @@ bits64 board::do_move(int move_id)
 
 std::string board::to_string() const {
   /* format:
-   * byte 0: '0'
-   * byte 1: reserved for rotation purposes
-   * byte 2-17: hex notation of me
-   * byte 18-33: hex notation of opp
-   * byte 34: \0
+   * byte 0-15: hex notation of me
+   * byte 16-31: hex notation of opp
+   * byte 32: \0
    */
   char res[33];  
   const char hex[17] = "0123456789abcdef";
