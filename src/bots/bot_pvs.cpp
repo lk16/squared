@@ -9,12 +9,31 @@ bot_pvs::~bot_pvs()
 {
 }
 
+void bot_pvs::do_sorting(board* children, int child_count)
+{
+  int heur[32];
+  
+  int tmp_search_max_discs = inspected.count_discs() + 2;
+  std::swap(tmp_search_max_discs,search_max_discs);
+  
+  for(int i=0;i<child_count;i++){
+    //heur[i] = -children[i].count_valid_moves();
+    std::swap(inspected,children[i]);
+    heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+    std::swap(inspected,children[i]);
+  }
+  
+  std::swap(tmp_search_max_discs,search_max_discs);
+  
+  ugly_sort<board>(children,heur,child_count);
+}
+
+
 int bot_pvs::pvs_sorted(int alpha, int beta)
 {
   stats.inc_nodes();
   
-  int depth_left = 
-    (int)inspected.count_discs() - search_max_discs;
+  int depth_left = inspected.count_discs() - search_max_discs;
   
   if(depth_left > search_max_sort_depth){
     return pvs_unsorted(alpha,beta);
@@ -41,22 +60,8 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     
   board children[32]; 
   int child_count = inspected.get_children(children) - children;
-  int heur[32];
   
-  int tmp_search_max_discs = inspected.count_discs() + 2;
-  std::swap(tmp_search_max_discs,search_max_discs);
-  
-  for(int i=0;i<child_count;i++){
-    //heur[i] = -children[i].count_valid_moves();
-    std::swap(inspected,children[i]);
-    heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
-    std::swap(inspected,children[i]);
-  }
-  
-  std::swap(tmp_search_max_discs,search_max_discs);
-  
-  ugly_sort<board>(children,heur,child_count);
-  
+  do_sorting(children,child_count);
   
   
   std::swap<board>(inspected,children[0]);
@@ -75,14 +80,14 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
   for(int i=1;i<child_count;i++){
     
     std::swap<board>(inspected,children[i]);
-    score = -pvs_null_window(-alpha-1);
-    std::swap<board>(inspected,children[i]);
     
+    score = -pvs_null_window(-alpha-1);
     if((alpha < score) && (score < beta)){
-      std::swap<board>(inspected,children[i]);
-      score = -pvs_sorted(-beta,-alpha);
-      std::swap<board>(inspected,children[i]);
-    }
+     score = -pvs_sorted(-beta,-score);
+    } 
+    
+    std::swap<board>(inspected,children[i]);
+      
     
     if(score >= beta){
       return beta;
@@ -101,7 +106,7 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
 {
   stats.inc_nodes();
     
-  if(inspected.count_discs() == search_max_discs){
+  if(inspected.count_discs() >= search_max_discs){
     return heuristic();
   }
   
@@ -121,11 +126,9 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
   }
 
   int move = bits64_find_first(valid_moves);
-  board backup = inspected;  
-  
-  inspected.do_move(move);
+  bits64 undo_data = inspected.do_move(move);
   int score = -pvs_unsorted(-beta,-alpha);
-  inspected = backup;
+  inspected.undo_move(move,undo_data);
 
   if(score >= beta){
     return beta;
@@ -137,16 +140,15 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
   
   while(valid_moves != 0ull){
     move = bits64_find_first(valid_moves);
+    undo_data = inspected.do_move(move);
     
-    inspected.do_move(move);
     score = -pvs_null_window(-alpha-1);
-    inspected = backup;
-    
     if((alpha < score) && (score < beta)){
-      inspected.do_move(move);
-      score = -pvs_unsorted(-beta,-alpha);
-      inspected = backup;
+      score = -pvs_unsorted(-beta,-score);
     }
+    
+    inspected.undo_move(move,undo_data);
+    
     if(score >= beta){
       return beta;
     }
@@ -162,7 +164,7 @@ int bot_pvs::pvs_null_window(int alpha)
 {
   stats.inc_nodes();
   
-  if(inspected.count_discs() == search_max_discs){
+  if(inspected.count_discs() >= search_max_discs){
     return heuristic();
   }
 
@@ -184,18 +186,12 @@ int bot_pvs::pvs_null_window(int alpha)
   
   while(valid_moves != 0ull){
     int move = bits64_find_first(valid_moves);
-    bits64 undo_data;
-    int score;
-    
-    undo_data = inspected.do_move(move);
-    score = -pvs_null_window(-(alpha+1));
+    bits64 undo_data = inspected.do_move(move);
+    int score = -pvs_null_window(-(alpha+1));
     inspected.undo_move(move,undo_data);
     
-    if(score >= (alpha+1)){
-      return (alpha+1);
-    }
-    if(score >= alpha){
-      alpha = score;
+    if(score > alpha){
+      return alpha+1;
     }
     valid_moves &= bits64_reset[move];
   }
@@ -225,31 +221,32 @@ int bot_pvs::pvs_exact(int alpha, int beta)
     return heur;
   }
 
-  bool null_window = false;
+  int move = bits64_find_first(valid_moves);
+  
+  bits64 undo_data = inspected.do_move(move);
+  int score = -pvs_exact(-beta,-alpha);
+  inspected.undo_move(move,undo_data);
+  
+  if(score >= beta){
+    return beta;
+  }
+  if(score >= alpha){
+    alpha = score;
+  }
+  valid_moves &= bits64_reset[move];
   
   while(valid_moves != 0ull){
     
-    int move = bits64_find_first(valid_moves);
-    bits64 undo_data;
-    int score;
+    move = bits64_find_first(valid_moves);
     
+    undo_data = inspected.do_move(move);
     
-    if(null_window){
-      undo_data = inspected.do_move(move);
-      score = -pvs_exact(-alpha-1,-alpha);
-      inspected.undo_move(move,undo_data);
-      
-      if((alpha < score) && (score < beta)){
-        undo_data = inspected.do_move(move);
-        score = -pvs_exact(-beta,-alpha);
-        inspected.undo_move(move,undo_data);
-      }
+    score = -pvs_exact_null_window(-alpha-1);
+    if((alpha < score) && (score < beta)){
+      score = -pvs_exact(-beta,-score);
     }
-    else{
-      undo_data = inspected.do_move(move);
-      score = -pvs_exact(-beta,-alpha);
-      inspected.undo_move(move,undo_data);
-    }
+    
+    inspected.undo_move(move,undo_data);
     
     if(score >= beta){
       return beta;
@@ -257,7 +254,52 @@ int bot_pvs::pvs_exact(int alpha, int beta)
     if(score >= alpha){
       alpha = score;
     }
-    null_window = true;
+    valid_moves &= bits64_reset[move];
+  }
+  return alpha;
+}
+
+int bot_pvs::pvs_exact_null_window(int alpha)
+{
+  stats.inc_nodes();
+  
+  bits64 valid_moves = inspected.get_valid_moves();
+
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_exact_null_window(-(alpha+1));
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+
+  int move = bits64_find_first(valid_moves);
+  
+  bits64 undo_data = inspected.do_move(move);
+  int score = -pvs_exact_null_window(-(alpha+1));
+  inspected.undo_move(move,undo_data);
+  
+  if(score > alpha){
+    return alpha+1;
+  }
+  valid_moves &= bits64_reset[move];
+  
+  while(valid_moves != 0ull){
+    
+    move = bits64_find_first(valid_moves);
+    
+    undo_data = inspected.do_move(move);
+    score = -pvs_exact_null_window(-alpha-1);
+    inspected.undo_move(move,undo_data);
+    
+    if(score > alpha){
+      return alpha+1;
+    }
     valid_moves &= bits64_reset[move];
   }
   return alpha;

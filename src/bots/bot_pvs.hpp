@@ -26,6 +26,15 @@ public:
   
   // picks a move!
   virtual void do_move(const board* b,board* res);
+    
+  // does something when a new game starts
+  virtual void on_new_game() = 0;
+  
+  // calculates the heuristic for this->inspected
+  virtual int heuristic() = 0;
+  
+  // sort children
+  void do_sorting(board* children,int n);
   
   // does the only move, no evaluation necessary
   void do_move_one_possibility(const board* b,board* res);
@@ -36,15 +45,9 @@ public:
   // evaluates and performs the perfect move
   void do_move_perfectly(const board* b,board* res);
   
-  // attempts to board is in book, returns whether successful
+  // performs best move if found in book, returns whether successful
   bool do_move_book(const board* b,board* res);
-  
-  // does something when a new game starts
-  virtual void on_new_game() = 0;
-  
-  // calculates the heuristic for this->inspected
-  virtual int heuristic() = 0;
-  
+
   // performs principle variation search, unsorted
   int pvs_unsorted(int alpha, int beta);
   
@@ -56,5 +59,8 @@ public:
   
   // calculates the result for perfect play of this->inspected
   int pvs_exact(int alpha, int beta);
+  
+  // performs null window search for perfect play of this->inspected
+  int pvs_exact_null_window(int alpha);
   
 };
