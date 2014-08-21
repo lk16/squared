@@ -6,8 +6,7 @@
 
 REGISTER_BOT(ali);
 
-bot_ali::bot_ali():
-  tpt(&board_hasher)
+bot_ali::bot_ali()
 {
   set_name("ali");
   book = new book_t(BOOK_PATH + get_name() + "_book.csv");

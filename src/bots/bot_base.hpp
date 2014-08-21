@@ -28,8 +28,6 @@ class bot_base{
     void inc_nodes();
   };
   
-  
-  
   std::string name;
   int search_depth;
   int perfect_depth;
@@ -40,25 +38,27 @@ public:
   stat_t stats;
   book_t* book;
   
-  
-  /// ctor
+  // ctor
   bot_base();
     
-  /// dtor
+  // dtor
   virtual ~bot_base();
 
-  /// calculate best move of b and put it in res
+  // perform a move on board in, put result in out
   virtual void do_move(const board* in,board* out) = 0;
   
-  
+  // perform some action when a new game starts
   virtual void on_new_game() = 0;
+  
+  // output stream to be used instead of std::cout
+  // may for example return reference to dummystream
+  std::ostream& output();
   
   int get_search_depth() const;
   int get_perfect_depth() const;
   bool get_use_book() const;
   std::string get_name() const;
   
-  std::ostream& output();
   
   void set_search_depth(int _search_depth,int _perfect_depth);
   void set_name(const std::string& _name);

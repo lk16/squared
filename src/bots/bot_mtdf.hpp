@@ -2,7 +2,7 @@
 
 #include "bots/bot_base.hpp"
 
-class bot_pvs:
+class bot_mtdf:
   public bot_base
 {
   
@@ -23,9 +23,9 @@ public:
   board inspected;
   
   
-  bot_pvs();  
+  bot_mtdf();  
   
-  ~bot_pvs();
+  ~bot_mtdf();
   
   // picks a move!
   virtual void do_move(const board* b,board* res);
@@ -36,10 +36,7 @@ public:
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
   
-  // sort children
-  void do_sorting(board* children,int n);
-  
-  // does the only move, no evaluation necessary
+   // does the only move, no evaluation necessary
   void do_move_one_possibility(const board* b,board* res);
 
   // evaluates and performs a move normally
@@ -51,19 +48,16 @@ public:
   // performs best move if found in book, returns whether successful
   bool do_move_book(const board* b,board* res);
 
-  // performs principle variation search, unsorted
-  int pvs_unsorted(int alpha, int beta);
-  
-  // performs principle variation search, sorted
-  int pvs_sorted(int alpha,int beta);
+  // performs mtdf search
+  int mtdf(int f);
   
   // performs null window search
-  int pvs_null_window(int alpha);
+  int null_window(int alpha);
   
-  // calculates the result for perfect play of this->inspected
-  int pvs_exact(int alpha, int beta);
+  // performs mtdf search perfectly
+  int mtdf_exact(int f);
   
   // performs null window search for perfect play of this->inspected
-  int pvs_exact_null_window(int alpha);
+  int null_window_exact(int alpha);
   
 };

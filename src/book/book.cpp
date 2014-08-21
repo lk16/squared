@@ -27,21 +27,14 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
 {
   board b(bs);
   
-  if(!in_bounds<int>(bv.depth,0,60)){
-    return false; } 
-  if(!in_bounds<int>(bv.best_move,0,63)){ 
-    return false; } 
-  if(!(bs.length() == 32)){ 
-    return false; } 
-  if(!((b.me & b.opp) == 0ull)){ 
-    return false; } 
-  if(!(((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)){ 
-    return false; } 
-  if(!(b.is_valid_move(bv.best_move))){ 
-    return false; } 
-  if(!(b == b.to_database_board())){ 
-    return false; }
-  return true;
+  return true
+  && in_bounds<int>(bv.depth,0,60)
+  && in_bounds<int>(bv.best_move,0,63)
+  && (bs.length() == 32)
+  && ((b.me & b.opp) == 0ull)
+  && (((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)
+  &&  (b.is_valid_move(bv.best_move))
+  && (b == b.to_database_board());
 }
 
 book_t::value::value(const csv::line_t& line)
@@ -112,14 +105,19 @@ void book_t::learn_parallel(bot_base* bot, int threads)
 void book_t::learn(bot_base* bot)
 {
   int learn_level = MIN_LEARN_DEPTH;
-   
+  
+  timeval last_reload,now;
+  gettimeofday(&last_reload,NULL);
+  
+  bool do_reload;
+  
+  
   citer book_citer;
-  
   bot->disable_shell_output();
-  
   print_stats();
   
   while(true){
+    do_reload = false;
     int n_left = 0;
     bot->set_search_depth(learn_level,learn_level);
     
@@ -144,10 +142,25 @@ void book_t::learn(bot_base* bot)
         book_iter->second.depth = learn_level;
         
         n_left--;
+        
+        gettimeofday(&now,NULL);
+        if(now.tv_sec - last_reload.tv_sec > RELOAD_INTERVAL){
+          memcpy(&last_reload,&now,sizeof(timeval));
+          do_reload = true;
+          break;
+        }
+        
       }
     }
     
-    learn_level++;
+    if(do_reload){
+      learn_level = MIN_LEARN_DEPTH; 
+      std::cout << "Reloading book\n";
+      reload();
+    }
+    else{
+      learn_level++;
+    }
   }
   
 }

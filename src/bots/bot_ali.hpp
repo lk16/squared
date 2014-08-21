@@ -15,34 +15,9 @@
 #include "bots/bot_pvs.hpp"
 #include "book/book.hpp"
 
-#define BOT_ALI_USE_MTDF 0
-
 class bot_ali:
   public bot_pvs
 {
-  
-  static const int search_max_sort_depth = 6;
-  
-
-  
-  // transposition table value
-  struct tpt_value{
-    
-    int lower_bound,upper_bound,best_move;
-    
-    tpt_value(){
-      lower_bound = MIN_HEURISTIC;
-      upper_bound = MAX_HEURISTIC;
-      best_move = -1;
-    }
-    
-    tpt_value(int lb,int ub,int bm){
-       lower_bound = lb,upper_bound = ub,best_move = bm;
-    }
-  };
-  
-  hash_table<board,tpt_value,1000001> tpt;
-
   /* This strongly influences the behaviour of ali, should be constant
      during the entire game, but can be changed from default before the
      game starts with set_location_values_from_file */

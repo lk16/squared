@@ -1,17 +1,17 @@
-#include "bots/bot_moves.hpp"
+#include "bots/bot_mtdf_moves.hpp"
 
-REGISTER_BOT(moves);
+REGISTER_BOT(mtdf_moves);
 
-bot_moves::bot_moves(){
-  set_name("moves");
+bot_mtdf_moves::bot_mtdf_moves(){
+  set_name("mtdf_moves");
   book = new book_t(BOOK_PATH + get_name() + "_book.csv");
 }
 
 
-bot_moves::~bot_moves(){  
+bot_mtdf_moves::~bot_mtdf_moves(){  
 }
 
-int bot_moves::heuristic()
+int bot_mtdf_moves::heuristic()
 {
   int res = inspected.count_valid_moves();
   int opp_move_count = inspected.count_opponent_moves();
@@ -29,7 +29,7 @@ int bot_moves::heuristic()
 }
 
   
-void bot_moves::on_new_game(){
+void bot_mtdf_moves::on_new_game(){
   if(get_use_book()){
     book->reload();
   }

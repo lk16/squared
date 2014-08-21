@@ -13,19 +13,19 @@ void bot_pvs::do_sorting(board* children, int child_count)
 {
   int heur[32];
   
-  int tmp_search_max_discs = inspected.count_discs() + 2;
-  std::swap(tmp_search_max_discs,search_max_discs);
+  int tmp = moves_left;
+  moves_left = 2;
   
   for(int i=0;i<child_count;i++){
-    //heur[i] = -children[i].count_valid_moves();
     std::swap(inspected,children[i]);
+    moves_left--;
     heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+    moves_left++;
     std::swap(inspected,children[i]);
   }
   
-  std::swap(tmp_search_max_discs,search_max_discs);
-  
   ugly_sort<board>(children,heur,child_count);
+  moves_left = tmp;
 }
 
 
@@ -33,13 +33,11 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
 {
   stats.inc_nodes();
   
-  int depth_left = inspected.count_discs() - search_max_discs;
-  
-  if(depth_left > search_max_sort_depth){
+  if(moves_left < search_max_sort_depth){
     return pvs_unsorted(alpha,beta);
   }
   
-  if(depth_left == 0){
+  if(moves_left == 0){
     return heuristic();
   }
   
@@ -52,7 +50,7 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
       heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      heur = -pvs_unsorted(-beta,-alpha);
+      heur = -pvs_sorted(-beta,-alpha);
     }
     inspected.switch_turn();
     return heur;
@@ -63,9 +61,10 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
   
   do_sorting(children,child_count);
   
-  
   std::swap<board>(inspected,children[0]);
+  moves_left--;
   int score = -pvs_sorted(-beta,-alpha);
+  moves_left++;
   std::swap<board>(inspected,children[0]);
   
   if(score >= beta){
@@ -81,10 +80,12 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     
     std::swap<board>(inspected,children[i]);
     
+    moves_left--;
     score = -pvs_null_window(-alpha-1);
     if((alpha < score) && (score < beta)){
      score = -pvs_sorted(-beta,-score);
     } 
+    moves_left++;
     
     std::swap<board>(inspected,children[i]);
       
@@ -105,8 +106,8 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
 int bot_pvs::pvs_unsorted(int alpha, int beta)
 {
   stats.inc_nodes();
-    
-  if(inspected.count_discs() >= search_max_discs){
+  
+  if(moves_left == 0){
     return heuristic();
   }
   
@@ -127,7 +128,9 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
 
   int move = bits64_find_first(valid_moves);
   bits64 undo_data = inspected.do_move(move);
+  moves_left--;
   int score = -pvs_unsorted(-beta,-alpha);
+  moves_left++;
   inspected.undo_move(move,undo_data);
 
   if(score >= beta){
@@ -142,10 +145,12 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
     move = bits64_find_first(valid_moves);
     undo_data = inspected.do_move(move);
     
+    moves_left--;
     score = -pvs_null_window(-alpha-1);
     if((alpha < score) && (score < beta)){
       score = -pvs_unsorted(-beta,-score);
     }
+    moves_left++;
     
     inspected.undo_move(move,undo_data);
     
@@ -164,10 +169,9 @@ int bot_pvs::pvs_null_window(int alpha)
 {
   stats.inc_nodes();
   
-  if(inspected.count_discs() >= search_max_discs){
+  if(moves_left == 0){
     return heuristic();
   }
-
   
   bits64 valid_moves = inspected.get_valid_moves();
 
@@ -187,7 +191,9 @@ int bot_pvs::pvs_null_window(int alpha)
   while(valid_moves != 0ull){
     int move = bits64_find_first(valid_moves);
     bits64 undo_data = inspected.do_move(move);
+    moves_left--;
     int score = -pvs_null_window(-(alpha+1));
+    moves_left++;
     inspected.undo_move(move,undo_data);
     
     if(score > alpha){
@@ -338,29 +344,33 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   output() << "bot_" << get_name() << " searching at depth ";
   output() << get_search_depth() << '\n';
 
-  search_max_discs = b->count_discs() + get_search_depth();
-
-  
-  if(get_search_depth() > search_max_sort_depth){
+  if(get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
     
-    search_max_discs -= 4;
+    moves_left = NORMAL_MOVE_SORT_DEPTH;
     
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -pvs_sorted(MIN_HEURISTIC,MAX_HEURISTIC);
+      moves_left--;
+      heurs[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+      moves_left++;
     }
     ugly_sort<board>(children,heurs,child_count);
     
-    search_max_discs += 4;
   }
 
+  moves_left = get_search_depth();
+  
+
+  
   int best_heur,best_id=0;
   
   best_heur = MIN_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
+    moves_left--;
     int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
+    moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
@@ -397,12 +407,10 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
   output() << "bot_" << get_name() << " searching perfectly at depth ";
   output() << b->count_empty_fields() << '\n';
   
-  search_max_discs = b->count_discs() + get_search_depth();
-
   
-  if(get_search_depth() > search_max_sort_depth){
+  if(moves_left > PERFECT_MOVE_SORT_DEPTH){
     
-    search_max_discs -= 4;
+    moves_left = PERFECT_MOVE_SORT_DEPTH;
     
     int heurs[32];
     for(int i=0;i<child_count;i++){
@@ -411,8 +419,9 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
     }
     ugly_sort<board>(children,heurs,child_count);
     
-    search_max_discs += 4;
   }
+  
+  moves_left = 64 - inspected.count_discs();
   
   int best_id = 0;
   int best_heur = MIN_PERFECT_HEURISTIC;

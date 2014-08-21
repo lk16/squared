@@ -115,6 +115,9 @@ struct board{
   /// returns the number of children, without calculating the actual children
   int count_valid_moves() const;
   
+  /// returns the number of opponent moves  
+  int count_opponent_moves() const;
+  
   bits64 get_empty_fields() const;
   bits64 get_non_empty_fields() const;
   int count_discs() const;
@@ -458,3 +461,108 @@ inline int board::count_empty_fields() const
   return bits64_count(get_empty_fields());
 }
 
+inline int board::count_opponent_moves() const
+{
+  bits64 moves = 0ull;
+  
+  for(int d=4;d<8;d++){
+    
+    assert(board::walk_diff[d][0] > 0);
+    
+    moves |= 
+    (
+    ((me >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
+    & 
+    (
+    ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+    |
+    (
+    ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
+    &
+    (
+    ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+    |
+    (
+    ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
+    &
+    (
+    ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+    |
+    (
+    ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
+    &
+    (
+    ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+    |
+    (
+    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
+    &
+    (
+    ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+    |
+    (
+    ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
+    &
+    ((opp >> board::walk_diff[d][6]) & board::walk_possible[d][6])
+    )
+    )
+    )
+    )  
+    )
+    )
+    )
+    )
+    )
+    )
+    );
+    
+    moves |= 
+    (
+    ((me << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
+    & 
+    (
+    ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
+    |
+    (
+    ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
+    &
+    (
+    ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
+    |
+    (
+    ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
+    &
+    (
+    ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
+    |
+    (
+    ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
+    &
+    (
+    ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
+    |
+    (
+    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
+    &
+    (
+    ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
+    |
+    (
+    ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
+    &
+    ((opp << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
+    )
+    )
+    )
+    )  
+    )
+    )
+    )
+    )
+    )
+    )
+    );
+  }
+  
+  return bits64_count(moves & get_empty_fields());
+}
