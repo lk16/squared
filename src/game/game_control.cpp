@@ -21,7 +21,7 @@ game_control::~game_control()
 
 void game_control::connect_timeout_signal()
 {
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),200);
+  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),20);
 }
 
 
