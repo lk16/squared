@@ -33,6 +33,7 @@ public:
   static const int MIN_LEARN_DEPTH = 9;
   static const int ENTRY_MAX_DISCS = 24;
   static const int NOT_FOUND = -1;
+  static const int RELOAD_INTERVAL = 300;
 
 private:
   
@@ -41,8 +42,9 @@ private:
 
 public:
   book_t();
-  book_t(const std::string& _filename);
-
+  
+  book_t(const std::string& _filename);  
+  
   bool add(const board* before,const board* after,int depth);
 
   void clean() const;

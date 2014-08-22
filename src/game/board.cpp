@@ -273,8 +273,10 @@ int board::get_disc_diff() const
 
 bits64 board::do_move(int move_id)
 {  
+  
+#if 1 
   return (this->*move_funcs[move_id])(); 
-#if 0  
+#else
   return do_move_experimental(move_id);
   
   bits64 tmp_mask,cur_bit,result = 0ull;
