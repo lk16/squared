@@ -87,10 +87,12 @@ void book_t::print_stats() const
     }
   }
   
+  
   for(auto it: book_stats){
     std::cout << "Boards found at depth " << it.first << ": ";
     std::cout << it.second << std::endl;
   }
+  std::cout << "Total boards in book: " << data.size() << std::endl;
 }
 
 void book_t::learn_parallel(bot_base* bot, int threads)
@@ -157,6 +159,7 @@ void book_t::learn(bot_base* bot)
       learn_level = MIN_LEARN_DEPTH; 
       std::cout << "Reloading book\n";
       reload();
+      print_stats();
     }
     else{
       learn_level++;

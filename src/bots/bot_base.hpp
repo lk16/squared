@@ -32,8 +32,12 @@ class bot_base{
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
+  int last_move_heur;
   
 public: 
+  
+  static const int ONE_MOVE_HEUR = 1000000;
+  static const int NO_HEUR_AVAILABLE = 1000001;
   
   stat_t stats;
   book_t* book;
@@ -55,14 +59,23 @@ public:
   std::ostream& output();
   
   int get_search_depth() const;
+  
   int get_perfect_depth() const;
+  
   bool get_use_book() const;
+  
   std::string get_name() const;
   
+  int get_last_move_heur() const;
+  
+  void set_last_move_heur(int heur);
   
   void set_search_depth(int _search_depth,int _perfect_depth);
+  
   void set_name(const std::string& _name);
+  
   void disable_book();
+  
   void disable_shell_output();
   
 };
@@ -76,6 +89,19 @@ inline bot_base::bot_base():
   book(nullptr)
 {
 }
+
+inline void bot_base::set_last_move_heur(int heur)
+{
+  last_move_heur = heur;
+}
+
+
+inline int bot_base::get_last_move_heur() const
+{
+  return last_move_heur;
+}
+
+
 
 inline int bot_base::get_search_depth() const
 {
