@@ -15,9 +15,6 @@
 
 struct board{
   
-  // static constants
-  static const unsigned int border[64]; // border flags
-  
   // contains bitsets of which bits are set when you can walk
   // in direction (1st index) for number of steps (2nd index)
   static const bits64 walk_possible[8][7];
@@ -26,7 +23,7 @@ struct board{
   // in direction (1st index) for number of steps (2nd index)
   static const int walk_diff[8][7];       
   
-  // location on board, for table see source file 
+  // location on board, as displayed below
   static const bits64 location[10];    
   
   // 0,1,2,3,3,2,1,0,
@@ -53,86 +50,97 @@ struct board{
     E1,E2,E3,E4,E5,E6,E7,E8,
     F1,F2,F3,F4,F5,F6,F7,F8,
     G1,G2,G3,G4,G5,G6,G7,G8,
-    H1,H2,H3,H4,H5,H6,H7,H8,
-    PASS
+    H1,H2,H3,H4,H5,H6,H7,H8
   };
 
 
-  // me = discs of player to move
-  // opp = opponent
-  bits64 me,opp;
+  // discs of player to move
+  bits64 me;
   
-  // represents which player is to move:
-  // false means black, true means white
-  /// bool turn;
-    
-  /// does NOTHING; call reset() to initialize
+  // discs of other player
+  bits64 opp;
+  
+  // does NOTHING; call reset() to initialize
   board();
   
-  /// copy ctor
+  // copy ctor
   board(const board& b);
 
-  /// move ctor
+  // move ctor
   board(const board&& b);
   
-  /// ctor from string of board::to_string()
+  // ctor from string returned by board::to_string()
   board(const std::string& in);
-
   
-  /// assigns a board from b
+  // assigns a board from b
   board& operator=(const board& b);
   
-  /// checks for board equality
+  // checks for board equality
   bool operator==(const board& b) const;
+  
+  // checks for board inequality
   bool operator!=(const board& b) const;
   
-  /// checks for ordering
+  // checks for ordering
   bool operator<(const board& b) const;
  
-  /// resets the board to starting position
+  // resets the board to starting position
   void reset();
   
-  /// switches me and opp
+  // switches me and opp
   void switch_turn();
   
-  /// checks whether for *this and this->turn, field_id is a valid move
+  // checks whether field_id is a valid move
+  // WARNING not efficient
   bool is_valid_move(int field_id) const;
     
-  /// out will represent a bitset in which each set bit represents a valid move
+  // returns a bitset of valid moves
   bits64 get_valid_moves() const;
 
+  // returns a bitset which is a superset of all valid moves
   bits64 get_valid_moves_superset() const;
   
+  // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
   
-  /// gets all children from this board
-  /// returns a possibly increased out pointer
+  // gets all children from this board
+  // returns a pointer to the last found child
   board* get_children(board* out) const;
   
-  /// returns whether this board has any children for this->turn
+  // returns whether this board has any valid moves
   bool has_valid_moves() const;
   
-  /// returns the number of children, without calculating the actual children
+  // returns the number of valid moves
   int count_valid_moves() const;
   
-  /// returns the number of opponent moves  
+  // returns the number of opponent moves  
   int count_opponent_moves() const;
   
+  // returns a bitset of empty fields
   bits64 get_empty_fields() const;
+  
+  // returns a bitset of non empty fields
   bits64 get_non_empty_fields() const;
+  
+  // returns the amount of discs on the board
   int count_discs() const;
+  
+  // returns the amount of empty fields on the board
   int count_empty_fields() const;
     
-  /// prints this to standard output, mark moves for current turn with '.'
+  // prints this to standard output, mark moves for current turn with '.'
+  // TODO change into operator<<(std::ostream&);
   void show() const;
   
-  /// returns disc count difference positive means this->turn has more
+  // returns disc count difference 
+  // positive means me has more than opp
   int get_disc_diff() const;
   
-  /// does a move, returns flipped discs
+  // does move field_id
+  // returns flipped discs
   bits64 do_move(int field_id);
   
-  /// experimental code for making specific move functions for each field
+  // experimental code for making specific move functions for each field
   bits64 do_move_experimental(const int field_id);
   
   /// does named move
@@ -200,28 +208,39 @@ struct board{
   bits64 do_move_H6();
   bits64 do_move_H7();
   bits64 do_move_H8();
-  bits64 do_move_pass();
   
-  /// recovers a board state before move field_id, with flipped discs in undo_data 
+  // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(int field_id,bits64 undo_data); 
   
-  /// returns string representation
+  // returns string representation of *this
   std::string to_string() const;
   
-  /// returns string representation modulo rotation
+  // returns string representation of *this modulo rotation
   std::string to_database_string() const;
   
-  /// returns *this modulo rotation
+  // returns index of the move done between *this and *after
+  // if none found returns 64
+  int get_move_index(const board* after) const;
+  
+  // returns *this modulo rotation
   board to_database_board() const;
   
-  /// rotate/mirror the board, 0 <= n <= 7
+  // returns a mirrored or rotated version of *this
+  // 0 <= n <= 7
   board rotate(int n) const;
   
-  /// returns how *this was rotated to get b or -1 if no matches are found
+  // returns how *this was rotated to get *b
+  // returns -1 if no matches are found
   int get_rotation(const board* b) const;
 
   
 };
+
+inline int board::get_move_index(const board* after) const
+{
+  return bits64_find_first(get_non_empty_fields() ^ after->get_non_empty_fields());
+}
+
 
 inline unsigned long long board_hasher(const board b){
   return b.me ^ ((b.opp << 32) | (b.opp >> 32));

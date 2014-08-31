@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <map>
 #include <string>
+#include <queue>
 
 #include <unistd.h>
 
@@ -20,17 +21,29 @@ public:
     static const unsigned NEEDED_COLUMNS = 3;
     
     value(const csv::line_t&);
-    value(int bm,int d);
+    value(int bm,int d,int h);
     value(){} // needed by STL
     
-    int best_move,depth;
+    void add_to_line(csv::line_t* l) const;
+    
+    int best_move,depth,heur;
+  };
+  
+  struct job_t{
+    int priority;
+    board b;
+    value info;
+    
+    job_t(const board& _b,const value& _info,int book_stddev);    
+    bool operator<(const job_t& j) const;
+    void assign_priority(int book_stddev);
   };
   
   typedef std::map<std::string,value> data_type;
   typedef data_type::const_iterator citer;
   typedef data_type::iterator iter;
 
-  static const int MIN_LEARN_DEPTH = 9;
+  static const int MIN_LEARN_DEPTH = 10;
   static const int ENTRY_MAX_DISCS = 24;
   static const int NOT_FOUND = -1;
   static const int RELOAD_INTERVAL = 300;
@@ -45,13 +58,11 @@ public:
   
   book_t(const std::string& _filename);  
   
-  bool add(const board* before,const board* after,int depth);
+  bool add(const board* b,const book_t::value* bv);
 
   void clean() const;
   
   void learn(bot_base* bot);
-
-  void learn_parallel(bot_base* bot,int threads);
   
   value lookup(const board* b,int min_depth);
   
@@ -59,16 +70,12 @@ public:
   
   std::string get_filename() const;
   
-  std::vector<book_t*> split(int n) const;
-  
   void set_csv_file(const std::string& filename);
   
-  bool add_entry(const std::string& bs,const book_t::value& bv);
+  int get_heur_stddev() const;
+  
 private:
-  
-  int get_move_index(const board* before,const board* after);
-  
-  board learn_move(bot_base* bot,const board* b,int depth,int n_left);
+  value do_job(bot_base* bot,const job_t* job);
   
   void print_stats() const;
   

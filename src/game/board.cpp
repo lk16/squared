@@ -1,16 +1,5 @@
 #include "board.hpp"
 
-const unsigned int board::border[64] = {
-  0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-};
-
 const int board::walk_diff[8][7] = {
   {- 9,-18,-27,-36,-45,-54,-63}, // 0: up left
   {- 8,-16,-24,-32,-40,-48,-56}, // 1: up 
@@ -97,7 +86,7 @@ const bits64 board::walk_possible[8][7] = {
   }
 };
 
-bits64 (board::* const move_funcs[65])() = {
+bits64 (board::* const move_funcs[64])() = {
   &board::do_move_A1,
   &board::do_move_A2,
   &board::do_move_A3,
@@ -161,8 +150,7 @@ bits64 (board::* const move_funcs[65])() = {
   &board::do_move_H5,
   &board::do_move_H6,
   &board::do_move_H7,
-  &board::do_move_H8,
-  &board::do_move_pass
+  &board::do_move_H8
 };
 
 
@@ -196,12 +184,9 @@ board* board::get_children(board* out_begin) const
   board* out_end = out_begin;
   bits64 valid_moves = get_valid_moves();
   
-  while(true){
+  while(valid_moves != 0ull){
     
     int move_id = bits64_find_first(valid_moves);
-    if(move_id == 64){
-      break;
-    } 
     
     *out_end = *this;
     out_end->do_move(move_id);
@@ -274,7 +259,7 @@ int board::get_disc_diff() const
 bits64 board::do_move(int move_id)
 {  
   
-#if 1 
+#if 0 
   return (this->*move_funcs[move_id])(); 
 #else
   return do_move_experimental(move_id);
@@ -367,7 +352,7 @@ std::string board::to_string() const {
    * byte 32: \0
    */
   char res[33];  
-  const char hex[17] = "0123456789abcdef";
+  const char* hex = "0123456789abcdef";
   
   
   for(int i=0;i<16;i++){
@@ -557,7 +542,7 @@ bits64 board::do_move_experimental(const int field_id){
   
   /* left up */
   if((field_id%8 > 1) && (field_id/8 > 1)){
-    line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;
+    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
     end = bits64_find_last(line & me);
     line &= bits64_after[end];
     if((opp & line) == line){
@@ -600,11 +585,4 @@ bits64 board::do_move_experimental(const int field_id){
   switch_turn();  
   return flipped;
 }
-
-bits64 board::do_move_pass()
-{
-  switch_turn();
-  return 0ull;
-}
-
 

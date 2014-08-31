@@ -318,14 +318,10 @@ void testing_area(){
     std::cout << std::hex << demo_rotate_left_8bit(i);
     std::cout << ((i%4 == 3) ? ",\n" : ",");
   }
+  */
   
-  board b;
-  b.reset();
-  b = b.do_random_moves(9);
-  b.show();
-  b = demo_rotate_left(&b);
-  b.show();*/
-  
-  bits64_show(0x7e8181818181817e);
+  for(int i=0;i<26;i++){
+    std::cout << i << '\t' << sqrt<int>(i) << '\n';
+  }
   
 }

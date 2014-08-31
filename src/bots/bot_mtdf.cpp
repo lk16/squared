@@ -84,7 +84,10 @@ void bot_mtdf::do_move_normally(const board* b, board* res)
   *res = children[best_id];
   
   if(get_use_book()){
-    if(book->add(b,res,get_search_depth())){
+    int move = b->get_move_index(res);
+    book_t::value v(move,get_search_depth(),best_heur);
+    
+    if(book->add(b,&v)){
       output() << "board was added to book\n";
     }
   }

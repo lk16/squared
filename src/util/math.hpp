@@ -1,6 +1,8 @@
 #pragma once
 
+
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 
 template<class T>
@@ -48,4 +50,9 @@ void ugly_sort(T *t,int* heurs, int count)
       }
     }
   }while(loop);
+}
+
+template<class T>
+inline T sqrt(T x) {
+  return (T)std::sqrt((T)x);
 }

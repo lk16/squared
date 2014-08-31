@@ -36,8 +36,7 @@ class bot_base{
   
 public: 
   
-  static const int ONE_MOVE_HEUR = 1000000;
-  static const int NO_HEUR_AVAILABLE = 1000001;
+  static const int NO_HEUR_AVAILABLE = 1000000;
   
   stat_t stats;
   book_t* book;
