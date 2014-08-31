@@ -9,6 +9,9 @@ bot_pvs::~bot_pvs()
 {
 }
 
+
+
+
 void bot_pvs::do_sorting(board* children, int child_count)
 {
   int heur[32];
@@ -65,6 +68,17 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     
   board children[32]; 
   int child_count = inspected.get_children(children) - children;
+  
+  // this branch is almost never taken
+  if(board::only_similar_siblings(children,child_count)){
+    std::swap<board>(inspected,children[0]);
+    moves_left--;
+    int score = -pvs_sorted(-beta,-alpha);
+    moves_left++;
+    std::swap<board>(inspected,children[0]);
+    return score;
+  }
+  
   
   do_sorting(children,child_count);
   
@@ -349,6 +363,14 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   
   board children[32];
   int child_count = b->get_children(children) - children;
+  
+  if(board::only_similar_siblings(children,child_count)){
+    output() << "bot_" << get_name() << " sees that all moves are similar.\n";
+    set_last_move_heur(0);
+    *res = children[0];
+    return;
+  }
+  
   
   output() << "bot_" << get_name() << " searching at depth ";
   output() << get_search_depth() << '\n';

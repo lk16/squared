@@ -128,9 +128,12 @@ struct board{
   // returns the amount of empty fields on the board
   int count_empty_fields() const;
     
-  // prints this to standard output, mark moves for current turn with '.'
-  // TODO change into operator<<(std::ostream&);
-  void show() const;
+  // returns string displaying this in a ascii art kind of way
+  std::string to_ascii_art() const;
+  
+  // returns string displaying this in a ascii art kind of way
+  // adjusts colors for the right turn
+  std::string to_ascii_art(int turn) const;
   
   // returns disc count difference 
   // positive means me has more than opp
@@ -212,6 +215,9 @@ struct board{
   // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(int field_id,bits64 undo_data); 
   
+  // returns whether all children are the same modulo rotation/mirroring
+  static bool only_similar_siblings(const board* siblings,int n);
+  
   // returns string representation of *this
   std::string to_string() const;
   
@@ -235,6 +241,14 @@ struct board{
 
   
 };
+
+extern bits64 (board::* const move_funcs[64])();
+
+inline bits64 board::do_move(int move_id)
+{  
+  return (this->*move_funcs[move_id])(); 
+}
+
 
 inline int board::get_move_index(const board* after) const
 {

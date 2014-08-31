@@ -8,7 +8,7 @@ game_control::game_control()
   board_state.turn = BLACK;
   quit_if_game_over = false;
   loop_game = false;
-  bot_type = "ali";
+  bot_type = "moves";
 }
 
 
@@ -73,7 +73,7 @@ void game_control::on_any_move()
   }
   mw->update_fields();
   if(bot[BLACK] && bot[WHITE]){
-    board_state.b.show();
+    std::cout << board_state.b.to_ascii_art();
   }
 }
 
@@ -158,7 +158,7 @@ void game_control::on_game_ended()
   mw->update_status_bar(text);
   
   if(quit_if_game_over){
-    board_state.b.show();
+    std::cout << board_state.b.to_ascii_art();
     mw->hide();
     exit(0);
   }

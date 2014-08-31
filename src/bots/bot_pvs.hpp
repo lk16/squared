@@ -16,8 +16,8 @@ class bot_pvs:
   int search_max_sort_depth;
   int moves_left;
   
-  static const int NORMAL_MOVE_SORT_DEPTH = 6;
-  static const int PERFECT_MOVE_SORT_DEPTH = 7;
+  static const int NORMAL_MOVE_SORT_DEPTH = 8;
+  static const int PERFECT_MOVE_SORT_DEPTH = 5;
   
 public:
   board inspected;

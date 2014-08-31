@@ -199,42 +199,16 @@ board* board::get_children(board* out_begin) const
 }
 
 
-
-void board::show() const
+bool board::only_similar_siblings(const board* siblings, int n)
 {
-  int x,y;
+  const board x = siblings[0].to_database_board();
   
-  bits64 black,white;
-  black = (true ? opp : me);
-  white = (true ? me : opp);
-  
-  
-  
-  /* top line */
-  std::cout << "+-----------------+\n";
-  
-  /* middle */
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      if(black & bits64_set[y*8+x]){
-          std::cout << "\033[31;1m@\033[0m ";
-      }
-      else if(white & bits64_set[y*8+x]){
-          std::cout << "\033[34;1m@\033[0m ";
-      }
-      else if(is_valid_move(y*8+x)){
-        std::cout << ". ";
-      }  
-      else{
-        std::cout << "  ";
-      }
+  for(int i=1;i<n;i++){
+    if(siblings[i].to_database_board() != x){
+      return false;
     }
-    std::cout << "|\n";
   }
-  
-  /* bottom line */
-  std::cout << "+-----------------+\n";
+  return true;  
 }
 
 int board::get_disc_diff() const
@@ -255,93 +229,104 @@ int board::get_disc_diff() const
   }
 }
 
-
-bits64 board::do_move(int move_id)
-{  
+std::string board::to_ascii_art() const
+{
+  std::stringstream ss;
   
-#if 0 
-  return (this->*move_funcs[move_id])(); 
-#else
-  return do_move_experimental(move_id);
+  bits64 moves = get_valid_moves();
   
-  bits64 tmp_mask,cur_bit,result = 0ull;
+  // top line 
+  ss << "+-a-b-c-d-e-f-g-h-+\n";
   
-  for(int i=0;i<4;++i){
+  for(int f=0;f<64;f++){
     
-    tmp_mask = 0ull;
-    cur_bit = bits64_set[move_id];
-    
-    
-    while(true){
-      
-      // will i walk off the board next step?
-      if((walk_possible[i][0] & cur_bit) == 0ull){
-        break;
-      }
-      
-      
-      cur_bit >>= board::walk_diff[7-i][0];
-      
-      // current field = my color
-      if((me & cur_bit) != 0ull){
-        result |= tmp_mask;
-        break;
-      }
-      
-      // current field = opponent color
-      if((opp & cur_bit) != 0ull){
-        tmp_mask |= cur_bit;
-        continue;
-      }
-      
-      // current field = empty
-      break;
+    // left line
+    if(f%8 == 0){
+      ss << (f/8)+1 << ' ';
     }
-  }
-  for(int i=4;i<8;++i){
     
-    tmp_mask = 0ull;
-    cur_bit = bits64_set[move_id];
+    bits64 thisbit = bits64_set[f];
     
+    if(me & thisbit){
+      ss << "@ "; // "\033[31;1m@\033[0m ";
+    }
+    else if(opp & thisbit){
+      ss << "+ "; // "\033[34;1m@\033[0m ";
+    }
+    else if(moves & thisbit){
+      ss << ". ";
+    }  
+    else{
+      ss << "  ";
+    }
     
-    while(true){
-      
-      // will i walk off the board next step?
-      if((walk_possible[i][0] & cur_bit) == 0ull){
-        break;
-      }
-      
-      cur_bit <<= board::walk_diff[i][0];
-      
-      // current field = my color
-      if((me & cur_bit) != 0ull){
-        result |= tmp_mask;
-        break;
-      }
-      
-      // current field = opponent color
-      if((opp & cur_bit) != 0ull){
-        tmp_mask |= cur_bit;
-        continue;
-      }
-      
-      // current fiend = empty
-      break;
+    // right line
+    if(f%8 == 7){
+      ss << "|\n";
     }
   }
   
-  assert((me & result) == 0ull);
-  assert((opp & result) == result);
-  assert((get_non_empty_fields() & bits64_set[move_id]) == 0ull);
+  // bottom line
+  ss << "+-----------------+\n";
   
-  me |= (result | bits64_set[move_id]);
-  opp &= ~me;
-    
-  switch_turn();
-  
-  return result;
-#endif
+  return ss.str();
 }
+
+std::string board::to_ascii_art(int turn) const
+{
+  std::stringstream ss;
+  
+  bits64 x,y;
+  
+  if(turn==0){
+    x = me;
+    y = opp;
+  }
+  else{
+    x = opp;
+    y = me;
+  }
+  
+  bits64 moves = get_valid_moves();
+  
+  // top line 
+  ss << "+-a-b-c-d-e-f-g-h-+\n";
+  
+  for(int f=0;f<64;f++){
+    
+    // left line
+    if(f%8 == 0){
+      ss << (f/8)+1 << ' ';
+    }
+    
+    bits64 thisbit = bits64_set[f];
+    
+    if(x & thisbit){
+      ss << "@ "; // "\033[31;1m@\033[0m ";
+    }
+    else if(y & thisbit){
+      ss << "+ "; // "\033[34;1m@\033[0m ";
+    }
+    else if(moves & thisbit){
+      ss << ". ";
+    }  
+    else{
+      ss << "  ";
+    }
+    
+    // right line
+    if(f%8 == 7){
+      ss << "|\n";
+    }
+  }
+  
+  // bottom line
+  ss << "+-----------------+\n";
+  
+  return ss.str();
+}
+
+
 
 
 

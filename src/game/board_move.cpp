@@ -80,7 +80,7 @@ bits64 board::do_move_##field_id(){\
   \
   /* left up */\
   if((field_id%8 > 1) && (field_id/8 > 1)){\
-    line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;\
+    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;\
     end = bits64_find_last(line & me);\
     line &= bits64_after[end];\
     if((opp & line) == line){\
@@ -121,7 +121,7 @@ bits64 board::do_move_##field_id(){\
   me |= bits64_set[field_id] | flipped;\
   opp &= ~me;\
   switch_turn();  \
-  return flipped;\
+  return flipped; \
 }
 
 

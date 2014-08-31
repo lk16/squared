@@ -265,7 +265,7 @@ book_t::value book_t::do_job(bot_base* bot,const job_t* job){
   
   int depth = job->info.depth;
   std::cout << std::endl << std::endl;
-  job->b.show();
+  std::cout << job->b.to_ascii_art();
   std::cout << "db string: " << job->b.to_database_string() << std::endl;
   std::cout << "depth: " << depth << std::endl;
   std::cout << "priority: " << job->priority << std::endl;
