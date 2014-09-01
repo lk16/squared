@@ -33,8 +33,8 @@ int bot_zolomon::heuristic()
   int res = 0;
   
   res += 15 * (
-    bits64_count(inspected.me & board::location[0]) 
-    - bits64_count(inspected.opp & board::location[0])
+    bits64_count(inspected.me & board::location[board::X_SQUARES]) 
+    - bits64_count(inspected.opp & board::location[board::X_SQUARES])
   );
   
   res += 12 * (

@@ -33,7 +33,27 @@ void squared_arg_t::init_map()
   parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
   parser->func_map["--loop"] = &squared_arg_t::loop_game;
   parser->func_map["--speed-test"] = &squared_arg_t::speed_test;
+  parser->func_map["--pgn"] = &squared_arg_t::process_pgn;
 }
+
+int squared_arg_t::process_pgn()
+{
+  if(!parser->has_enough_args(3)){
+    return PARSING_ERROR;
+  }
+  start_windowed_game = false;
+  pgn p(parser->get_arg(3));
+  bot_base* bot = bot_registration::bots()[gc.bot_type]();
+  int level[2];
+  level[0] = from_str<int>(parser->get_arg(1));
+  level[1] = from_str<int>(parser->get_arg(2));
+  bot->set_search_depth(level[0],level[1]);
+  bot->disable_shell_output();
+  std::cout << p.analyse(bot,true,true);
+  delete bot;
+  return PARSING_IGNORE_OTHER_ARGS;
+}
+
 
 int squared_arg_t::set_bot_type()
 {
@@ -219,7 +239,7 @@ int squared_arg_t::speed_test()
   bot->disable_shell_output();
   bot->disable_book();
   std::cout << "testing speed of bot_" << gc.bot_type << " on this board:\n";
-  gc.board_state.b.show();
+  std::cout << gc.board_state.b.to_ascii_art();
   for(int i=1;i<=60;i++){
     board b,dummy;
     b = gc.board_state.b;

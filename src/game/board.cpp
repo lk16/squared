@@ -1,16 +1,5 @@
 #include "board.hpp"
 
-const unsigned int board::border[64] = {
-  0x2f,0x07,0x07,0x07,0x07,0x07,0x07,0x97,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0x29,0x00,0x00,0x00,0x00,0x00,0x00,0x94,
-  0xe9,0xe0,0xe0,0xe0,0xe0,0xe0,0xe0,0xf4
-};
-
 const int board::walk_diff[8][7] = {
   {- 9,-18,-27,-36,-45,-54,-63}, // 0: up left
   {- 8,-16,-24,-32,-40,-48,-56}, // 1: up 
@@ -97,7 +86,7 @@ const bits64 board::walk_possible[8][7] = {
   }
 };
 
-bits64 (board::* const move_funcs[65])() = {
+bits64 (board::* const move_funcs[64])() = {
   &board::do_move_A1,
   &board::do_move_A2,
   &board::do_move_A3,
@@ -161,8 +150,7 @@ bits64 (board::* const move_funcs[65])() = {
   &board::do_move_H5,
   &board::do_move_H6,
   &board::do_move_H7,
-  &board::do_move_H8,
-  &board::do_move_pass
+  &board::do_move_H8
 };
 
 
@@ -196,12 +184,9 @@ board* board::get_children(board* out_begin) const
   board* out_end = out_begin;
   bits64 valid_moves = get_valid_moves();
   
-  while(true){
+  while(valid_moves != 0ull){
     
     int move_id = bits64_find_first(valid_moves);
-    if(move_id == 64){
-      break;
-    } 
     
     *out_end = *this;
     out_end->do_move(move_id);
@@ -214,42 +199,16 @@ board* board::get_children(board* out_begin) const
 }
 
 
-
-void board::show() const
+bool board::only_similar_siblings(const board* siblings, int n)
 {
-  int x,y;
+  const board x = siblings[0].to_database_board();
   
-  bits64 black,white;
-  black = (true ? opp : me);
-  white = (true ? me : opp);
-  
-  
-  
-  /* top line */
-  std::cout << "+-----------------+\n";
-  
-  /* middle */
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      if(black & bits64_set[y*8+x]){
-          std::cout << "\033[31;1m@\033[0m ";
-      }
-      else if(white & bits64_set[y*8+x]){
-          std::cout << "\033[34;1m@\033[0m ";
-      }
-      else if(is_valid_move(y*8+x)){
-        std::cout << ". ";
-      }  
-      else{
-        std::cout << "  ";
-      }
+  for(int i=1;i<n;i++){
+    if(siblings[i].to_database_board() != x){
+      return false;
     }
-    std::cout << "|\n";
   }
-  
-  /* bottom line */
-  std::cout << "+-----------------+\n";
+  return true;  
 }
 
 int board::get_disc_diff() const
@@ -270,91 +229,104 @@ int board::get_disc_diff() const
   }
 }
 
-
-bits64 board::do_move(int move_id)
-{  
-  return (this->*move_funcs[move_id])(); 
-#if 0  
-  return do_move_experimental(move_id);
+std::string board::to_ascii_art() const
+{
+  std::stringstream ss;
   
-  bits64 tmp_mask,cur_bit,result = 0ull;
+  bits64 moves = get_valid_moves();
   
-  for(int i=0;i<4;++i){
+  // top line 
+  ss << "+-a-b-c-d-e-f-g-h-+\n";
+  
+  for(int f=0;f<64;f++){
     
-    tmp_mask = 0ull;
-    cur_bit = bits64_set[move_id];
-    
-    
-    while(true){
-      
-      // will i walk off the board next step?
-      if((walk_possible[i][0] & cur_bit) == 0ull){
-        break;
-      }
-      
-      
-      cur_bit >>= board::walk_diff[7-i][0];
-      
-      // current field = my color
-      if((me & cur_bit) != 0ull){
-        result |= tmp_mask;
-        break;
-      }
-      
-      // current field = opponent color
-      if((opp & cur_bit) != 0ull){
-        tmp_mask |= cur_bit;
-        continue;
-      }
-      
-      // current field = empty
-      break;
+    // left line
+    if(f%8 == 0){
+      ss << (f/8)+1 << ' ';
     }
-  }
-  for(int i=4;i<8;++i){
     
-    tmp_mask = 0ull;
-    cur_bit = bits64_set[move_id];
+    bits64 thisbit = bits64_set[f];
     
+    if(me & thisbit){
+      ss << "@ "; // "\033[31;1m@\033[0m ";
+    }
+    else if(opp & thisbit){
+      ss << "+ "; // "\033[34;1m@\033[0m ";
+    }
+    else if(moves & thisbit){
+      ss << ". ";
+    }  
+    else{
+      ss << "  ";
+    }
     
-    while(true){
-      
-      // will i walk off the board next step?
-      if((walk_possible[i][0] & cur_bit) == 0ull){
-        break;
-      }
-      
-      cur_bit <<= board::walk_diff[i][0];
-      
-      // current field = my color
-      if((me & cur_bit) != 0ull){
-        result |= tmp_mask;
-        break;
-      }
-      
-      // current field = opponent color
-      if((opp & cur_bit) != 0ull){
-        tmp_mask |= cur_bit;
-        continue;
-      }
-      
-      // current fiend = empty
-      break;
+    // right line
+    if(f%8 == 7){
+      ss << "|\n";
     }
   }
   
-  assert((me & result) == 0ull);
-  assert((opp & result) == result);
-  assert((get_non_empty_fields() & bits64_set[move_id]) == 0ull);
+  // bottom line
+  ss << "+-----------------+\n";
   
-  me |= (result | bits64_set[move_id]);
-  opp &= ~me;
-    
-  switch_turn();
-  
-  return result;
-#endif
+  return ss.str();
 }
+
+std::string board::to_ascii_art(int turn) const
+{
+  std::stringstream ss;
+  
+  bits64 x,y;
+  
+  if(turn==0){
+    x = me;
+    y = opp;
+  }
+  else{
+    x = opp;
+    y = me;
+  }
+  
+  bits64 moves = get_valid_moves();
+  
+  // top line 
+  ss << "+-a-b-c-d-e-f-g-h-+\n";
+  
+  for(int f=0;f<64;f++){
+    
+    // left line
+    if(f%8 == 0){
+      ss << (f/8)+1 << ' ';
+    }
+    
+    bits64 thisbit = bits64_set[f];
+    
+    if(x & thisbit){
+      ss << "@ "; // "\033[31;1m@\033[0m ";
+    }
+    else if(y & thisbit){
+      ss << "+ "; // "\033[34;1m@\033[0m ";
+    }
+    else if(moves & thisbit){
+      ss << ". ";
+    }  
+    else{
+      ss << "  ";
+    }
+    
+    // right line
+    if(f%8 == 7){
+      ss << "|\n";
+    }
+  }
+  
+  // bottom line
+  ss << "+-----------------+\n";
+  
+  return ss.str();
+}
+
+
 
 
 
@@ -365,7 +337,7 @@ std::string board::to_string() const {
    * byte 32: \0
    */
   char res[33];  
-  const char hex[17] = "0123456789abcdef";
+  const char* hex = "0123456789abcdef";
   
   
   for(int i=0;i<16;i++){
@@ -555,7 +527,7 @@ bits64 board::do_move_experimental(const int field_id){
   
   /* left up */
   if((field_id%8 > 1) && (field_id/8 > 1)){
-    line = (0x8040201008040200 >> (63-field_id)) & left_border_mask;
+    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
     end = bits64_find_last(line & me);
     line &= bits64_after[end];
     if((opp & line) == line){
@@ -598,11 +570,4 @@ bits64 board::do_move_experimental(const int field_id){
   switch_turn();  
   return flipped;
 }
-
-bits64 board::do_move_pass()
-{
-  switch_turn();
-  return 0ull;
-}
-
 

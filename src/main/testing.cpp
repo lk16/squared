@@ -311,21 +311,6 @@ board demo_rotate_left(const board* b){
 }
 
 void testing_area(){
-  /*for(int i=0;i<256;i++){
-    std::cout << "0x";
-    std::cout.fill('0');
-    std::cout.width(16);
-    std::cout << std::hex << demo_rotate_left_8bit(i);
-    std::cout << ((i%4 == 3) ? ",\n" : ",");
-  }
-  
-  board b;
-  b.reset();
-  b = b.do_random_moves(9);
-  b.show();
-  b = demo_rotate_left(&b);
-  b.show();*/
-  
-  bits64_show(0x7e8181818181817e);
-  
+  std::cout << "\u26AA\n";
+  std::cout << "\u26AB\n";
 }

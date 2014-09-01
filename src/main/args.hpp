@@ -2,8 +2,9 @@
 
 #include "bots/bot_ali_trainer.hpp"
 #include "game/game_control.hpp"
-#include "util/arg_parser.hpp"
 #include "main/testing.hpp"
+#include "util/arg_parser.hpp"
+#include "util/pgn.hpp"
 
 struct squared_arg_t
 {
@@ -41,4 +42,5 @@ struct squared_arg_t
   int set_bot_type();
   int loop_game();
   int speed_test();
+  int process_pgn();
 };
