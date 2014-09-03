@@ -42,18 +42,16 @@ void book_t::job_t::assign_priority(int heur_stddev)
     priority = -9999999;
     return;
   }
-  
-  if(info.depth < 12){
-    priority = - b.count_discs();
-    return;
-  }
-  
-  
+    
   priority = 0;
   priority -= 5 * (b.count_valid_moves() - b.count_opponent_moves());
   priority -= 7 * b.count_discs();
   priority -= 3 * abs(info.heur);
   priority -= 12 * info.depth;
+  
+  // remember info.depth is one lower than the job depth
+  priority -= 500 * max(info.depth-14,0); 
+  priority += 500 * max(11-info.depth,0);
 }
 
 
@@ -61,7 +59,7 @@ int book_t::get_heur_stddev() const
 {
   int total = 0.0;
   int count = 0;
-  for(auto it: data){
+  for(data_type::const_reference it: data){
     if(it.second.heur > -2000 && it.second.heur < 2000){
       count++;
       total += it.second.heur;
@@ -72,7 +70,7 @@ int book_t::get_heur_stddev() const
   
   double res = 0.0;
   
-  for(auto it: data){
+  for(data_type::const_reference it: data){
     if(it.second.heur > -2000 && it.second.heur < 2000){
       double diff = it.second.heur - avg;
       res += (diff*diff);
@@ -265,7 +263,9 @@ book_t::value book_t::do_job(bot_base* bot,const job_t* job){
   
   int depth = job->info.depth;
   std::cout << std::endl << std::endl;
-  std::cout << job->b.to_ascii_art();
+  // the displayed colors will be inaccurate 
+  // if the amount of passed turns is odd
+  std::cout << job->b.to_ascii_art(job->b.count_discs() % 2);
   std::cout << "db string: " << job->b.to_database_string() << std::endl;
   std::cout << "depth: " << depth << std::endl;
   std::cout << "priority: " << job->priority << std::endl;

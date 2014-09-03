@@ -129,11 +129,12 @@ struct board{
   int count_empty_fields() const;
     
   // returns string displaying this in a ascii art kind of way
-  std::string to_ascii_art() const;
-  
-  // returns string displaying this in a ascii art kind of way
   // adjusts colors for the right turn
   std::string to_ascii_art(int turn) const;
+  
+  // returns html code displaying *this
+  // adjusts colors for the right turn
+  std::string to_html_table(int turn) const;
   
   // returns disc count difference 
   // positive means me has more than opp
@@ -146,7 +147,15 @@ struct board{
   // experimental code for making specific move functions for each field
   bits64 do_move_experimental(const int field_id);
   
-  /// does named move
+  // converts for example "a1" to 0
+  // converts "--" to -1
+  // converts anything else to -2
+  static int position_to_index(const std::string& str);
+  
+  // reverses position_to_index
+  static std::string index_to_position(int index);
+  
+  // does named move
   bits64 do_move_A1();
   bits64 do_move_A2();
   bits64 do_move_A3();

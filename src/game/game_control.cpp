@@ -73,7 +73,7 @@ void game_control::on_any_move()
   }
   mw->update_fields();
   if(bot[BLACK] && bot[WHITE]){
-    std::cout << board_state.b.to_ascii_art();
+    std::cout << board_state.b.to_ascii_art(board_state.turn);
   }
 }
 
@@ -158,7 +158,7 @@ void game_control::on_game_ended()
   mw->update_status_bar(text);
   
   if(quit_if_game_over){
-    std::cout << board_state.b.to_ascii_art();
+    std::cout << board_state.b.to_ascii_art(board_state.turn);
     mw->hide();
     exit(0);
   }

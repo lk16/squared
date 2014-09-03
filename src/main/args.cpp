@@ -239,7 +239,7 @@ int squared_arg_t::speed_test()
   bot->disable_shell_output();
   bot->disable_book();
   std::cout << "testing speed of bot_" << gc.bot_type << " on this board:\n";
-  std::cout << gc.board_state.b.to_ascii_art();
+  std::cout << gc.board_state.b.to_ascii_art(gc.board_state.turn);
   for(int i=1;i<=60;i++){
     board b,dummy;
     b = gc.board_state.b;
