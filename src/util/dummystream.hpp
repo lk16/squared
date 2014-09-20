@@ -8,6 +8,7 @@ struct dummystream:
   
   template<class T>
   dummystream& operator<<(T t){
+    (void)t;
     return *this;
   }
   

@@ -43,7 +43,12 @@ public:
   typedef data_type::const_iterator citer;
   typedef data_type::iterator iter;
 
-  static const int MIN_LEARN_DEPTH = 10;
+  // lowest depth for a move to be stored in the book_stddev
+  static const int MIN_ACCEPT_DEPTH = 8;
+  
+  // lowest depth for a move to be learned
+  static const int MIN_LEARN_DEPTH = 12;
+
   static const int ENTRY_MAX_DISCS = 24;
   static const int NOT_FOUND = -1;
   static const int RELOAD_INTERVAL = 300;

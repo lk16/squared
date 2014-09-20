@@ -352,8 +352,8 @@ bool bot_pvs::do_move_book(const board* b, board* res)
       output() << board::index_to_position(lookup.best_move);
       output() << ") in book at depth " << lookup.depth;
       output() << ", heuristic " << lookup.heur << '\n';
+      set_last_move_heur(lookup.heur);
       return true;
-      set_last_move_heur(NO_HEUR_AVAILABLE);
     }
   }
   return false;

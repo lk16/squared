@@ -38,6 +38,14 @@ void book_t::job_t::assign_priority(int heur_stddev)
 {
   (void)heur_stddev;
   
+  /*if(info.depth < 12){
+    priority = 1000;
+    priority -= info.depth;
+    //priority -= 10*b.count_discs();
+    return;
+  }
+  
+ 
   if(info.heur % (2*EXACT_SCORE_FACTOR) == 0 && info.heur != 0){
     priority = -9999999;
     return;
@@ -45,13 +53,15 @@ void book_t::job_t::assign_priority(int heur_stddev)
     
   priority = 0;
   priority -= 5 * (b.count_valid_moves() - b.count_opponent_moves());
-  priority -= 7 * b.count_discs();
+  priority -= b.count_discs() * b.count_discs();
   priority -= 3 * abs(info.heur);
-  priority -= 12 * info.depth;
+  priority -= info.depth * info.depth;
   
-  // remember info.depth is one lower than the job depth
-  priority -= 500 * max(info.depth-14,0); 
-  priority += 500 * max(11-info.depth,0);
+  if(info.depth > 14){
+    priority -= 500*(info.depth-14);
+  }*/
+  priority = -info.depth;
+  
 }
 
 
@@ -100,7 +110,7 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
   if(!(bs.length() == 32)){ 
     error = 3;
   }
-  if(!(bv.depth >= MIN_LEARN_DEPTH)){ 
+  if(!(bv.depth >= MIN_ACCEPT_DEPTH)){ 
     error = 4;
   }
   if(!((b.me & b.opp) == 0ull)){ 
@@ -160,11 +170,12 @@ void book_t::print_stats() const
   }
   
   
+  std::cout << "Total boards in book: " << data.size() << std::endl;
   for(auto it: book_stats){
-    std::cout << "Boards found at depth " << it.first << ": ";
+    std::cout << "Boards found at depth " << (it.first < 10 ? " " : "");
+    std::cout << it.first << ": ";
     std::cout << it.second << std::endl;
   }
-  std::cout << "Total boards in book: " << data.size() << std::endl;
 }
 
 
@@ -229,8 +240,9 @@ bool book_t::add(const board* b,const book_t::value* bv)
   
   if(true 
     && (b->count_discs() < ENTRY_MAX_DISCS)
-    && (fixed_bv.depth >= MIN_LEARN_DEPTH)
+    && (fixed_bv.depth >= MIN_ACCEPT_DEPTH)
     && ((it == data.end()) || (bv->depth > it->second.depth))
+    && (bv->heur != bot_base::NO_HEUR_AVAILABLE)
   ){
     
     if(!is_correct_entry(str,fixed_bv)){
@@ -261,15 +273,16 @@ void book_t::value::add_to_line(csv::line_t* l) const
 
 book_t::value book_t::do_job(bot_base* bot,const job_t* job){
   
-  int depth = job->info.depth;
+  
+  int depth = max(job->info.depth,MIN_LEARN_DEPTH);
+  
   std::cout << std::endl << std::endl;
-  // the displayed colors will be inaccurate 
-  // if the amount of passed turns is odd
   std::cout << job->b.to_ascii_art(job->b.count_discs() % 2);
   std::cout << "db string: " << job->b.to_database_string() << std::endl;
   std::cout << "depth: " << depth << std::endl;
   std::cout << "priority: " << job->priority << std::endl;
   std::cout << "last heur: " << job->info.heur << std::endl;
+  
   bot->set_search_depth(depth,depth);
   bot->stats.start_timer();
   board after;
