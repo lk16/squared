@@ -23,7 +23,8 @@ int main(int argc,char **argv){
   squared_arg_t arg_data = parser.data;
 
   if(arg_data.show_flag){
-    std::cout << arg_data.gc.board_state.b.to_ascii_art();
+    int turn = arg_data.gc.board_state.turn;
+    std::cout << arg_data.gc.board_state.b.to_ascii_art(turn);
   }
   
   if(arg_data.start_windowed_game){

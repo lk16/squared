@@ -229,48 +229,63 @@ int board::get_disc_diff() const
   }
 }
 
-std::string board::to_ascii_art() const
+std::string board::to_html_table(int turn) const
 {
   std::stringstream ss;
+    
+  std::string colors[2] = {"black","white"};
+  
   
   bits64 moves = get_valid_moves();
   
   // top line 
-  ss << "+-a-b-c-d-e-f-g-h-+\n";
+  ss << "<table border='0' cellspacing='0' cellpadding='0'><tr>\n";
+  ss << "<td></td>\n";
+  for(int i=0;i<8;i++){
+    ss << "<td align='center'>" << (char)('a'+i) << "</td>\n";
+  }
+  ss << "</tr>";
+  
   
   for(int f=0;f<64;f++){
     
     // left line
     if(f%8 == 0){
-      ss << (f/8)+1 << ' ';
+      ss << "<tr><td width='15' align='center'>" << (char)('1'+(f/8)) << "</td>";
     }
     
     bits64 thisbit = bits64_set[f];
+    ss << "<td><img src='" << IMAGE_PATH << "small/";
     
     if(me & thisbit){
-      ss << "@ "; // "\033[31;1m@\033[0m ";
+      ss << colors[turn] << ".png'>";
     }
     else if(opp & thisbit){
-      ss << "+ "; // "\033[34;1m@\033[0m ";
+      ss << colors[1-turn] << ".png'>";
     }
     else if(moves & thisbit){
-      ss << ". ";
+      
+      ss << "move_" << colors[turn] << ".png'>";
     }  
     else{
-      ss << "  ";
+      ss << "empty.png'>";
     }
+    
+    ss << "</td>";
     
     // right line
     if(f%8 == 7){
-      ss << "|\n";
+      ss << "</tr>";
     }
   }
   
   // bottom line
-  ss << "+-----------------+\n";
+  ss << "</table>\n";
   
   return ss.str();
 }
+
+
 
 std::string board::to_ascii_art(int turn) const
 {
@@ -302,13 +317,13 @@ std::string board::to_ascii_art(int turn) const
     bits64 thisbit = bits64_set[f];
     
     if(x & thisbit){
-      ss << "@ "; // "\033[31;1m@\033[0m ";
+      ss << "\033[31;1m\u2B24\033[0m ";
     }
     else if(y & thisbit){
-      ss << "+ "; // "\033[34;1m@\033[0m ";
+      ss << "\033[34;1m\u2B24\033[0m ";
     }
     else if(moves & thisbit){
-      ss << ". ";
+      ss << "- ";
     }  
     else{
       ss << "  ";
@@ -327,7 +342,28 @@ std::string board::to_ascii_art(int turn) const
 }
 
 
+int board::position_to_index(const std::string& str)
+{
+  if(str == "--"){
+    return -1;
+  }
+  if(str.length()==2 && in_bounds(str[0],'a','h') && in_bounds(str[1],'1','8')){
+    return 8*(str[1] - '1') + str[0] - 'a';
+  }
+  return -2;
+}
 
+std::string board::index_to_position(int index)
+{
+  if(out_bounds(index,0,63)){
+    return "??";
+  }
+  char s[3];
+  s[0] = 'a' + (index%8);
+  s[1] = '1' + (index/8);
+  s[2] = '\0';
+  return std::string(s);
+}
 
 
 std::string board::to_string() const {
