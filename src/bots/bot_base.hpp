@@ -53,6 +53,10 @@ public:
   // perform some action when a new game starts
   virtual void on_new_game() = 0;
   
+  // does a very rough prediction on the perfect play
+  virtual int rough_prediction(const board* b) const;
+  
+  
   // output stream to be used instead of std::cout
   // may for example return reference to dummystream
   std::ostream& output();
@@ -98,6 +102,14 @@ inline void bot_base::set_last_move_heur(int heur)
 inline int bot_base::get_last_move_heur() const
 {
   return last_move_heur;
+}
+
+inline int bot_base::rough_prediction(const board* b) const
+{
+  (void)b;
+  std::cout << "warning: bot_" << get_name() << " did not implement ";
+  std::cout << " rough_prediction()\n";
+  return 0;
 }
 
 

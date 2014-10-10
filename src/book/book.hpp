@@ -16,6 +16,7 @@
 #include "game/board.hpp"
 #include "util/csv.hpp"
 #include "util/priority_threadpool.hpp"
+#include "util/read_write_lock.hpp"
 
 struct bot_base;
 
@@ -61,7 +62,7 @@ private:
   
   data_type data;
   csv csv_file;
-  mutable std::mutex data_mutex;
+  read_write_lock data_lock;
   
   // used only for multithreaded learning
   // and should only be changed in learn()
@@ -105,7 +106,6 @@ public:
   
   
 private:
-  static int job_priority(data_type::const_iterator it);
   static int job_priority(const board* b,int depth,int last_heur);
   
   void print_stats() const;
