@@ -35,7 +35,7 @@ int book_t::job_priority(const board* b, int depth, int last_heur)
   }
   
   int res = 0;
-  res += -4 * b->count_discs();
+  res += -7 * b->count_discs();
   res += -10 * depth;
   return res;
 }
