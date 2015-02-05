@@ -144,10 +144,13 @@ int squared_arg_t::testing_area_mask(){
 }
 
 int squared_arg_t::learn(){
-  bot_base* bot = bot_registration::bots()[gc.bot_type]();
+  if(!parser->has_enough_args(1)){
+    return PARSING_ERROR;
+  }
+  start_windowed_game = false;
+  int threads = from_str<int>(parser->get_arg(1));
   book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
-  book.learn(bot);
-  delete bot;
+  book.learn(gc.bot_type,threads);
   return PARSING_IGNORE_OTHER_ARGS;
 }
 

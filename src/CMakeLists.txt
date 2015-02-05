@@ -11,15 +11,15 @@ pkg_check_modules(GDK_PIXBUF gdk-pixbuf-2.0)
 
 
 set(DEBUG_FLAGS
-  "-I .. -std=c++0x -Wall -Wextra -g -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+  "-I .. -std=c++0x -pthread -Wall -Wextra -g -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
 )
 
 set(OPTIMIZED_DEBUG_FLAGS
-  "-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O2 -g -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
+  "-I .. -std=c++0x -pthread -Wall -Wextra -g -DNDEBUG -O2 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
 set(OPTIMIZING_FLAGS
-  "-I .. -std=c++0x -Wall -DNDEBUG -Wextra -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
+  "-I .. -std=c++0x -pthread -Wall -Wextra -DNDEBUG -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
 set(CMAKE_CXX_FLAGS 

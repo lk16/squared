@@ -607,3 +607,21 @@ bits64 board::do_move_experimental(const int field_id){
   return flipped;
 }
 
+void board::count_frontier_discs(int* me,int* opp) const
+{
+  bits64 both = get_non_empty_fields();
+  bits64 mask = both;
+  
+  mask &= ((both << 9) && 0xFEFEFEFEFEFEFEFE);
+  mask &= ((both << 8));
+  mask &= ((both << 7) && 0x7F7F7F7F7F7F7F7F);
+  mask &= ((both << 1) && 0xFEFEFEFEFEFEFEFE);
+  mask &= ((both >> 1) && 0x7F7F7F7F7F7F7F7F);
+  mask &= ((both >> 7) && 0xFEFEFEFEFEFEFEFE);
+  mask &= ((both >> 8));
+  mask &= ((both >> 9) && 0x7F7F7F7F7F7F7F7F);
+  
+  *me = mask & this->me;
+  *opp = mask & this->opp;
+  
+}

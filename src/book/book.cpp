@@ -2,12 +2,14 @@
 #include "bots/bot_ali.hpp"
 
 book_t::book_t():
-  csv_file("")
+  csv_file(""),
+  ppool(nullptr)
 { 
 }
 
 book_t::book_t(const std::string& _filename):
-  csv_file(_filename)
+  csv_file(_filename),
+  ppool(nullptr)
 {
   load();
 }
@@ -22,66 +24,20 @@ void book_t::set_csv_file(const std::string& filename)
   csv_file.set_file(filename);
 }
 
-bool book_t::job_t::operator<(const book_t::job_t& j) const
+
+int book_t::job_priority(data_type::const_iterator it)
 {
-  return priority < j.priority;
+  board b(it->first);
+  return job_priority(&b,it->second.depth+1,it->second.heur);
 }
 
-book_t::job_t::job_t(const board& _b, const book_t::value& _info, int book_stddev)
+int book_t::job_priority(const board* b, int depth, int last_heur)
 {
-  b = _b;
-  info = _info;
-  assign_priority(book_stddev);
+  (void)b;
+  (void)last_heur;
+  return -depth;
 }
 
-void book_t::job_t::assign_priority(int heur_stddev)
-{
-  (void)heur_stddev;
-  
-  if(info.heur % (2*EXACT_SCORE_FACTOR) == 0 && info.heur != 0){
-    priority = -9999999;
-    return;
-  }
-    
-  priority = 0;
-  priority -= 5 * (b.count_valid_moves() - b.count_opponent_moves());
-  priority -= 7 * b.count_discs();
-  priority -= 3 * abs(info.heur);
-  priority -= 12 * info.depth;
-  
-  // remember info.depth is one lower than the job depth
-  priority -= 500 * max(info.depth-14,0); 
-  priority += 500 * max(11-info.depth,0);
-}
-
-
-int book_t::get_heur_stddev() const
-{
-  int total = 0.0;
-  int count = 0;
-  for(data_type::const_reference it: data){
-    if(it.second.heur > -2000 && it.second.heur < 2000){
-      count++;
-      total += it.second.heur;
-    }
-  }
-  
-  const double avg = (double)total / count;
-  
-  double res = 0.0;
-  
-  for(data_type::const_reference it: data){
-    if(it.second.heur > -2000 && it.second.heur < 2000){
-      double diff = it.second.heur - avg;
-      res += (diff*diff);
-    }
-
-  }
-  
-  res /= count;
-  
-  return sqrt<int>((int)res);
-}
 
 
 
@@ -100,7 +56,7 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
   if(!(bs.length() == 32)){ 
     error = 3;
   }
-  if(!(bv.depth >= MIN_LEARN_DEPTH)){ 
+  if(!(bv.depth >= MIN_ACCEPT_DEPTH)){ 
     error = 4;
   }
   if(!((b.me & b.opp) == 0ull)){ 
@@ -125,14 +81,9 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
 
 book_t::value::value(const csv::line_t& line)
 {
-  depth = from_str<int>(line[1]);
-  best_move = from_str<int>(line[2]);
-  if(line.size() > 3){
-    heur = from_str<int>(line[3]);
-  }
-  else{
-    heur = bot_base::NO_HEUR_AVAILABLE;
-  }
+  depth = from_str<int>(line[COL_DEPTH]);
+  best_move = from_str<int>(line[COL_BEST_MOVE]);
+  heur = from_str<int>(line[COL_HEUR]);
 }
 
 book_t::value::value(int bm, int d,int h)
@@ -160,60 +111,92 @@ void book_t::print_stats() const
   }
   
   
+  std::cout << "Total boards in book: " << data.size() << std::endl;
   for(auto it: book_stats){
-    std::cout << "Boards found at depth " << it.first << ": ";
+    std::cout << "Boards found at depth " << (it.first < 10 ? " " : "");
+    std::cout << it.first << ": ";
     std::cout << it.second << std::endl;
   }
-  std::cout << "Total boards in book: " << data.size() << std::endl;
 }
 
 
 
-void book_t::learn(bot_base* bot)
+
+
+void book_t::learn(const std::string _bot_name,int threads)
 {
-  //timeval last_reload,now;
-  //gettimeofday(&last_reload,NULL);
-  // WARNING reloading doesn't change job_queue
+  bot_name = _bot_name;
   
-  bot->disable_shell_output();
+  
   print_stats();
   
-  std::priority_queue<job_t> job_queue;
+  ppool = new priority_threadpool(threads);
   
-  int book_stddev = get_heur_stddev();
-  
-  for(auto it: data){
-    job_t job(board(it.first),it.second,book_stddev);
-    job.info.depth++; //search one move deeper than already known
-    job_queue.push(job);
+  for(citer it=data.begin();it!=data.end();it++){
+    board b(it->first);
+    int depth = it->second.depth + 1;
+    int prio = job_priority(it);
+    auto func = std::bind(&book_t::learn_job,this,b,depth);
+    auto func2 = std::bind(&book_t::on_job_done,this);
+    ppool->add_job(func,func2,prio);
   }
   
-  while(true){
-    job_t job = job_queue.top();
-    value v = do_job(bot,&job);
-    job_queue.pop();
-    add(&job.b,&v);
-    
-    // update job and insert it into queue again
-    job.info = v;
-    job.info.depth++;
-    job.info.heur = v.heur;
-    job.assign_priority(book_stddev);
-    job_queue.push(job);
-    
-    /*gettimeofday(&now,NULL);
-    if(now.tv_sec - last_reload.tv_sec > RELOAD_INTERVAL){
-      std::cout << "Reloading book" << std::endl;
-      reload();
-      print_stats();
-      memcpy(&last_reload,&now,sizeof(timeval));
-    }*/
+  ppool->start_workers();
+  
+  std::cout << "done adding all threads to thread pool, spinning forever" << std::endl;  
+  while(!ppool->empty()){
+    sleep(1);
   }
+  
+  std::cout << "somehow the threadpool became empty!\n";
+  std::cout << "does the book file exist at all?\n";
+  delete ppool;
 }
+
+void book_t::on_job_done()
+{
+  // this function does nothing at all on purpose
+}
+
+void book_t::learn_job(board b, int depth)
+{
+  bot_base* bot = bot_registration::bots()[bot_name]();
+  bot->disable_book();
+  bot->disable_shell_output();
+  bot->set_search_depth(depth,depth);
+  
+  board out;
+  bot->stats.start_timer();
+  bot->do_move(&b,&out);
+  bot->stats.stop_timer();
+  
+  int heur = bot->get_last_move_heur();
+  int move = b.get_move_index(&out);
+  value v(move,depth,heur);
+  
+  std::stringstream ss;
+  ss << std::this_thread::get_id() << ": learned " << b.to_database_string();
+  ss << " at depth " << depth << "\t" << big_number(bot->stats.get_nodes());
+  ss << "n / " << (int)(bot->stats.get_seconds()) << " sec = ";
+  ss << big_number(bot->stats.get_nodes_per_second()) << "n/sec\n";
+  std::cout << ss.str();
+  add(&b,&v);
+  
+  auto func = std::bind(&book_t::learn_job,this,b,depth+1);
+  auto func2 = std::bind(&book_t::on_job_done,this);
+  ppool->add_job(func,func2,job_priority(&b,depth+1,heur));
+  
+  delete bot;
+}
+
+
+
+
 
 bool book_t::add(const board* b,const book_t::value* bv)
 {
-  
+  std::unique_lock<std::mutex> data_lock(data_mutex);
+    
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
   int rot = b->get_rotation(&before_normalized);
@@ -229,8 +212,9 @@ bool book_t::add(const board* b,const book_t::value* bv)
   
   if(true 
     && (b->count_discs() < ENTRY_MAX_DISCS)
-    && (fixed_bv.depth >= MIN_LEARN_DEPTH)
+    && (fixed_bv.depth >= MIN_ACCEPT_DEPTH)
     && ((it == data.end()) || (bv->depth > it->second.depth))
+    && (bv->heur != bot_base::NO_HEUR_AVAILABLE)
   ){
     
     if(!is_correct_entry(str,fixed_bv)){
@@ -259,17 +243,18 @@ void book_t::value::add_to_line(csv::line_t* l) const
 }
 
 
-book_t::value book_t::do_job(bot_base* bot,const job_t* job){
+/*book_t::value book_t::do_job(bot_base* bot,const job_t* job){
   
-  int depth = job->info.depth;
+  
+  int depth = max(job->info.depth,MIN_LEARN_DEPTH);
+  
   std::cout << std::endl << std::endl;
-  // the displayed colors will be inaccurate 
-  // if the amount of passed turns is odd
   std::cout << job->b.to_ascii_art(job->b.count_discs() % 2);
   std::cout << "db string: " << job->b.to_database_string() << std::endl;
   std::cout << "depth: " << depth << std::endl;
   std::cout << "priority: " << job->priority << std::endl;
   std::cout << "last heur: " << job->info.heur << std::endl;
+  
   bot->set_search_depth(depth,depth);
   bot->stats.start_timer();
   board after;
@@ -286,7 +271,7 @@ book_t::value book_t::do_job(bot_base* bot,const job_t* job){
   int heur = bot->get_last_move_heur();
   
   return value(move,depth,heur);
-}
+}*/
 
 void book_t::clean() const
 {
@@ -321,6 +306,7 @@ void book_t::clean() const
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
   value res(NOT_FOUND,0,0);
+  std::unique_lock<std::mutex> data_lock(data_mutex);
   std::string key = b->to_database_string();
   citer it = data.find(key);
   if(it == data.end() || (it->second.depth < min_depth)){

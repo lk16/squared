@@ -34,3 +34,5 @@ void bot_moves::on_new_game(){
     book->reload();
   }
 }
+
+
