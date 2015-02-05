@@ -3,6 +3,7 @@
 
 bot_pvs::bot_pvs()
 {
+  enable_rough_prediction = true;
 }
 
 bot_pvs::~bot_pvs()
@@ -47,7 +48,7 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
   if(get_use_book()){
     book_t::value bv = book->lookup(&inspected,moves_left);
     if(bv.best_move != book_t::NOT_FOUND){
-      return max(min(bv.heur,beta),alpha);
+      return min(max(bv.heur,alpha),beta);
     }
   }
   
@@ -488,6 +489,14 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
 
 void bot_pvs::do_move(const board* b,board* res)
 {
+  int d=6,pd=12;
+  if(enable_rough_prediction 
+    && (b->count_discs() > book_t::ENTRY_MAX_DISCS)
+    && (b->count_discs() < 64-pd)
+  ){
+    int pred = rough_prediction(b,d,pd);
+    std::cout << "rough prediction: " << pred << std::endl;
+  }
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
     return;
@@ -504,5 +513,40 @@ void bot_pvs::do_move(const board* b,board* res)
   
   do_move_perfectly(b,res);
 
+}
+
+int bot_pvs::rough_prediction(const board* b,int d,int pd) const
+{
+  auto it = bot_registration::bots().find(get_name());
+  if(it == bot_registration::bots().end()){
+    std::cout << "warning: bot name \"" << get_name() << "\" could not be found ";
+    std::cout << "in bot_registration table!\n";
+    return 0;
+  }
+  
+  
+  bot_pvs* bot = (bot_pvs*)(it->second)();
+  bot->set_search_depth(d,pd);
+  bot->disable_book();
+  bot->disable_shell_output();
+  bot->enable_rough_prediction = false;
+  board* bi = &bot->inspected;
+  *bi = *b;
+  
+  board tmp;  
+  int mult = 1;
+  while(true){
+    if(!bi->has_valid_moves()){
+      bi->switch_turn();
+      mult *= -1;
+      if(!bi->has_valid_moves()){
+        mult *= -1;
+        return bi->get_disc_diff();
+      }
+    }
+    mult *= -1;
+    bot->do_move(bi,&tmp);
+    *bi = tmp;    
+  }  
 }
 

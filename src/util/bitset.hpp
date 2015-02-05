@@ -4,7 +4,7 @@
 
 typedef unsigned long long bits64;
 
-extern const int bits_counts[65536];
+extern const char bits_counts[65536];
 
 extern const bits64 bits64_set[65];
 extern const bits64 bits64_reset[65];

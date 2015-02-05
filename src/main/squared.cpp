@@ -7,7 +7,6 @@
 #include "main/args.hpp"
 
 
-
 int main(int argc,char **argv){
   srand(std::time(NULL));
   

@@ -24,18 +24,20 @@ void book_t::set_csv_file(const std::string& filename)
   csv_file.set_file(filename);
 }
 
-
-int book_t::job_priority(data_type::const_iterator it)
-{
-  board b(it->first);
-  return job_priority(&b,it->second.depth+1,it->second.heur);
-}
-
 int book_t::job_priority(const board* b, int depth, int last_heur)
 {
-  (void)b;
-  (void)last_heur;
-  return -depth;
+  
+  if(depth < MIN_LEARN_DEPTH){
+    return 99999999-depth;
+  }
+  if(last_heur%(2*EXACT_SCORE_FACTOR)==0 && last_heur!=0){
+    return -99999999;
+  }
+  
+  int res = 0;
+  res += -7 * b->count_discs();
+  res += -10 * depth;
+  return res;
 }
 
 
@@ -117,6 +119,7 @@ void book_t::print_stats() const
     std::cout << it.first << ": ";
     std::cout << it.second << std::endl;
   }
+  
 }
 
 
@@ -135,7 +138,7 @@ void book_t::learn(const std::string _bot_name,int threads)
   for(citer it=data.begin();it!=data.end();it++){
     board b(it->first);
     int depth = it->second.depth + 1;
-    int prio = job_priority(it);
+    int prio = job_priority(&b,it->second.depth,it->second.heur);
     auto func = std::bind(&book_t::learn_job,this,b,depth);
     auto func2 = std::bind(&book_t::on_job_done,this);
     ppool->add_job(func,func2,prio);
@@ -160,6 +163,8 @@ void book_t::on_job_done()
 
 void book_t::learn_job(board b, int depth)
 {
+  depth = max(depth,MIN_LEARN_DEPTH);  
+  
   bot_base* bot = bot_registration::bots()[bot_name]();
   bot->disable_book();
   bot->disable_shell_output();
@@ -195,8 +200,7 @@ void book_t::learn_job(board b, int depth)
 
 bool book_t::add(const board* b,const book_t::value* bv)
 {
-  std::unique_lock<std::mutex> data_lock(data_mutex);
-    
+  rw_lock_write_guard guard(data_lock);  
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
   int rot = b->get_rotation(&before_normalized);
@@ -211,7 +215,7 @@ bool book_t::add(const board* b,const book_t::value* bv)
   fixed_bv.best_move = move;
   
   if(true 
-    && (b->count_discs() < ENTRY_MAX_DISCS)
+    && (b->count_discs() <= ENTRY_MAX_DISCS)
     && (fixed_bv.depth >= MIN_ACCEPT_DEPTH)
     && ((it == data.end()) || (bv->depth > it->second.depth))
     && (bv->heur != bot_base::NO_HEUR_AVAILABLE)
@@ -229,7 +233,6 @@ bool book_t::add(const board* b,const book_t::value* bv)
     csv_file.append_line(book_line);
     
     data[str] = fixed_bv;
-    
     return true;
   }
   return false;
@@ -241,37 +244,6 @@ void book_t::value::add_to_line(csv::line_t* l) const
   l->push_back(to_str<int>(best_move));
   l->push_back(to_str<int>(heur));
 }
-
-
-/*book_t::value book_t::do_job(bot_base* bot,const job_t* job){
-  
-  
-  int depth = max(job->info.depth,MIN_LEARN_DEPTH);
-  
-  std::cout << std::endl << std::endl;
-  std::cout << job->b.to_ascii_art(job->b.count_discs() % 2);
-  std::cout << "db string: " << job->b.to_database_string() << std::endl;
-  std::cout << "depth: " << depth << std::endl;
-  std::cout << "priority: " << job->priority << std::endl;
-  std::cout << "last heur: " << job->info.heur << std::endl;
-  
-  bot->set_search_depth(depth,depth);
-  bot->stats.start_timer();
-  board after;
-  bot->do_move(&job->b,&after);
-  bot->stats.stop_timer();
-  
-  
-  std::cout << "time: " << (int)bot->stats.get_seconds() << " s" << std::endl;
-  std::cout << "nodes: " << big_number(bot->stats.get_nodes()) << std::endl; 
-  std::cout << "speed: " << big_number(bot->stats.get_nodes_per_second()); 
-  std::cout << "n/s" << std::endl;
-  
-  int move = job->b.get_move_index(&after);
-  int heur = bot->get_last_move_heur();
-  
-  return value(move,depth,heur);
-}*/
 
 void book_t::clean() const
 {
@@ -305,17 +277,16 @@ void book_t::clean() const
 
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
+  rw_lock_read_guard guard(data_lock);  
   value res(NOT_FOUND,0,0);
-  std::unique_lock<std::mutex> data_lock(data_mutex);
   std::string key = b->to_database_string();
   citer it = data.find(key);
-  if(it == data.end() || (it->second.depth < min_depth)){
-    return res;
+  if((it!=data.end()) && (it->second.depth >= min_depth)){
+    res = it->second;
+    bits64 move_bit = bits64_set[res.best_move];
+    int rot = b->to_database_board().get_rotation(b);
+    res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
   }
-  res = it->second;
-  bits64 move_bit = bits64_set[res.best_move];
-  int rot = b->to_database_board().get_rotation(b);
-  res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
   return res;
 }
 
