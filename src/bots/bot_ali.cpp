@@ -6,10 +6,11 @@
 
 REGISTER_BOT(ali);
 
-bot_ali::bot_ali()
+bot_ali::bot_ali():
+  book(BOOK_PATH + get_name() + "_book.csv"),
+  tpt(board_hasher)
 {
   set_name("ali");
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
   
   int tmp[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
   std::copy(tmp,tmp+10,location_values);
@@ -73,7 +74,7 @@ bot_ali::~bot_ali(){}
 void bot_ali::on_new_game()
 {
   if(get_use_book()){
-    book->reload();
+    book.reload();
   }
 }
 

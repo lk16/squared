@@ -16,7 +16,7 @@ struct bot_ali_trainer{
     ali->disable_book();
     ali->disable_shell_output();
     
-    csv op("sample");
+    csv op("openings");
     while(true){
       csv::line_t line = op.get_line();
       if(op.get_file()->fail()){
@@ -28,11 +28,11 @@ struct bot_ali_trainer{
   
   int play_game(board* start,bot_ali* p1,bot_ali* p2);
   
-  void modify_ali(const bot_ali* origin,bot_ali* target);
-  
-  int play_tournament(bot_ali* p1,bot_ali* p2);
-  
   void run();
   
   void print_bot_location_values(const bot_ali* a);
+
+  std::vector<bot_ali*> procreate(const bot_ali*, int);
+
+  int play_match(bot_ali*,bot_ali*);
 };
