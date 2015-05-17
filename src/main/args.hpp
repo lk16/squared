@@ -1,6 +1,5 @@
 #pragma once
 
-#include "bots/bot_ali_trainer.hpp"
 #include "game/game_control.hpp"
 #include "main/testing.hpp"
 #include "util/arg_parser.hpp"
