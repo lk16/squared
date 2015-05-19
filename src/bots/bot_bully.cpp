@@ -462,7 +462,7 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
     inspected = children[id];
     int cur_heur;
     if(found_win){
-      cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,0);
+      cur_heur = -pvs_exact(-worst_win,0);
     }
     else{
       cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-highest);
