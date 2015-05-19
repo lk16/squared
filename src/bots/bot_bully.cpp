@@ -450,50 +450,61 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
   
   moves_left = 64 - inspected.count_discs();
   
-  int heurs[32];
+ 
   
   bool found_win = false;
   
+  int highest = MIN_PERFECT_HEURISTIC;
+  int move_id = -1;
+  int worst_win = MAX_PERFECT_HEURISTIC;
   
   for(int id=0;id<child_count;++id){
     inspected = children[id];
-    int beta = found_win ?  0 : (-MIN_PERFECT_HEURISTIC);
-    heurs[id] = -pvs_exact(MIN_PERFECT_HEURISTIC,beta);
-    if(heurs[id] > 0){
-      found_win = true;      
-    }
-    output() << "move " << (id+1) << "/" << (child_count) << ": ";
-    if(found_win && (heurs[id]==0)){
-      output() << "draw/loss";
+    int cur_heur;
+    if(found_win){
+      cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,0);
     }
     else{
-      output() << heurs[id];
+      cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-highest);
     }
+    
+    if(cur_heur > 0){
+      found_win = true;      
+    }
+  
+    output() << "move " << (id+1) << "/" << (child_count) << ": ";
+ 
+    
+    if(found_win){
+      if(cur_heur <= 0){
+        output() << "draw or loss";
+      }
+      else if(cur_heur >= worst_win){
+        output() << "win, but not a worse one";
+      }
+      else{
+        output() << "worst win: " << cur_heur;
+        worst_win = cur_heur;
+        move_id = id;
+      }
+    }
+    else{
+      if(cur_heur <= highest){
+        output() << "worse loss";
+      }
+      else{
+        output() << "best loss: " << cur_heur;
+        highest = cur_heur;
+        move_id = id;
+      }
+    }
+ 
     output() << std::endl;
   }
 
-  int best_id = -1;
-  int best_heur = MAX_PERFECT_HEURISTIC;
-  for(int id=0;id<child_count;++id){
-    // If I can win: do the worst move that lets me win! >:)
-    if((heurs[id] > 0) && (heurs[id] < best_heur)){
-      best_id = id;
-      best_heur = heurs[id];
-    }
-  }
-  if(best_id == -1){
-    // If I cannot win, do the best move! >:(
-    best_heur = MIN_PERFECT_HEURISTIC;
-    for(int id=0;id<child_count;++id){
-      if(heurs[id] > best_heur){
-        best_id = id;
-        best_heur = heurs[id];
-      }
-    }
-  }
   
-  *res = children[best_id];
-  set_last_move_heur(best_heur);
+  *res = children[move_id];
+  set_last_move_heur(found_win ? worst_win : highest);
   
   stats.stop_timer();
   
