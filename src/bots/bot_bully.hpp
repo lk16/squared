@@ -2,7 +2,8 @@
 
 #include "bots/bot_base.hpp"
 
-
+// this bot plays the worst move it can guarantee winning with in endgame
+// the rest is the same as bot_ali
 struct bot_bully:
   public bot_base
 {
