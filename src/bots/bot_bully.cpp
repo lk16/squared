@@ -4,12 +4,33 @@ REGISTER_BOT(bully);
 
 bot_bully::bot_bully()
 {
+  set_name("bully");
   disable_book();
+  search_max_sort_depth = 6;
 }
 
 void bot_bully::on_new_game()
 {
   // do nothing
+}
+
+void bot_bully::do_sorting(board* children, int child_count)
+{
+  int heur[32];
+  
+  int tmp = moves_left;
+  moves_left = 2;
+  
+  for(int i=0;i<child_count;i++){
+    std::swap(inspected,children[i]);
+    moves_left--;
+    heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+    moves_left++;
+    std::swap(inspected,children[i]);
+  }
+  
+  ugly_sort<board>(children,heur,child_count);
+  moves_left = tmp;
 }
 
 int bot_bully::rough_prediction(const board* b) const
@@ -30,6 +51,97 @@ void bot_bully::do_move(const board* in, board* out)
     return;
   }  
   do_move_perfectly(in,out);
+}
+
+int bot_bully::pvs_sorted(int alpha, int beta)
+{
+  stats.inc_nodes();
+  
+  if(moves_left < search_max_sort_depth){
+    return pvs_unsorted(alpha,beta);
+  }
+  
+  if(moves_left == 0){
+    return heuristic();
+  }
+  
+  /*if(get_use_book()){
+    book_t::value bv = book->lookup(&inspected,moves_left);
+    if(bv.best_move != book_t::NOT_FOUND){
+      return min(max(bv.heur,alpha),beta);
+    }
+  }*/
+  
+  bits64 valid_moves = inspected.get_valid_moves();
+  
+  if(valid_moves == 0ull){
+    int heur;
+    inspected.switch_turn();
+    if(inspected.get_valid_moves() == 0ull){
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    }
+    else{
+      heur = -pvs_sorted(-beta,-alpha);
+    }
+    inspected.switch_turn();
+    return heur;
+  }
+    
+  board children[32]; 
+  int child_count = inspected.get_children(children) - children;
+  
+  // this branch is almost never taken
+  if(board::only_similar_siblings(children,child_count)){
+    std::swap<board>(inspected,children[0]);
+    moves_left--;
+    int score = -pvs_sorted(-beta,-alpha);
+    moves_left++;
+    std::swap<board>(inspected,children[0]);
+    return score;
+  }
+  
+  
+  do_sorting(children,child_count);
+  
+  std::swap<board>(inspected,children[0]);
+  moves_left--;
+  int score = -pvs_sorted(-beta,-alpha);
+  moves_left++;
+  std::swap<board>(inspected,children[0]);
+  
+  if(score >= beta){
+    return beta;
+  }
+  if(score >= alpha){
+    alpha = score;
+  }
+      
+    
+    
+  for(int i=1;i<child_count;i++){
+    
+    std::swap<board>(inspected,children[i]);
+    
+    moves_left--;
+    score = -pvs_null_window(-alpha-1);
+    if((alpha < score) && (score < beta)){
+     score = -pvs_sorted(-beta,-score);
+    } 
+    moves_left++;
+    
+    std::swap<board>(inspected,children[i]);
+      
+    
+    if(score >= beta){
+      return beta;
+    }
+    if(score >= alpha){
+      alpha = score;
+    }
+  }
+  return alpha;
+    
+    
 }
 
 int bot_bully::pvs_unsorted(int alpha, int beta)
@@ -293,7 +405,7 @@ void bot_bully::do_move_normally(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs_unsorted(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -338,17 +450,46 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
   
   moves_left = 64 - inspected.count_discs();
   
-  int best_id = 0;
-  int best_heur = MIN_PERFECT_HEURISTIC;
+  int heurs[32];
+  
+  bool found_win = false;
+  
+  
   for(int id=0;id<child_count;++id){
     inspected = children[id];
-    int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
-    if(cur_heur > best_heur){
-      best_heur = cur_heur;
-      best_id = id;
+    int beta = found_win ?  0 : (-MIN_PERFECT_HEURISTIC);
+    heurs[id] = -pvs_exact(MIN_PERFECT_HEURISTIC,beta);
+    if(heurs[id] > 0){
+      found_win = true;      
     }
-    output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": " << best_heur << std::endl;
+    output() << "move " << (id+1) << "/" << (child_count) << ": ";
+    if(found_win && (heurs[id]==0)){
+      output() << "draw/loss";
+    }
+    else{
+      output() << heurs[id];
+    }
+    output() << std::endl;
+  }
+
+  int best_id = -1;
+  int best_heur = MAX_PERFECT_HEURISTIC;
+  for(int id=0;id<child_count;++id){
+    // If I can win: do the worst move that lets me win! >:)
+    if((heurs[id] > 0) && (heurs[id] < best_heur)){
+      best_id = id;
+      best_heur = heurs[id];
+    }
+  }
+  if(best_id == -1){
+    // If I cannot win, do the best move! >:(
+    best_heur = MIN_PERFECT_HEURISTIC;
+    for(int id=0;id<child_count;++id){
+      if(heurs[id] > best_heur){
+        best_id = id;
+        best_heur = heurs[id];
+      }
+    }
   }
   
   *res = children[best_id];

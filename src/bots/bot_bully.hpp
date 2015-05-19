@@ -7,6 +7,8 @@ struct bot_bully:
   public bot_base
 {
   int moves_left;
+  int search_max_sort_depth;
+  
   board inspected;
   
   bot_bully();
@@ -16,6 +18,9 @@ struct bot_bully:
   virtual void on_new_game();
 
   virtual int rough_prediction(const board* b) const;
+
+  
+  void do_sorting(board* children, int child_count);
   
   // performs principle variation search, unsorted
   int pvs_unsorted(int alpha, int beta);

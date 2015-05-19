@@ -4,6 +4,7 @@
 bot_pvs::bot_pvs()
 {
   enable_rough_prediction = true;
+  search_max_sort_depth = 6;
 }
 
 bot_pvs::~bot_pvs()
