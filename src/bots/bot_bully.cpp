@@ -1,20 +1,20 @@
-#include "bots/bot_pvs.hpp"
+#include "bot_bully.hpp"
 
+REGISTER_BOT(bully);
 
-bot_pvs::bot_pvs()
+bot_bully::bot_bully()
 {
-  enable_rough_prediction = true;
+  set_name("bully");
+  disable_book();
   search_max_sort_depth = 6;
 }
 
-bot_pvs::~bot_pvs()
+void bot_bully::on_new_game()
 {
+  // do nothing
 }
 
-
-
-
-void bot_pvs::do_sorting(board* children, int child_count)
+void bot_bully::do_sorting(board* children, int child_count)
 {
   int heur[32];
   
@@ -33,8 +33,27 @@ void bot_pvs::do_sorting(board* children, int child_count)
   moves_left = tmp;
 }
 
+int bot_bully::rough_prediction(const board* b) const
+{
+  // do nothing
+  (void)b;
+  return 0;  
+}
 
-int bot_pvs::pvs_sorted(int alpha, int beta)
+void bot_bully::do_move(const board* in, board* out)
+{
+  if(in->count_valid_moves() == 1){
+    in->get_children(out);
+    return;
+  }  
+  if(in->count_empty_fields() > get_perfect_depth()){
+    do_move_normally(in,out);
+    return;
+  }  
+  do_move_perfectly(in,out);
+}
+
+int bot_bully::pvs_sorted(int alpha, int beta)
 {
   stats.inc_nodes();
   
@@ -46,12 +65,12 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     return heuristic();
   }
   
-  if(get_use_book()){
+  /*if(get_use_book()){
     book_t::value bv = book->lookup(&inspected,moves_left);
     if(bv.best_move != book_t::NOT_FOUND){
       return min(max(bv.heur,alpha),beta);
     }
-  }
+  }*/
   
   bits64 valid_moves = inspected.get_valid_moves();
   
@@ -125,8 +144,7 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     
 }
 
-
-int bot_pvs::pvs_unsorted(int alpha, int beta)
+int bot_bully::pvs_unsorted(int alpha, int beta)
 {
   stats.inc_nodes();
   
@@ -188,7 +206,7 @@ int bot_pvs::pvs_unsorted(int alpha, int beta)
   return alpha;
 }
 
-int bot_pvs::pvs_null_window(int alpha)
+int bot_bully::pvs_null_window(int alpha)
 {
   stats.inc_nodes();
   
@@ -230,7 +248,7 @@ int bot_pvs::pvs_null_window(int alpha)
 
 
 
-int bot_pvs::pvs_exact(int alpha, int beta)
+int bot_bully::pvs_exact(int alpha, int beta)
 {
   
   stats.inc_nodes();
@@ -288,7 +306,7 @@ int bot_pvs::pvs_exact(int alpha, int beta)
   return alpha;
 }
 
-int bot_pvs::pvs_exact_null_window(int alpha)
+int bot_bully::pvs_exact_null_window(int alpha)
 {
   stats.inc_nodes();
   
@@ -334,34 +352,34 @@ int bot_pvs::pvs_exact_null_window(int alpha)
   return alpha;
 }
 
-void bot_pvs::do_move_one_possibility(const board* b, board* res)
+int bot_bully::heuristic() const
 {
-  board children[32];
-  b->get_children(children);
-  *res = children[0];
-  set_last_move_heur(NO_HEUR_AVAILABLE);
-  output() << "only one valid move found, evaluation skipped.\n";
+  
+  
+  const int location_values[10] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
+  
+#define LOCATION_HEUR(i) \
+  location_values[i] * ( \
+    bits64_count(inspected.me & board::location[i]) \
+    - bits64_count(inspected.opp & board::location[i]) \
+  )
+  
+  return
+  LOCATION_HEUR(0) +
+  LOCATION_HEUR(1) +
+  LOCATION_HEUR(2) +
+  LOCATION_HEUR(3) +
+  LOCATION_HEUR(4) +
+  LOCATION_HEUR(5) +
+  LOCATION_HEUR(6) +
+  LOCATION_HEUR(7) +
+  LOCATION_HEUR(8) +
+  LOCATION_HEUR(9);
+  
+#undef LOCATION_HEUR
 }
 
-bool bot_pvs::do_move_book(const board* b, board* res)
-{
-  if(get_use_book()){
-    book_t::value lookup = book->lookup(b,get_search_depth());
-    if(lookup.best_move != book_t::NOT_FOUND){
-      *res = *b;
-      res->do_move(lookup.best_move);
-      output() << "bot_" << get_name() << " found best move (";
-      output() << board::index_to_position(lookup.best_move);
-      output() << ") in book at depth " << lookup.depth;
-      output() << ", heuristic " << lookup.heur << '\n';
-      set_last_move_heur(lookup.heur);
-      return true;
-    }
-  }
-  return false;
-}
-
-void bot_pvs::do_move_normally(const board* b, board* res)
+void bot_bully::do_move_normally(const board* b, board* res)
 {
   stats.start_timer();
   
@@ -379,24 +397,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   output() << "bot_" << get_name() << " searching at depth ";
   output() << get_search_depth() << '\n';
 
-  if(get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
-    
-    moves_left = NORMAL_MOVE_SORT_DEPTH;
-    
-    int heurs[32];
-    for(int i=0;i<child_count;i++){
-      inspected = children[i];
-      moves_left--;
-      heurs[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
-      moves_left++;
-    }
-    ugly_sort<board>(children,heurs,child_count);
-    
-  }
-
   moves_left = get_search_depth();
-  
-
   
   int best_heur,best_id=0;
   
@@ -436,7 +437,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   
 }
 
-void bot_pvs::do_move_perfectly(const board* b, board* res)
+void bot_bully::do_move_perfectly(const board* b, board* res)
 {
   stats.start_timer();
   
@@ -447,36 +448,63 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
   output() << b->count_empty_fields() << '\n';
   
   
-  if(moves_left > PERFECT_MOVE_SORT_DEPTH){
-    
-    moves_left = PERFECT_MOVE_SORT_DEPTH;
-    
-    int heurs[32];
-    for(int i=0;i<child_count;i++){
-      inspected = children[i];
-      heurs[i] = -pvs_sorted(MIN_HEURISTIC,MAX_HEURISTIC);
-    }
-    ugly_sort<board>(children,heurs,child_count);
-    
-  }
-  
   moves_left = 64 - inspected.count_discs();
   
-  int best_id = 0;
-  int best_heur = MIN_PERFECT_HEURISTIC;
+ 
+  
+  bool found_win = false;
+  
+  int highest = MIN_PERFECT_HEURISTIC;
+  int move_id = -1;
+  int worst_win = MAX_PERFECT_HEURISTIC;
+  
   for(int id=0;id<child_count;++id){
     inspected = children[id];
-    int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
-    if(cur_heur > best_heur){
-      best_heur = cur_heur;
-      best_id = id;
+    int cur_heur;
+    if(found_win){
+      cur_heur = -pvs_exact(-worst_win,0);
     }
-    output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": " << best_heur << std::endl;
-  }
+    else{
+      cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-highest);
+    }
+    
+    if(cur_heur > 0){
+      found_win = true;      
+    }
   
-  *res = children[best_id];
-  set_last_move_heur(best_heur);
+    output() << "move " << (id+1) << "/" << (child_count) << ": ";
+ 
+    
+    if(found_win){
+      if(cur_heur <= 0){
+        output() << "draw or loss";
+      }
+      else if(cur_heur >= worst_win){
+        output() << "win, but not a worse one";
+      }
+      else{
+        output() << "worst win: " << cur_heur;
+        worst_win = cur_heur;
+        move_id = id;
+      }
+    }
+    else{
+      if(cur_heur <= highest){
+        output() << "worse loss";
+      }
+      else{
+        output() << "best loss: " << cur_heur;
+        highest = cur_heur;
+        move_id = id;
+      }
+    }
+ 
+    output() << std::endl;
+  }
+
+  
+  *res = children[move_id];
+  set_last_move_heur(found_win ? worst_win : highest);
   
   stats.stop_timer();
   
@@ -484,70 +512,3 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
   output() << stats.get_seconds() << " seconds: ";
   output() << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
 }
-
-
-
-
-void bot_pvs::do_move(const board* b,board* res)
-{
-  int d=6,pd=12;
-  if(enable_rough_prediction 
-    && (b->count_discs() > book_t::ENTRY_MAX_DISCS)
-    && (b->count_discs() < 64-pd)
-  ){
-    int pred = rough_prediction(b,d,pd);
-    std::cout << "rough prediction: " << pred << std::endl;
-  }
-  if(b->count_valid_moves() == 1){
-    do_move_one_possibility(b,res);
-    return;
-  }
-  
-  if(do_move_book(b,res)){
-    return;
-  }
-  
-  if(b->count_empty_fields() > get_perfect_depth()){
-    do_move_normally(b,res);
-    return;
-  }
-  
-  do_move_perfectly(b,res);
-
-}
-
-int bot_pvs::rough_prediction(const board* b,int d,int pd) const
-{
-  auto it = bot_registration::bots().find(get_name());
-  if(it == bot_registration::bots().end()){
-    std::cout << "warning: bot name \"" << get_name() << "\" could not be found ";
-    std::cout << "in bot_registration table!\n";
-    return 0;
-  }
-  
-  
-  bot_pvs* bot = (bot_pvs*)(it->second)();
-  bot->set_search_depth(d,pd);
-  bot->disable_book();
-  bot->disable_shell_output();
-  bot->enable_rough_prediction = false;
-  board* bi = &bot->inspected;
-  *bi = *b;
-  
-  board tmp;  
-  int mult = 1;
-  while(true){
-    if(!bi->has_valid_moves()){
-      bi->switch_turn();
-      mult *= -1;
-      if(!bi->has_valid_moves()){
-        mult *= -1;
-        return bi->get_disc_diff();
-      }
-    }
-    mult *= -1;
-    bot->do_move(bi,&tmp);
-    *bi = tmp;    
-  }  
-}
-

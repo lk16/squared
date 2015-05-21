@@ -20,8 +20,6 @@ void squared_arg_t::init_map()
   parser->func_map["--randomize"] = &squared_arg_t::randomize_board;
   parser->func_map["-r"] = &squared_arg_t::randomize_board;
   parser->func_map["-lb"] = &squared_arg_t::set_black_level;
-  parser->func_map["--set-white-valuation-file"] = &squared_arg_t::set_white_valuation;
-  parser->func_map["--set-black-valuation-file"] = &squared_arg_t::set_black_valuation;
   parser->func_map["-lw"] = &squared_arg_t::set_white_level;
   parser->func_map["--board"] = &squared_arg_t::set_board;
   parser->func_map["-b"] = &squared_arg_t::set_board;
@@ -29,7 +27,6 @@ void squared_arg_t::init_map()
   parser->func_map["-cb"] = &squared_arg_t::compress_book;
   parser->func_map["-q"] = &squared_arg_t::minus_q_flag;
   parser->func_map["-nb"] = &squared_arg_t::no_book;
-  parser->func_map["-tb"] = &squared_arg_t::train_bot_ali;
   parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
   parser->func_map["--loop"] = &squared_arg_t::loop_game;
   parser->func_map["--speed-test"] = &squared_arg_t::speed_test;
@@ -80,19 +77,6 @@ int squared_arg_t::loop_game()
   gc.loop_game = true;
   return 1;
 }
-
-
-int squared_arg_t::train_bot_ali()
-{
-  start_windowed_game = false;
-  bot_ali ali;
-  ali.set_search_depth(6,12);
-  int v[] = {347,-47,-24,-33,-119,-35,-26,-23,-7,3};
-  ali.set_location_values(v);
-  bot_ali_trainer(&ali).run();
-  return PARSING_IGNORE_OTHER_ARGS;
-}
-
 
 int squared_arg_t::no_book()
 {
@@ -204,30 +188,6 @@ int squared_arg_t::compress_book()
   book.clean();
   start_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;
-}
-
-int squared_arg_t::set_valuation(int color){
-  if(!parser->has_enough_args(1)){
-    return PARSING_ERROR;
-  }
-
-  bot_ali* ali = dynamic_cast<bot_ali*>(gc.bot[color]);
-  if(!ali){ 
-    return PARSING_ERROR;
-  }
-  if(!ali->set_location_values_from_file(parser->get_arg(1))){
-    return PARSING_ERROR;
-  } else {
-    ali->disable_book();
-    return 2;
-  }
-}
-
-int squared_arg_t::set_white_valuation(){
-  return set_valuation(WHITE);
-}
-int squared_arg_t::set_black_valuation(){
-  return set_valuation(BLACK);
 }
 
 int squared_arg_t::minus_q_flag()
