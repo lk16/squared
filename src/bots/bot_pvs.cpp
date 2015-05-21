@@ -487,7 +487,6 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
 
 
 
-
 void bot_pvs::do_move(const board* b,board* res)
 {
   int d=6,pd=12;

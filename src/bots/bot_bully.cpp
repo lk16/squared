@@ -33,6 +33,14 @@ void bot_bully::do_sorting(board* children, int child_count)
   moves_left = tmp;
 }
 
+int bot_bully::bully_disc_diff() const{
+  int diff = this->inspected.get_disc_diff();
+  if(diff <= 0){
+    return diff;
+  }
+  return 66 - diff;
+}
+
 int bot_bully::rough_prediction(const board* b) const
 {
   // do nothing
@@ -78,7 +86,7 @@ int bot_bully::pvs_sorted(int alpha, int beta)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+      heur = -EXACT_SCORE_FACTOR * bully_disc_diff();    
     }
     else{
       heur = -pvs_sorted(-beta,-alpha);
@@ -158,7 +166,7 @@ int bot_bully::pvs_unsorted(int alpha, int beta)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+      heur = -EXACT_SCORE_FACTOR * bully_disc_diff();    
     }
     else{
       heur = -pvs_unsorted(-beta,-alpha);
@@ -220,7 +228,7 @@ int bot_bully::pvs_null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+      heur = -EXACT_SCORE_FACTOR * bully_disc_diff();    
     }
     else{
       heur = -pvs_null_window(-(alpha+1));
@@ -259,7 +267,7 @@ int bot_bully::pvs_exact(int alpha, int beta)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();    
+      heur = -bully_disc_diff();    
     }
     else{
       heur = -pvs_exact(-beta,-alpha);
@@ -316,7 +324,7 @@ int bot_bully::pvs_exact_null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();    
+      heur = -bully_disc_diff();    
     }
     else{
       heur = -pvs_exact_null_window(-(alpha+1));
@@ -439,7 +447,7 @@ void bot_bully::do_move_normally(const board* b, board* res)
 
 void bot_bully::do_move_perfectly(const board* b, board* res)
 {
-  stats.start_timer();
+ stats.start_timer();
   
   board children[32];
   int child_count = b->get_children(children) - children;
@@ -447,64 +455,23 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
   output() << "bot_" << get_name() << " searching perfectly at depth ";
   output() << b->count_empty_fields() << '\n';
   
-  
   moves_left = 64 - inspected.count_discs();
   
- 
-  
-  bool found_win = false;
-  
-  int highest = MIN_PERFECT_HEURISTIC;
-  int move_id = -1;
-  int worst_win = MAX_PERFECT_HEURISTIC;
-  
+  int best_id = 0;
+  int best_heur = MIN_PERFECT_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
-    int cur_heur;
-    if(found_win){
-      cur_heur = -pvs_exact(-worst_win,0);
+    int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
+    if(cur_heur > best_heur){
+      best_heur = cur_heur;
+      best_id = id;
     }
-    else{
-      cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-highest);
-    }
-    
-    if(cur_heur > 0){
-      found_win = true;      
-    }
-  
-    output() << "move " << (id+1) << "/" << (child_count) << ": ";
- 
-    
-    if(found_win){
-      if(cur_heur <= 0){
-        output() << "draw or loss";
-      }
-      else if(cur_heur >= worst_win){
-        output() << "win, but not a worse one";
-      }
-      else{
-        output() << "worst win: " << cur_heur;
-        worst_win = cur_heur;
-        move_id = id;
-      }
-    }
-    else{
-      if(cur_heur <= highest){
-        output() << "worse loss";
-      }
-      else{
-        output() << "best loss: " << cur_heur;
-        highest = cur_heur;
-        move_id = id;
-      }
-    }
- 
-    output() << std::endl;
+    output() << "move " << (id+1) << "/" << (child_count);
+    output() << ": " << ((best_heur <= 0) ? best_heur : (66 - best_heur)) << std::endl;
   }
-
   
-  *res = children[move_id];
-  set_last_move_heur(found_win ? worst_win : highest);
+  *res = children[best_id];
+  set_last_move_heur(best_heur);
   
   stats.stop_timer();
   
@@ -512,3 +479,4 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
   output() << stats.get_seconds() << " seconds: ";
   output() << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
 }
+
