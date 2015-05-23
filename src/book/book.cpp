@@ -27,7 +27,7 @@ void book_t::set_csv_file(const std::string& filename)
 int book_t::job_priority(const board* b, int depth, int last_heur)
 {
   
-  if(depth < MIN_LEARN_DEPTH){
+  /*if(depth < MIN_LEARN_DEPTH){
     return 99999999-depth;
   }
   if(last_heur%(2*EXACT_SCORE_FACTOR)==0 && last_heur!=0){
@@ -37,7 +37,9 @@ int book_t::job_priority(const board* b, int depth, int last_heur)
   int res = 0;
   res += -7 * b->count_discs();
   res += -10 * depth;
-  return res;
+  return res;*/
+  (void)last_heur;
+  return (-100*depth) - b->count_discs(); 
 }
 
 

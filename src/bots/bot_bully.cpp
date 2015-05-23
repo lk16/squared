@@ -493,7 +493,13 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
         output() << "worse loss";
       }
       else{
-        output() << "best loss: " << cur_heur;
+        if(cur_heur == 0){
+          output() << "draw: 0";
+        }
+        else{
+          output() << "best loss: " << cur_heur;
+        }
+      
         highest = cur_heur;
         move_id = id;
       }
