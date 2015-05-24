@@ -20,6 +20,9 @@ struct bot_bully:
 
   virtual int rough_prediction(const board* b) const;
 
+  int bully_disc_diff() const;
+  
+  
   
   void do_sorting(board* children, int child_count);
   
