@@ -56,10 +56,8 @@ public:
   bool do_move_book(const board* b,board* res);
 
   // performs principle variation search, unsorted
-  int pvs_unsorted(int alpha, int beta);
-  
-  // performs principle variation search, sorted
-  int pvs_sorted(int alpha,int beta);
+  template<bool sorted>
+  int pvs(int alpha, int beta);
   
   // performs null window search
   int pvs_null_window(int alpha);

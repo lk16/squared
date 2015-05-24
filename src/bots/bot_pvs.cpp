@@ -23,7 +23,7 @@ void bot_pvs::do_sorting(board* children, int child_count)
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    heur[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+    heur[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
     moves_left++;
     std::swap(inspected,children[i]);
   }
@@ -32,13 +32,13 @@ void bot_pvs::do_sorting(board* children, int child_count)
   moves_left = tmp;
 }
 
-
-int bot_pvs::pvs_sorted(int alpha, int beta)
+template<bool sorted>
+int bot_pvs::pvs(int alpha, int beta)
 {
   stats.inc_nodes();
   
   if(moves_left < search_max_sort_depth){
-    return pvs_unsorted(alpha,beta);
+    return pvs<false>(alpha,beta);
   }
   
   if(moves_left == 0){
@@ -61,7 +61,7 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
       heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      heur = -pvs_sorted(-beta,-alpha);
+      heur = -pvs<true>(-beta,-alpha);
     }
     inspected.switch_turn();
     return heur;
@@ -69,23 +69,27 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     
   board children[32]; 
   int child_count = inspected.get_children(children) - children;
+    
   
-  // this branch is almost never taken
-  if(board::only_similar_siblings(children,child_count)){
-    std::swap<board>(inspected,children[0]);
-    moves_left--;
-    int score = -pvs_sorted(-beta,-alpha);
-    moves_left++;
-    std::swap<board>(inspected,children[0]);
-    return score;
+  if(sorted){
+    
+    // this branch is almost never taken
+    if(board::only_similar_siblings(children,child_count)){
+      std::swap<board>(inspected,children[0]);
+      moves_left--;
+      int score = -pvs<true>(-beta,-alpha);
+      moves_left++;
+      std::swap<board>(inspected,children[0]);
+      return score;
+    }
+    
+    do_sorting(children,child_count);
   }
   
   
-  do_sorting(children,child_count);
-  
   std::swap<board>(inspected,children[0]);
   moves_left--;
-  int score = -pvs_sorted(-beta,-alpha);
+  int score = -pvs<true>(-beta,-alpha);
   moves_left++;
   std::swap<board>(inspected,children[0]);
   
@@ -105,7 +109,7 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
     moves_left--;
     score = -pvs_null_window(-alpha-1);
     if((alpha < score) && (score < beta)){
-     score = -pvs_sorted(-beta,-score);
+     score = -pvs<true>(-beta,-score);
     } 
     moves_left++;
     
@@ -122,69 +126,6 @@ int bot_pvs::pvs_sorted(int alpha, int beta)
   return alpha;
     
     
-}
-
-
-int bot_pvs::pvs_unsorted(int alpha, int beta)
-{
-  stats.inc_nodes();
-  
-  if(moves_left == 0){
-    return heuristic();
-  }
-  
-  bits64 valid_moves = inspected.get_valid_moves();
-
-  if(valid_moves == 0ull){
-    int heur;
-    inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
-    }
-    else{
-      heur = -pvs_unsorted(-beta,-alpha);
-    }
-    inspected.switch_turn();
-    return heur;
-  }
-
-  int move = bits64_find_first(valid_moves);
-  bits64 undo_data = inspected.do_move(move);
-  moves_left--;
-  int score = -pvs_unsorted(-beta,-alpha);
-  moves_left++;
-  inspected.undo_move(move,undo_data);
-
-  if(score >= beta){
-    return beta;
-  }
-  if(score >= alpha){
-    alpha = score;
-  }
-  valid_moves &= bits64_reset[move];
-  
-  while(valid_moves != 0ull){
-    move = bits64_find_first(valid_moves);
-    undo_data = inspected.do_move(move);
-    
-    moves_left--;
-    score = -pvs_null_window(-alpha-1);
-    if((alpha < score) && (score < beta)){
-      score = -pvs_unsorted(-beta,-score);
-    }
-    moves_left++;
-    
-    inspected.undo_move(move,undo_data);
-    
-    if(score >= beta){
-      return beta;
-    }
-    if(score >= alpha){
-      alpha = score;
-    }
-    valid_moves &= bits64_reset[move];
-  }
-  return alpha;
 }
 
 int bot_pvs::pvs_null_window(int alpha)
@@ -386,7 +327,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
     for(int i=0;i<child_count;i++){
       inspected = children[i];
       moves_left--;
-      heurs[i] = -pvs_unsorted(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
       moves_left++;
     }
     ugly_sort<board>(children,heurs,child_count);
@@ -403,7 +344,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs_sorted(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -453,7 +394,7 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -pvs_sorted(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs<true>(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     ugly_sort<board>(children,heurs,child_count);
     
