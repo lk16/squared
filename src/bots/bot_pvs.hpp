@@ -22,7 +22,6 @@ class bot_pvs:
   
 public:
   board inspected;
-  bool enable_rough_prediction;
   
   bot_pvs();  
   
@@ -36,9 +35,6 @@ public:
   
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
-  
-  // does a rough prediction on perfect play result
-  virtual int rough_prediction(const board* b,int d,int pd) const;
   
   // sort children
   void do_sorting(board* children,int n);
