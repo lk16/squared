@@ -31,14 +31,21 @@ void bot_pvs::do_sorting(board* children, int child_count)
   moves_left = tmp;
 }
 
-template<bool sorted,bool exact>
+template<bool sort,bool exact>
 int bot_pvs::pvs(int alpha, int beta)
 {
-  stats.inc_nodes();
   
-  if((sorted) && (moves_left < search_max_sort_depth)){
-    return pvs<false,exact>(alpha,beta);
+  if(sort){
+    if(exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)){
+      return pvs<false,true>(alpha,beta);
+    }
+    if((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)){
+      return pvs<false,false>(alpha,beta);
+    }
   }
+
+  stats.inc_nodes();
+
   
   if((!exact) && moves_left == 0){
     return heuristic();
@@ -51,17 +58,14 @@ int bot_pvs::pvs(int alpha, int beta)
     }
   }
   
-  bits64 valid_moves = inspected.get_valid_moves();
-  
-  if(valid_moves == 0ull){
-    int heur;
+  if(!inspected.has_valid_moves()){
     inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+    if(!inspected.has_valid_moves()){
+      int diff = inspected.get_disc_diff();
+      inspected.switch_turn();
+      return -EXACT_SCORE_FACTOR * diff;  
     }
-    else{
-      heur = -pvs<sorted,exact>(-beta,-alpha);
-    }
+    int heur = -pvs<sort,exact>(-beta,-alpha);
     inspected.switch_turn();
     return heur;
   }
@@ -70,46 +74,28 @@ int bot_pvs::pvs(int alpha, int beta)
   int child_count = inspected.get_children(children) - children;
     
   
-  if(sorted){
-    
-    // this branch is almost never taken
-    if(board::only_similar_siblings(children,child_count)){
-      std::swap<board>(inspected,children[0]);
-      moves_left--;
-      int score = -pvs<sorted,exact>(-beta,-alpha);
-      moves_left++;
-      std::swap<board>(inspected,children[0]);
-      return score;
-    }
-    
+  if(sort){
     do_sorting(children,child_count);
   }
   
-  
-  std::swap<board>(inspected,children[0]);
-  moves_left--;
-  int score = -pvs<sorted,exact>(-beta,-alpha);
-  moves_left++;
-  std::swap<board>(inspected,children[0]);
-  
-  if(score >= beta){
-    return beta;
-  }
-  if(score >= alpha){
-    alpha = score;
-  }
-      
-    
-    
-  for(int i=1;i<child_count;i++){
-    
+  int score;
+  for(int i=0;i<child_count;i++){
     std::swap<board>(inspected,children[i]);
-    
     moves_left--;
-    score = -pvs_null_window(-alpha-1);
-    if((alpha < score) && (score < beta)){
-     score = -pvs<sorted,exact>(-beta,-score);
-    } 
+    if(i==0){
+      score = -pvs<sort,exact>(-beta,-alpha);
+    }
+    else{
+      //if(exact){
+      //  score = -pvs_exact_null_window(-alpha-1);
+      //}
+      //else{
+        score = -pvs_null_window(-alpha-1);
+      //}
+      if((alpha < score) && (score < beta)){
+        score = -pvs<sort,exact>(-beta,-score);
+      } 
+    }
     moves_left++;
     
     std::swap<board>(inspected,children[i]);
@@ -118,9 +104,7 @@ int bot_pvs::pvs(int alpha, int beta)
     if(score >= beta){
       return beta;
     }
-    if(score >= alpha){
-      alpha = score;
-    }
+    alpha = max(alpha,score);
   }
   return alpha;
     

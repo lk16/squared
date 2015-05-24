@@ -17,7 +17,7 @@ class bot_pvs:
   int search_max_sort_depth;
   int moves_left;
   
-  static const int NORMAL_MOVE_SORT_DEPTH = 8;
+  static const int NORMAL_MOVE_SORT_DEPTH = 7;
   static const int PERFECT_MOVE_SORT_DEPTH = 5;
   
 public:
@@ -54,7 +54,7 @@ private:
   bool do_move_book(const board* b,board* res);
 
   // performs principle variation search, unsorted
-  template<bool sorted,bool exact>
+  template<bool sort,bool exact>
   int pvs(int alpha, int beta);
   
   // performs null window search
