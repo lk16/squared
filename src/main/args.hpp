@@ -42,4 +42,5 @@ struct squared_arg_t
   int loop_game();
   int speed_test();
   int process_pgn();
+  int use_xot();
 };

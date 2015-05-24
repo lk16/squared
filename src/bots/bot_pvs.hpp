@@ -17,12 +17,11 @@ class bot_pvs:
   int search_max_sort_depth;
   int moves_left;
   
-  static const int NORMAL_MOVE_SORT_DEPTH = 8;
-  static const int PERFECT_MOVE_SORT_DEPTH = 5;
+  static const int NORMAL_MOVE_SORT_DEPTH = 7;
+  static const int PERFECT_MOVE_SORT_DEPTH = 4;
   
 public:
   board inspected;
-  bool enable_rough_prediction;
   
   bot_pvs();  
   
@@ -36,38 +35,29 @@ public:
   
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
+
   
-  // does a rough prediction on perfect play result
-  virtual int rough_prediction(const board* b,int d,int pd) const;
-  
+private:
   // sort children
   void do_sorting(board* children,int n);
   
   // does the only move, no evaluation necessary
   void do_move_one_possibility(const board* b,board* res);
 
-  // evaluates and performs a move normally
-  void do_move_normally(const board* b,board* res);
-  
-  // evaluates and performs the perfect move
-  void do_move_perfectly(const board* b,board* res);
+  // search for the best move
+  template<bool exact>
+  void do_move_search(const board* b,board* res);
   
   // performs best move if found in book, returns whether successful
   bool do_move_book(const board* b,board* res);
 
   // performs principle variation search, unsorted
-  int pvs_unsorted(int alpha, int beta);
-  
-  // performs principle variation search, sorted
-  int pvs_sorted(int alpha,int beta);
+  template<bool sort,bool exact>
+  int pvs(int alpha, int beta);
   
   // performs null window search
+  template<bool exact>
   int pvs_null_window(int alpha);
   
-  // calculates the result for perfect play of this->inspected
-  int pvs_exact(int alpha, int beta);
-  
-  // performs null window search for perfect play of this->inspected
-  int pvs_exact_null_window(int alpha);
   
 };
