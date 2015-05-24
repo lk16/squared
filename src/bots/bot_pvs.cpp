@@ -9,9 +9,6 @@ bot_pvs::~bot_pvs()
 {
 }
 
-
-
-
 void bot_pvs::do_sorting(board* children, int child_count)
 {
   int heur[32];
@@ -90,7 +87,7 @@ int bot_pvs::pvs(int alpha, int beta)
       //  score = -pvs_exact_null_window(-alpha-1);
       //}
       //else{
-        score = -pvs_null_window(-alpha-1);
+        score = -pvs_null_window<exact>(-alpha-1);
       //}
       if((alpha < score) && (score < beta)){
         score = -pvs<sort,exact>(-beta,-score);
@@ -111,11 +108,12 @@ int bot_pvs::pvs(int alpha, int beta)
     
 }
 
+template<bool exact>
 int bot_pvs::pvs_null_window(int alpha)
 {
   stats.inc_nodes();
   
-  if(moves_left == 0){
+  if((!exact) && moves_left == 0){
     return heuristic();
   }
   
@@ -128,7 +126,7 @@ int bot_pvs::pvs_null_window(int alpha)
       heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      heur = -pvs_null_window(-(alpha+1));
+      heur = -pvs_null_window<exact>(-alpha-1);
     }
     inspected.switch_turn();
     return heur;
@@ -138,7 +136,7 @@ int bot_pvs::pvs_null_window(int alpha)
     int move = bits64_find_first(valid_moves);
     bits64 undo_data = inspected.do_move(move);
     moves_left--;
-    int score = -pvs_null_window(-(alpha+1));
+    int score = -pvs_null_window<exact>(-alpha-1);
     moves_left++;
     inspected.undo_move(move,undo_data);
     
@@ -149,53 +147,6 @@ int bot_pvs::pvs_null_window(int alpha)
   }
   return alpha;
   
-}
-
-
-int bot_pvs::pvs_exact_null_window(int alpha)
-{
-  stats.inc_nodes();
-  
-  bits64 valid_moves = inspected.get_valid_moves();
-
-  if(valid_moves == 0ull){
-    int heur;
-    inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();    
-    }
-    else{
-      heur = -pvs_exact_null_window(-(alpha+1));
-    }
-    inspected.switch_turn();
-    return heur;
-  }
-
-  int move = bits64_find_first(valid_moves);
-  
-  bits64 undo_data = inspected.do_move(move);
-  int score = -pvs_exact_null_window(-(alpha+1));
-  inspected.undo_move(move,undo_data);
-  
-  if(score > alpha){
-    return alpha+1;
-  }
-  valid_moves &= bits64_reset[move];
-  
-  while(valid_moves != 0ull){
-    
-    move = bits64_find_first(valid_moves);
-    
-    undo_data = inspected.do_move(move);
-    score = -pvs_exact_null_window(-alpha-1);
-    inspected.undo_move(move,undo_data);
-    
-    if(score > alpha){
-      return alpha+1;
-    }
-    valid_moves &= bits64_reset[move];
-  }
-  return alpha;
 }
 
 void bot_pvs::do_move_one_possibility(const board* b, board* res)

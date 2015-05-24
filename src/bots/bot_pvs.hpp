@@ -18,7 +18,7 @@ class bot_pvs:
   int moves_left;
   
   static const int NORMAL_MOVE_SORT_DEPTH = 7;
-  static const int PERFECT_MOVE_SORT_DEPTH = 5;
+  static const int PERFECT_MOVE_SORT_DEPTH = 4;
   
 public:
   board inspected;
@@ -58,9 +58,8 @@ private:
   int pvs(int alpha, int beta);
   
   // performs null window search
+  template<bool exact>
   int pvs_null_window(int alpha);
   
-  // performs null window search for perfect play of this->inspected
-  int pvs_exact_null_window(int alpha);
   
 };
