@@ -22,7 +22,7 @@ void bot_pvs::do_sorting(board* children, int child_count)
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    heur[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
+    heur[i] = -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC);
     moves_left++;
     std::swap(inspected,children[i]);
   }
@@ -31,20 +31,20 @@ void bot_pvs::do_sorting(board* children, int child_count)
   moves_left = tmp;
 }
 
-template<bool sorted>
+template<bool sorted,bool exact>
 int bot_pvs::pvs(int alpha, int beta)
 {
   stats.inc_nodes();
   
-  if(moves_left < search_max_sort_depth){
-    return pvs<false>(alpha,beta);
+  if((sorted) && (moves_left < search_max_sort_depth)){
+    return pvs<false,exact>(alpha,beta);
   }
   
-  if(moves_left == 0){
+  if((!exact) && moves_left == 0){
     return heuristic();
   }
   
-  if(get_use_book()){
+  if((!exact) && get_use_book()){
     book_t::value bv = book->lookup(&inspected,moves_left);
     if(bv.best_move != book_t::NOT_FOUND){
       return min(max(bv.heur,alpha),beta);
@@ -60,7 +60,7 @@ int bot_pvs::pvs(int alpha, int beta)
       heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
-      heur = -pvs<true>(-beta,-alpha);
+      heur = -pvs<sorted,exact>(-beta,-alpha);
     }
     inspected.switch_turn();
     return heur;
@@ -76,7 +76,7 @@ int bot_pvs::pvs(int alpha, int beta)
     if(board::only_similar_siblings(children,child_count)){
       std::swap<board>(inspected,children[0]);
       moves_left--;
-      int score = -pvs<true>(-beta,-alpha);
+      int score = -pvs<sorted,exact>(-beta,-alpha);
       moves_left++;
       std::swap<board>(inspected,children[0]);
       return score;
@@ -88,7 +88,7 @@ int bot_pvs::pvs(int alpha, int beta)
   
   std::swap<board>(inspected,children[0]);
   moves_left--;
-  int score = -pvs<true>(-beta,-alpha);
+  int score = -pvs<sorted,exact>(-beta,-alpha);
   moves_left++;
   std::swap<board>(inspected,children[0]);
   
@@ -108,7 +108,7 @@ int bot_pvs::pvs(int alpha, int beta)
     moves_left--;
     score = -pvs_null_window(-alpha-1);
     if((alpha < score) && (score < beta)){
-     score = -pvs<true>(-beta,-score);
+     score = -pvs<sorted,exact>(-beta,-score);
     } 
     moves_left++;
     
@@ -167,65 +167,6 @@ int bot_pvs::pvs_null_window(int alpha)
   
 }
 
-
-
-int bot_pvs::pvs_exact(int alpha, int beta)
-{
-  
-  stats.inc_nodes();
-  
-  bits64 valid_moves = inspected.get_valid_moves();
-
-  if(valid_moves == 0ull){
-    int heur;
-    inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();    
-    }
-    else{
-      heur = -pvs_exact(-beta,-alpha);
-    }
-    inspected.switch_turn();
-    return heur;
-  }
-
-  int move = bits64_find_first(valid_moves);
-  
-  bits64 undo_data = inspected.do_move(move);
-  int score = -pvs_exact(-beta,-alpha);
-  inspected.undo_move(move,undo_data);
-  
-  if(score >= beta){
-    return beta;
-  }
-  if(score >= alpha){
-    alpha = score;
-  }
-  valid_moves &= bits64_reset[move];
-  
-  while(valid_moves != 0ull){
-    
-    move = bits64_find_first(valid_moves);
-    
-    undo_data = inspected.do_move(move);
-    
-    score = -pvs_exact_null_window(-alpha-1);
-    if((alpha < score) && (score < beta)){
-      score = -pvs_exact(-beta,-score);
-    }
-    
-    inspected.undo_move(move,undo_data);
-    
-    if(score >= beta){
-      return beta;
-    }
-    if(score >= alpha){
-      alpha = score;
-    }
-    valid_moves &= bits64_reset[move];
-  }
-  return alpha;
-}
 
 int bot_pvs::pvs_exact_null_window(int alpha)
 {
@@ -326,7 +267,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
     for(int i=0;i<child_count;i++){
       inspected = children[i];
       moves_left--;
-      heurs[i] = -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC);
       moves_left++;
     }
     ugly_sort<board>(children,heurs,child_count);
@@ -343,7 +284,7 @@ void bot_pvs::do_move_normally(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs<true>(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,false>(MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -393,7 +334,7 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
     int heurs[32];
     for(int i=0;i<child_count;i++){
       inspected = children[i];
-      heurs[i] = -pvs<true>(MIN_HEURISTIC,MAX_HEURISTIC);
+      heurs[i] = -pvs<false,true>(MIN_HEURISTIC,MAX_HEURISTIC);
     }
     ugly_sort<board>(children,heurs,child_count);
     
@@ -402,16 +343,16 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
   moves_left = 64 - inspected.count_discs();
   
   int best_id = 0;
-  int best_heur = MIN_PERFECT_HEURISTIC;
+  int best_heur = -64000;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
-    int cur_heur = -pvs_exact(MIN_PERFECT_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,true>(-64000,-best_heur);
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": " << best_heur << std::endl;
+    output() << ": " << best_heur/1000 << std::endl;
   }
   
   *res = children[best_id];

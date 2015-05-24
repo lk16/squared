@@ -52,14 +52,11 @@ public:
   bool do_move_book(const board* b,board* res);
 
   // performs principle variation search, unsorted
-  template<bool sorted>
+  template<bool sorted,bool exact>
   int pvs(int alpha, int beta);
   
   // performs null window search
   int pvs_null_window(int alpha);
-  
-  // calculates the result for perfect play of this->inspected
-  int pvs_exact(int alpha, int beta);
   
   // performs null window search for perfect play of this->inspected
   int pvs_exact_null_window(int alpha);
