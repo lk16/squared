@@ -372,20 +372,16 @@ void bot_pvs::do_move(const board* b,board* res)
 {
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
-    return;
   }
-  
-  if(do_move_book(b,res)){
-    return;
-  }
-  
-  if(b->count_empty_fields() > get_perfect_depth()){
+  else if(do_move_book(b,res)){
+    (void)0;
+  }  
+  else if(b->count_empty_fields() > get_perfect_depth()){
     do_move_normally(b,res);
-    return;
   }
-  
-  do_move_perfectly(b,res);
-
+  else{
+    do_move_perfectly(b,res);
+  }
 }
 
 

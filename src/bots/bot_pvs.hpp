@@ -35,7 +35,9 @@ public:
   
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
+
   
+private:
   // sort children
   void do_sorting(board* children,int n);
   
