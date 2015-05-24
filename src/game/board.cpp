@@ -175,7 +175,15 @@ const bits64 board::location[10] = {
   /* 8 */ bits64_set[19] | bits64_set[20] | bits64_set[26] | bits64_set[29] | bits64_set[34] | bits64_set[37] | bits64_set[43] | bits64_set[44],
   /* 9 */ bits64_set[27] | bits64_set[28] | bits64_set[35] | bits64_set[36]
 };
-  
+
+void board::xot()
+{
+  int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
+  int index = rand() % xot_boards_size;
+  me = xot_boards[index][0];
+  opp = xot_boards[index][1];
+}
+
 
 board* board::get_children(board* out_begin) const
 {

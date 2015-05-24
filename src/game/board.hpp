@@ -6,11 +6,13 @@
 #include <iostream>
 #include <sstream>
 
+#include "game/xot.hpp"
 #include "util/bitset.hpp"
 #include "util/const.hpp"
 #include "util/bitset.hpp"
 #include "util/macros.hpp"
 #include "util/math.hpp"
+
 
 
 struct board{
@@ -86,6 +88,10 @@ struct board{
  
   // resets the board to starting position
   void reset();
+  
+  // init with random xot board
+  // thanks to http://berg.earthlingz.de/xot/download.php?lang=en
+  void xot();
   
   // switches me and opp
   void switch_turn();

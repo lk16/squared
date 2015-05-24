@@ -311,6 +311,17 @@ board demo_rotate_left(const board* b){
 }
 
 void testing_area(){
-  std::cout << "\u26AA\n";
-  std::cout << "\u26AB\n";
+  char buff[1024];
+  std::ifstream file("xot");
+  board b;
+  while(!file.eof()){
+    file.getline(buff,1024,'\n');
+    b.reset();
+    for(int i=0;i<8;i++){
+      b.do_move(buff[2*i]-'a'+(8*(buff[(2*i)+1]-'1')));     
+    }
+    std::cout << "{0x" << std::hex << b.me << ",0x" << b.opp << "},\n"; 
+    
+  }
+  
 }

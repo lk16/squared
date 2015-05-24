@@ -31,6 +31,13 @@ void squared_arg_t::init_map()
   parser->func_map["--loop"] = &squared_arg_t::loop_game;
   parser->func_map["--speed-test"] = &squared_arg_t::speed_test;
   parser->func_map["--pgn"] = &squared_arg_t::process_pgn;
+  parser->func_map["--xot"] = &squared_arg_t::use_xot;
+}
+
+int squared_arg_t::use_xot()
+{
+  gc.board_state.b.xot();
+  return 1;
 }
 
 int squared_arg_t::process_pgn()
