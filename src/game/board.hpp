@@ -390,103 +390,26 @@ inline bits64 board::get_valid_moves() const
   
   for(int d=4;d<8;d++){
     
-    assert(board::walk_diff[d][0] > 0);
+    assert(walk_diff[d][0] > 0);
     
     res |= 
-    (
-    ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
-    & 
-    (
-    ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    |
-    (
-    ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    &
-    (
-    ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    |
-    (
-    ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    &
-    (
-    ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    |
-    (
-    ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    &
-    (
-    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    |
-    (
-    ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    &
-    (
-    ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    |
-    (
-    ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    &
-    ((me >> board::walk_diff[d][6]) & board::walk_possible[d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
+    ((opp>>walk_diff[d][0]) & walk_possible[d][0]) & (((me>>walk_diff[d][1]) & walk_possible[d][1])|(
+    ((opp>>walk_diff[d][1]) & walk_possible[d][1]) & (((me>>walk_diff[d][2]) & walk_possible[d][2])|(
+    ((opp>>walk_diff[d][2]) & walk_possible[d][2]) & (((me>>walk_diff[d][3]) & walk_possible[d][3])|(
+    ((opp>>walk_diff[d][3]) & walk_possible[d][3]) & (((me>>walk_diff[d][4]) & walk_possible[d][4])|(
+    ((opp>>walk_diff[d][4]) & walk_possible[d][4]) & (((me>>walk_diff[d][5]) & walk_possible[d][5])|(
+    ((opp>>walk_diff[d][5]) & walk_possible[d][5]) &  ((me>>walk_diff[d][6]) & walk_possible[d][6])))))))))));
     
-    res |= 
-    (
-    ((opp << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
-    & 
-    (
-    ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    |
-    (
-    ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    &
-    (
-    ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    |
-    (
-    ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    &
-    (
-    ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    |
-    (
-    ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    &
-    (
-    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    |
-    (
-    ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    &
-    (
-    ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    |
-    (
-    ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    &
-    ((me << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
+    res|=
+    ((opp<<walk_diff[d][0]) & walk_possible[7-d][0]) & (((me<<walk_diff[d][1]) & walk_possible[7-d][1])|(
+    ((opp<<walk_diff[d][1]) & walk_possible[7-d][1]) & (((me<<walk_diff[d][2]) & walk_possible[7-d][2])|(
+    ((opp<<walk_diff[d][2]) & walk_possible[7-d][2]) & (((me<<walk_diff[d][3]) & walk_possible[7-d][3])|(
+    ((opp<<walk_diff[d][3]) & walk_possible[7-d][3]) & (((me<<walk_diff[d][4]) & walk_possible[7-d][4])|(
+    ((opp<<walk_diff[d][4]) & walk_possible[7-d][4]) & (((me<<walk_diff[d][5]) & walk_possible[7-d][5])|(
+    ((opp<<walk_diff[d][5]) & walk_possible[7-d][5]) &  ((me<<walk_diff[d][6]) & walk_possible[7-d][6])))))))))));
+    
   }
-  
+
   res &= get_empty_fields();
   return res;
 }

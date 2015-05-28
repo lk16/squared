@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #include "util/const.hpp"
 
@@ -11,7 +11,7 @@ template<class T>
 struct arg_parser{
   
   
-  typedef std::map<std::string,int(T::*)()> func_map_t;
+  typedef std::unordered_map<std::string,int(T::*)()> func_map_t;
   
   
   const char **current_arg,**end_arg;
