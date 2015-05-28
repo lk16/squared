@@ -84,7 +84,11 @@ public:
 };
 
 inline bot_base::~bot_base()
-{}
+{
+  if(book){
+    delete book;
+  }  
+}
 
 inline bot_base::bot_base():
   name("base"),

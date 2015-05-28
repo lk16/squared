@@ -167,8 +167,8 @@ int bot_mtdf::mtdf(int f)
     else{
       beta = g;
     }
-    g = -null_window<sort,exact>(1-beta);
-    std::cout << lower_bound << " <= " << g << " <= " << upper_bound << '\n';
+    g = null_window<sort,exact>(beta-1);
+    //std::cout << lower_bound << " <= " << g << " <= " << upper_bound << '\n';
     if(g < beta){
       upper_bound = g;
     }
@@ -197,7 +197,8 @@ int bot_mtdf::null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff(); 
+      heur = alpha + ((heur > alpha) ? 1 : 0);
     }
     else{
       heur = -null_window<sort,exact>(-(alpha+1));
