@@ -132,18 +132,21 @@ int bot_pvs::pvs_null_window(int alpha)
     return heur;
   }
   
-  while(valid_moves != 0ull){
-    int move = bits64_find_first(valid_moves);
-    bits64 undo_data = inspected.do_move(move);
-    moves_left--;
-    int score = -pvs_null_window<exact>(-alpha-1);
-    moves_left++;
-    inspected.undo_move(move,undo_data);
-    
-    if(score > alpha){
-      return alpha+1;
+  for(int i=0;i<9;i++){
+    bits64 location_moves = valid_moves & board::ordered_locations[i];
+    while(location_moves != 0ull){
+      int move = bits64_find_first(location_moves);
+      bits64 undo_data = inspected.do_move(move);
+      moves_left--;
+      int score = -pvs_null_window<exact>(-alpha-1);
+      moves_left++;
+      inspected.undo_move(bits64_set[move],undo_data);
+      
+      if(score > alpha){
+        return alpha+1;
+      }
+      location_moves &= bits64_reset[move];
     }
-    valid_moves &= bits64_reset[move];
   }
   return alpha;
   

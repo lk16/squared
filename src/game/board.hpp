@@ -13,7 +13,9 @@
 #include "util/macros.hpp"
 #include "util/math.hpp"
 
+struct board;
 
+extern bits64 (board::* const move_funcs[64])();
 
 struct board{
   
@@ -27,6 +29,8 @@ struct board{
   
   // location on board, as displayed below
   static const bits64 location[10];    
+  
+  static const bits64 ordered_locations[10];
   
   // 0,1,2,3,3,2,1,0,
   // 1,4,5,6,6,5,4,1,
@@ -230,7 +234,7 @@ struct board{
   bits64 do_move_H8();
   
   // undoes move field_id, flips back all discs represented by undo_data
-  void undo_move(int field_id,bits64 undo_data); 
+  void undo_move(bits64 move_bit,bits64 undo_data); 
   
   // returns whether all children are the same modulo rotation/mirroring
   static bool only_similar_siblings(const board* siblings,int n);
@@ -259,7 +263,6 @@ struct board{
   
 };
 
-extern bits64 (board::* const move_funcs[64])();
 
 inline bits64 board::do_move(int move_id)
 {  
@@ -351,19 +354,17 @@ inline bool board::is_valid_move(int field_id) const
   return (get_valid_moves() & bits64_set[field_id]) != 0ull;
 }
 
-inline void board::undo_move(int field_id,bits64 undo_data)
+inline void board::undo_move(bits64 move_bit,bits64 undo_data)
 {
-  //switch_turn();
-  //me &= ~(undo_data | bits64_set[field_id]);
-  //opp |= (undo_data);  
+  assert(bits64_count(move_bit)==1);
   
   bits64 tmp = me;
-  me = opp & ~(undo_data | bits64_set[field_id]);
+  me = opp & ~(undo_data | move_bit);
   opp = tmp | undo_data;
  
   assert((me & undo_data) == 0ull);
   assert((opp & undo_data) == undo_data);
-  assert((get_non_empty_fields() & bits64_set[field_id]) == 0ull);
+  assert((get_non_empty_fields() & move_bit) == 0ull);
 }
 
 inline bits64 board::get_valid_moves_superset() const{

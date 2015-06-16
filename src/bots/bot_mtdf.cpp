@@ -95,7 +95,7 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -mtdf<true,exact>(0);
+    int cur_heur = -mtdf<true,exact>(id==0 ? 0 : best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -104,7 +104,7 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     output() << "move " << (id+1) << "/" << (child_count);
     output() << ": ";
     if(exact){
-      output() << best_heur/1000;
+      output() << best_heur/EXACT_SCORE_FACTOR;
     }
     else{
       output() << best_heur;
@@ -168,7 +168,6 @@ int bot_mtdf::mtdf(int f)
       beta = g;
     }
     g = null_window<sort,exact>(beta-1);
-    //std::cout << lower_bound << " <= " << g << " <= " << upper_bound << '\n';
     if(g < beta){
       upper_bound = g;
     }
@@ -197,7 +196,10 @@ int bot_mtdf::null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff(); 
+      heur = -inspected.get_disc_diff();
+      if(!exact){
+        heur *= EXACT_SCORE_FACTOR; 
+      }
       heur = alpha + ((heur > alpha) ? 1 : 0);
     }
     else{
@@ -207,18 +209,22 @@ int bot_mtdf::null_window(int alpha)
     return heur;
   }
   
-  while(valid_moves != 0ull){
-    int move = bits64_find_first(valid_moves);
-    bits64 undo_data = inspected.do_move(move);
-    moves_left--;
-    int score = -null_window<sort,exact>(-(alpha+1));
-    moves_left++;
-    inspected.undo_move(move,undo_data);
-    
-    if(score > alpha){
-      return alpha+1;
+  for(int i=0;i<9;i++){
+    bits64 location_moves = valid_moves & board::ordered_locations[i];
+    while(location_moves != 0ull){
+      bits64 move_bit = bits64_first(location_moves);
+      location_moves &= ~move_bit;
+      int move = bits64_find_first(move_bit);
+      bits64 undo_data = inspected.do_move(move);
+      moves_left--;
+      int score = -null_window<sort,exact>(-(alpha+1));
+      moves_left++;
+      inspected.undo_move(move_bit,undo_data);
+      
+      if(score > alpha){
+        return alpha+1;
+      }
     }
-    valid_moves &= bits64_reset[move];
   }
   return alpha;
 }
