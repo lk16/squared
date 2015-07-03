@@ -28,7 +28,6 @@ int main(int argc,char **argv){
   
   if(arg_data.start_windowed_game){
     Gtk::Main kit(argc,argv);
-     
     main_window window;
     arg_data.gc.mw = &window;
     window.control = &arg_data.gc;

@@ -55,7 +55,8 @@ int bot_pvs::pvs(int alpha, int beta)
     }
   }
   
-  if(!inspected.has_valid_moves()){
+  bits64 moves = inspected.get_valid_moves();
+  if(moves == 0ull){
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
       int diff = inspected.get_disc_diff();
@@ -68,8 +69,7 @@ int bot_pvs::pvs(int alpha, int beta)
   }
     
   board children[32]; 
-  int child_count = inspected.get_children(children) - children;
-    
+  int child_count = inspected.get_children(children,moves) - children;
   
   if(sort){
     do_sorting(children,child_count);

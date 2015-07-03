@@ -212,23 +212,21 @@ void board::xot()
 
 board* board::get_children(board* out_begin) const
 {
-  assert(out_begin);
+  return get_children(out_begin,get_valid_moves());
+}
+
+board* board::get_children(board* out, bits64 moves) const
+{
+  assert(out);
   
-  board* out_end = out_begin;
-  bits64 valid_moves = get_valid_moves();
-  
-  while(valid_moves != 0ull){
-    
-    int move_id = bits64_find_first(valid_moves);
-    
-    *out_end = *this;
-    out_end->do_move(move_id);
-    out_end++;
-    
-    valid_moves &= bits64_reset[move_id];
-    
+  while(moves != 0ull){
+    int move_id = bits64_find_first(moves);
+    *out = *this;
+    out->do_move(move_id);
+    out++;
+    moves &= bits64_reset[move_id];
   }
-  return out_end;
+  return out;  
 }
 
 

@@ -117,6 +117,11 @@ struct board{
   // returns a pointer to the last found child
   board* get_children(board* out) const;
   
+  // gets all children from this board
+  // returns a pointer to the last found child
+  // use this when valid moves are known
+  board* get_children(board* out,bits64 moves) const;
+  
   // returns whether this board has any valid moves
   bool has_valid_moves() const;
   
