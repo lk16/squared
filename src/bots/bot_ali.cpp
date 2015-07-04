@@ -1,9 +1,6 @@
 #include "bot_ali.hpp"
 #include "book/book.hpp"
 
-#include <fstream>
-#include <algorithm>
-
 REGISTER_BOT(ali);
 
 const int bot_ali::location_values[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
