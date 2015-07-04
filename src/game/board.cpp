@@ -295,6 +295,7 @@ std::string board::to_html_table(int turn) const
 
 
 
+
 std::string board::to_ascii_art(int turn) const
 {
   std::stringstream ss;

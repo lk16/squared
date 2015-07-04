@@ -103,6 +103,9 @@ struct board{
   // returns a bitset of valid moves
   bits64 get_valid_moves() const;
   
+  // helper function of get_valid_moves()
+  static bits64 get_some_moves(const bits64 me, const bits64 opp_mask, const int dir);
+  
   // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
   
@@ -359,111 +362,41 @@ inline void board::undo_move(int field_id,bits64 undo_data)
   opp = tmp | undo_data;
 }
 
+inline bits64 board::get_some_moves(const bits64 me, const bits64 opp_mask, const int dir) 
+{
+  // this code was copied from Edax
+  
+  // 1-stage Parallel Prefix (intermediate between kogge stone & sequential) 
+  // 6 << + 6 >> + 7 | + 10 &
+  bits64 flip_l, flip_r,mask_l, mask_r;
+  const bits64 dir2 = dir + dir;
+
+  flip_l  = opp_mask & (me << dir);
+  flip_r  = opp_mask & (me >> dir);
+  flip_l |= opp_mask & (flip_l << dir);
+  flip_r |= opp_mask & (flip_r >> dir);
+  mask_l  = opp_mask & (opp_mask << dir);
+  mask_r  = opp_mask & (opp_mask >> dir);
+  flip_l |= mask_l & (flip_l << dir2);
+  flip_r |= mask_r & (flip_r >> dir2);
+  flip_l |= mask_l & (flip_l << dir2);
+  flip_r |= mask_r & (flip_r >> dir2);
+
+  return (flip_l << dir) | (flip_r >> dir);
+}
+
 inline bits64 board::get_valid_moves() const
 {
-  bits64 res = 0ull;
-  
-  for(int d=4;d<8;d++){
-    
-    assert(board::walk_diff[d][0] > 0);
-    
-    res |= 
-    (
-    ((opp >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
-    & 
-    (
-    ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    |
-    (
-    ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    &
-    (
-    ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    |
-    (
-    ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    &
-    (
-    ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    |
-    (
-    ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    &
-    (
-    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    |
-    (
-    ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    &
-    (
-    ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    |
-    (
-    ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    &
-    ((me >> board::walk_diff[d][6]) & board::walk_possible[d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
-    
-    res |= 
-    (
-    ((opp << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
-    & 
-    (
-    ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    |
-    (
-    ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    &
-    (
-    ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    |
-    (
-    ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    &
-    (
-    ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    |
-    (
-    ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    &
-    (
-    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    |
-    (
-    ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    &
-    (
-    ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    |
-    (
-    ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    &
-    ((me << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
-  }
-  
-  res &= get_empty_fields();
-  return res;
+  // this code was copied from Edax
+  const bits64 mask = opp & 0x7E7E7E7E7E7E7E7Eull;
+
+  return (0ull
+    | get_some_moves(me,mask,1) // horizontal
+    | get_some_moves(me,opp, 8) // vertical
+    | get_some_moves(me,mask,7) // diagonals
+    | get_some_moves(me,mask,9)
+  )
+  & get_empty_fields(); // mask with empties
 }
 
 inline int board::get_rotation(const board* b) const
@@ -488,106 +421,7 @@ inline int board::count_empty_fields() const
 
 inline int board::count_opponent_moves() const
 {
-  bits64 moves = 0ull;
-  
-  for(int d=4;d<8;d++){
-    
-    assert(board::walk_diff[d][0] > 0);
-    
-    moves |= 
-    (
-    ((me >> board::walk_diff[d][0]) & board::walk_possible[d][0]) 
-    & 
-    (
-    ((opp >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    |
-    (
-    ((me >> board::walk_diff[d][1]) & board::walk_possible[d][1])
-    &
-    (
-    ((opp >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    |
-    (
-    ((me >> board::walk_diff[d][2]) & board::walk_possible[d][2])
-    &
-    (
-    ((opp >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    |
-    (
-    ((me >> board::walk_diff[d][3]) & board::walk_possible[d][3])
-    &
-    (
-    ((opp >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    |
-    (
-    ((me >> board::walk_diff[d][4]) & board::walk_possible[d][4])
-    &
-    (
-    ((opp >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    |
-    (
-    ((me >> board::walk_diff[d][5]) & board::walk_possible[d][5])
-    &
-    ((opp >> board::walk_diff[d][6]) & board::walk_possible[d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
-    
-    moves |= 
-    (
-    ((me << board::walk_diff[d][0]) & board::walk_possible[7-d][0]) 
-    & 
-    (
-    ((opp << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    |
-    (
-    ((me << board::walk_diff[d][1]) & board::walk_possible[7-d][1])
-    &
-    (
-    ((opp << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    |
-    (
-    ((me << board::walk_diff[d][2]) & board::walk_possible[7-d][2])
-    &
-    (
-    ((opp << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    |
-    (
-    ((me << board::walk_diff[d][3]) & board::walk_possible[7-d][3])
-    &
-    (
-    ((opp << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    |
-    (
-    ((me << board::walk_diff[d][4]) & board::walk_possible[7-d][4])
-    &
-    (
-    ((opp << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    |
-    (
-    ((me << board::walk_diff[d][5]) & board::walk_possible[7-d][5])
-    &
-    ((opp << board::walk_diff[d][6]) & board::walk_possible[7-d][6])
-    )
-    )
-    )
-    )  
-    )
-    )
-    )
-    )
-    )
-    )
-    );
-  }
-  
-  return bits64_count(moves & get_empty_fields());
+  board copy(*this);
+  copy.switch_turn();
+  return copy.count_valid_moves();
 }
