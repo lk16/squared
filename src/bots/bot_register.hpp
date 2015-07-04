@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #define REGISTER_BOT(t) bot_registration REGISTER_##t(\
@@ -15,13 +15,9 @@ bot_base* create_bot(){
   return new T;
 }
 
-class bot_registration{
+struct bot_registration{
   
-  
-  
-public:
-  
-  typedef std::map<std::string,bot_base*(*)()> t_map;
+  typedef std::unordered_map<std::string,bot_base*(*)()> t_map;
   static t_map& bots();
   
   bot_registration(const char* key,bot_base*(*value)()){

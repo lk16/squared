@@ -4,7 +4,6 @@ REGISTER_BOT(mtdf_moves);
 
 bot_mtdf_moves::bot_mtdf_moves(){
   set_name("mtdf_moves");
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
 }
 
 
@@ -30,7 +29,5 @@ int bot_mtdf_moves::heuristic()
 
   
 void bot_mtdf_moves::on_new_game(){
-  if(get_use_book()){
-    book->reload();
-  }
+  bot_base::on_new_game();
 }

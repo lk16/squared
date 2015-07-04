@@ -5,14 +5,6 @@
 class bot_mtdf:
   public bot_base
 {
-  
-  enum eval_mode{
-    ONE_MOVE_MODE,
-    NORMAL_MODE,
-    PERFECT_MODE,
-    BOOK_MODE
-  };
-  
   int search_max_sort_depth;
   int moves_left;
   

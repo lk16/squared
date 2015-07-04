@@ -10,6 +10,5 @@ struct bot_random:
   virtual void do_move(const board* in, board* out);
   virtual void on_new_game();
   virtual void disable_book();
-  virtual void disable_shell_output();
-  virtual ~bot_random();
+  virtual ~bot_random() = default;
 };

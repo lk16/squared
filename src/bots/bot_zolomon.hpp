@@ -13,7 +13,7 @@ struct bot_zolomon:
   public bot_pvs
 {
   bot_zolomon();  
-  virtual ~bot_zolomon();
+  virtual ~bot_zolomon() = default;
   
   virtual void on_new_game();
   virtual int heuristic();

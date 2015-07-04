@@ -5,19 +5,12 @@ REGISTER_BOT(kag0);
 bot_kag0::bot_kag0()
 {
   set_name("kag0");  
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
 }
 
-bot_kag0::~bot_kag0()
-{
-  if(book){
-    delete book;
-  }
-}
 
 void bot_kag0::on_new_game()
 {
-  book->reload();
+  bot_base::on_new_game();
 }
 
 int bot_kag0::heuristic()
@@ -45,9 +38,7 @@ int bot_kag0::get_forfeit() const
   if(!inspected.has_valid_moves()){
     return -1;
   }
-  board copy = inspected;
-  copy.switch_turn();
-  if(!copy.has_valid_moves()){
+  if(inspected.count_opponent_moves() == 0){
     return 1;
   }
   return 0;

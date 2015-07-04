@@ -4,11 +4,6 @@ REGISTER_BOT(moves);
 
 bot_moves::bot_moves(){
   set_name("moves");
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
-}
-
-
-bot_moves::~bot_moves(){  
 }
 
 int bot_moves::heuristic()
@@ -30,9 +25,7 @@ int bot_moves::heuristic()
 
   
 void bot_moves::on_new_game(){
-  if(get_use_book()){
-    book->reload();
-  }
+  bot_base::on_new_game();
 }
 
 

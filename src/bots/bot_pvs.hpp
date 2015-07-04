@@ -6,14 +6,7 @@
 class bot_pvs:
   public bot_base
 {
-  
-  enum eval_mode{
-    ONE_MOVE_MODE,
-    NORMAL_MODE,
-    PERFECT_MODE,
-    BOOK_MODE
-  };
-  
+
   int search_max_sort_depth;
   int moves_left;
   
@@ -23,9 +16,11 @@ class bot_pvs:
 public:
   board inspected;
   
-  bot_pvs();  
+  // ctor
+  bot_pvs() = default;  
   
-  ~bot_pvs();
+  // dtor
+  ~bot_pvs() = default;
   
   // picks a move!
   virtual void do_move(const board* b,board* res);

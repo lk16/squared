@@ -8,16 +8,10 @@ bot_zolomon::bot_zolomon()
   book = new book_t(BOOK_PATH + get_name() + "_book.csv");
 }
 
-bot_zolomon::~bot_zolomon()
-{
-  if(book){
-    delete book;
-  }
-}
 
 void bot_zolomon::on_new_game()
 {
-  book->reload();
+  bot_base::on_new_game();
 }
 
 int bot_zolomon::heuristic()

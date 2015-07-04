@@ -1,14 +1,5 @@
 #include "bots/bot_pvs.hpp"
 
-
-bot_pvs::bot_pvs()
-{
-}
-
-bot_pvs::~bot_pvs()
-{
-}
-
 void bot_pvs::do_sorting(board* children, int child_count)
 {
   int heur[32];

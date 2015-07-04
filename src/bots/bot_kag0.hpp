@@ -14,7 +14,7 @@ struct bot_kag0:
   public bot_pvs
 {
   bot_kag0();  
-  virtual ~bot_kag0();
+  virtual ~bot_kag0() = default;
   
   virtual void on_new_game();
   virtual int heuristic();
