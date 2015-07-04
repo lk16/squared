@@ -16,15 +16,7 @@
 
 
 struct board{
-  
-  // contains bitsets of which bits are set when you can walk
-  // in direction (1st index) for number of steps (2nd index)
-  static const bits64 walk_possible[8][7];
-  
-  // contains index differences when you can walk
-  // in direction (1st index) for number of steps (2nd index)
-  static const int walk_diff[8][7];       
-  
+ 
   // location on board, as displayed below
   static const bits64 location[10];    
   
