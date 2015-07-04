@@ -356,7 +356,7 @@ inline void board::undo_move(int field_id,bits64 undo_data)
 
 inline bits64 board::get_some_moves(const bits64 me, const bits64 opp_mask, const int dir) 
 {
-  // this code was copied from Edax
+  // this funtion is a modified version of code from Edax
   
   // 1-stage Parallel Prefix (intermediate between kogge stone & sequential) 
   // 6 << + 6 >> + 7 | + 10 &
@@ -379,12 +379,12 @@ inline bits64 board::get_some_moves(const bits64 me, const bits64 opp_mask, cons
 
 inline bits64 board::get_valid_moves() const
 {
-  // this code was copied from Edax
+  // this funtion is a modified version of code from Edax
   const bits64 mask = opp & 0x7E7E7E7E7E7E7E7Eull;
 
   return (0ull
     | get_some_moves(me,mask,1) // horizontal
-    | get_some_moves(me,opp, 8) // vertical
+    | get_some_moves(me,opp,8) // vertical
     | get_some_moves(me,mask,7) // diagonals
     | get_some_moves(me,mask,9)
   )
