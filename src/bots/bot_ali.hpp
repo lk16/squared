@@ -11,7 +11,6 @@
 #include "util/math.hpp"
 #include "util/macros.hpp"
 #include "util/string.hpp"
-#include "util/hash_table.hpp"
 #include "bots/bot_pvs.hpp"
 #include "book/book.hpp"
 
@@ -45,21 +44,7 @@ class bot_ali:
   
   /// transposition table
   
-  struct tpt_value{
-    int lower_bound,upper_bound,best_move;
-    
-    tpt_value(){
-      lower_bound = MIN_HEURISTIC;
-      upper_bound = MAX_HEURISTIC;
-      best_move = -1;
-    }
-    
-    tpt_value(int lb,int ub,int bm){
-       lower_bound = lb,upper_bound = ub,best_move = bm;
-    }
-  };
-  
-  hash_table<board,tpt_value,1000001> tpt;
+   
 
   /// This strongly influences the behaviour of ali, should be constant
   /// during the entire game, but can be changed from default before the

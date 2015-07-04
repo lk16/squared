@@ -259,6 +259,12 @@ struct board{
   
 };
 
+struct board_hash {
+  size_t operator()(const board b) const{
+    return b.me ^ ((b.opp << 32) | (b.opp >> 32));
+  }
+};
+
 extern bits64 (board::* const move_funcs[64])();
 
 inline bits64 board::do_move(int move_id)
@@ -273,9 +279,6 @@ inline int board::get_move_index(const board* after) const
 }
 
 
-inline unsigned long long board_hasher(const board b){
-  return b.me ^ ((b.opp << 32) | (b.opp >> 32));
-}
 
 inline board::board(const board&& b):
   me(std::move(b.me)),

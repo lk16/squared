@@ -19,6 +19,22 @@ class bot_mtdf:
   static const int NORMAL_MOVE_SORT_DEPTH = 4;
   static const int PERFECT_MOVE_SORT_DEPTH = 7;
   
+  struct tpt_value{
+    int lower_bound,upper_bound,best_move;
+    
+    tpt_value(){
+      lower_bound = MIN_HEURISTIC;
+      upper_bound = MAX_HEURISTIC;
+      best_move = -1;
+    }
+    
+    tpt_value(int lb,int ub,int bm){
+       lower_bound = lb,upper_bound = ub,best_move = bm;
+    }
+  };
+ 
+  std::unordered_map<board,tpt_value,board_hash> hash_table;
+  
 public:
   board inspected;
   

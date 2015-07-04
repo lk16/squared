@@ -1,7 +1,6 @@
 #include "testing.hpp"
 #include "bots/bot_ali.hpp"
 #include "util/csv.hpp"
-#include "util/hash_table.hpp"
 
 #include <future>
 #include <vector>

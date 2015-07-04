@@ -9,6 +9,7 @@
 #include <string>
 #include <thread>
 #include <queue>
+#include <unordered_map>
 
 #include <unistd.h>
 
@@ -45,7 +46,7 @@ public:
     int best_move,depth,heur;
   };
   
-  typedef std::map<std::string,value> data_type;
+  typedef std::unordered_map<std::string,value> data_type;
   typedef data_type::const_iterator citer;
   typedef data_type::iterator iter;
 
