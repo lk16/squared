@@ -49,6 +49,7 @@ public:
   typedef std::unordered_map<std::string,value> container_t;
   typedef container_t::const_iterator citer;
   typedef container_t::iterator iter;
+  typedef container_t::value_type entry;
 
   // lowest depth for a move to be stored in the book_stddev
   static const int MIN_ACCEPT_DEPTH = 8;
@@ -112,7 +113,8 @@ private:
   
   void print_stats() const;
   
-  bool is_correct_entry(const std::string& bs,const book_t::value& bv) const;
+  bool is_correct_entry(const entry& e) const;
+  bool is_suitable_entry(const entry& e) const;
   
   void load();
 };

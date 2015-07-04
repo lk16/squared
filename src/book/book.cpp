@@ -40,25 +40,34 @@ int book_t::job_priority(const board* b, int depth, int last_heur)
   return res;
 }
 
-
-
-
-bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) const
+bool book_t::is_suitable_entry(const entry& e) const
 {
-  board b(bs);
+  board b(e.first);
+  
+  return true
+    && (b.count_discs() <= ENTRY_MAX_DISCS)
+    && (e.second.depth >= MIN_ACCEPT_DEPTH)
+    && (e.second.heur != bot_base::NO_HEUR_AVAILABLE); 
+}
+
+
+
+bool book_t::is_correct_entry(const entry& e) const
+{
+  board b(e.first);
   
   int error = 0;
   
-  if(out_bounds<int>(bv.depth,0,60)){
+  if(out_bounds<int>(e.second.depth,0,60)){
     error = 1;
   }
-  if(out_bounds<int>(bv.best_move,0,63)){ 
+  if(out_bounds<int>(e.second.best_move,0,63)){ 
     error = 2;
   }
-  if(bs.length() != 32){ 
+  if(e.first.length() != 32){ 
     error = 3;
   }
-  if(bv.depth < MIN_ACCEPT_DEPTH){ 
+  if(e.second.depth < MIN_ACCEPT_DEPTH){ 
     error = 4;
   }
   if((b.me & b.opp) != 0ull){ 
@@ -67,7 +76,7 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
   if(((b.me | b.opp) & 0x0000001818000000) != 0x0000001818000000){ 
     error = 6;
   }
-  if(!b.is_valid_move(bv.best_move)){ 
+  if(!b.is_valid_move(e.second.best_move)){ 
     error = 7;
   }
   if(b != b.to_database_board()){ 
@@ -200,28 +209,23 @@ bool book_t::add(const board* b,const book_t::value* bv)
   book_t::value fixed_bv = *bv;
   fixed_bv.best_move = move;
   
-  if(true 
-    && (b->count_discs() <= ENTRY_MAX_DISCS)
-    && (fixed_bv.depth >= MIN_ACCEPT_DEPTH)
-    && ((it == container.end()) || (bv->depth > it->second.depth))
-    && (bv->heur != bot_base::NO_HEUR_AVAILABLE)
-  ){
-    
-    if(!is_correct_entry(str,fixed_bv)){
-      std::cout << "WARNING: attempting to add invalid value to book!\n";
-      return false;
-    }
-    
-    csv::line_t book_line;
-    book_line.push_back(str);
-    fixed_bv.add_to_line(&book_line);
-    
-    csv_file.append_line(book_line);
-    
-    container[str] = fixed_bv;
-    return true;
+  if(it==container.end() || !is_suitable_entry(*it)){
+    return false;  
   }
-  return false;
+  
+  if(!is_correct_entry(*it)){
+    std::cout << "WARNING: attempting to add invalid value to book!\n";
+    return false;
+  }
+    
+  csv::line_t book_line;
+  book_line.push_back(str);
+  fixed_bv.add_to_line(&book_line);
+  
+  csv_file.append_line(book_line);
+  
+  container[str] = fixed_bv;
+  return true;
 }
 
 void book_t::value::add_to_line(csv::line_t* l) const
@@ -246,7 +250,7 @@ void book_t::clean() const
   csv new_book_file(get_filename());  
   
   for(auto it: container){
-    if(is_correct_entry(it.first,it.second)){
+    if(is_correct_entry(it) && is_suitable_entry(it)){
       csv::line_t book_line;
       book_line.push_back(it.first);
       it.second.add_to_line(&book_line);
@@ -295,10 +299,11 @@ void book_t::load()
       errors++;
       continue;
     }
-    book_t::value bv(line);
     
-    if(is_correct_entry(line[0],bv)){
-      container[line[0]] = bv;
+    book_t::entry e(line[0],book_t::value(line));
+    
+    if(is_correct_entry(e)){
+      container.insert(e);
     }
     else{
       errors++;
