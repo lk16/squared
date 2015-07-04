@@ -55,9 +55,7 @@ int bot_kag0::get_forfeit() const
 
 int bot_kag0::get_mobility() const
 {
-  board copy = inspected;
-  copy.switch_turn();
-  return inspected.count_valid_moves() - copy.count_valid_moves();
+  return inspected.count_valid_moves() - inspected.count_opponent_moves();
 }
 
 int bot_kag0::get_frontier() const
