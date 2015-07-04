@@ -46,7 +46,8 @@ int bot_pvs::pvs(int alpha, int beta)
     }
   }
   
-  if(!inspected.has_valid_moves()){
+  bits64 moves = inspected.get_valid_moves();
+  if(moves == 0ull){
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
       int diff = inspected.get_disc_diff();
@@ -59,8 +60,7 @@ int bot_pvs::pvs(int alpha, int beta)
   }
     
   board children[32]; 
-  int child_count = inspected.get_children(children) - children;
-    
+  int child_count = inspected.get_children(children,moves) - children;
   
   if(sort){
     do_sorting(children,child_count);
@@ -123,18 +123,21 @@ int bot_pvs::pvs_null_window(int alpha)
     return heur;
   }
   
-  while(valid_moves != 0ull){
-    int move = bits64_find_first(valid_moves);
-    bits64 undo_data = inspected.do_move(move);
-    moves_left--;
-    int score = -pvs_null_window<exact>(-alpha-1);
-    moves_left++;
-    inspected.undo_move(move,undo_data);
-    
-    if(score > alpha){
-      return alpha+1;
+  for(int i=0;i<9;i++){
+    bits64 location_moves = valid_moves & board::ordered_locations[i];
+    while(location_moves != 0ull){
+      int move = bits64_find_first(location_moves);
+      bits64 undo_data = inspected.do_move(move);
+      moves_left--;
+      int score = -pvs_null_window<exact>(-alpha-1);
+      moves_left++;
+      inspected.undo_move(bits64_set[move],undo_data);
+      
+      if(score > alpha){
+        return alpha+1;
+      }
+      location_moves &= bits64_reset[move];
     }
-    valid_moves &= bits64_reset[move];
   }
   return alpha;
   

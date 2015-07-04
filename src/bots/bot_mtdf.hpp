@@ -44,28 +44,28 @@ public:
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
   
+private:
+  
+  // sort children
+  void do_sorting(board* children,int n);
+  
+  
    // does the only move, no evaluation necessary
   void do_move_one_possibility(const board* b,board* res);
 
-  // evaluates and performs a move normally
-  void do_move_normally(const board* b,board* res);
-  
-  // evaluates and performs the perfect move
-  void do_move_perfectly(const board* b,board* res);
-  
   // performs best move if found in book, returns whether successful
   bool do_move_book(const board* b,board* res);
 
+  // evaluates and performs a move normally
+  template<bool exact>
+  void do_move_search(const board* b,board* res);
+  
   // performs mtdf search
+  template<bool sort,bool exact>
   int mtdf(int f);
   
   // performs null window search
+  template<bool sort,bool exact>
   int null_window(int alpha);
-  
-  // performs mtdf search perfectly
-  int mtdf_exact(int f);
-  
-  // performs null window search for perfect play of this->inspected
-  int null_window_exact(int alpha);
   
 };

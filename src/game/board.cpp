@@ -90,6 +90,31 @@ const bits64 board::location[10] = {
   /* 9 */ bits64_set[27] | bits64_set[28] | bits64_set[35] | bits64_set[36]
 };
 
+// 0,1,2,3,3,2,1,0,
+// 1,4,5,6,6,5,4,1,
+// 2,5,7,8,8,7,5,2,
+// 3,6,8,9,9,8,6,3,
+// 3,6,8,9,9,8,6,3,
+// 2,5,7,8,8,7,5,2,
+// 1,4,5,6,6,5,4,1,
+// 0,1,2,3,3,2,1,0
+
+const bits64 board::ordered_locations[10] = {
+  location[0],
+  location[8],
+  location[7],
+  location[3],
+  location[6],
+  location[5],
+  location[2],
+  location[1],
+  location[4],
+  location[9]
+  
+};
+
+
+
 void board::xot()
 {
   int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
@@ -101,23 +126,21 @@ void board::xot()
 
 board* board::get_children(board* out_begin) const
 {
-  assert(out_begin);
+  return get_children(out_begin,get_valid_moves());
+}
+
+board* board::get_children(board* out, bits64 moves) const
+{
+  assert(out);
   
-  board* out_end = out_begin;
-  bits64 valid_moves = get_valid_moves();
-  
-  while(valid_moves != 0ull){
-    
-    int move_id = bits64_find_first(valid_moves);
-    
-    *out_end = *this;
-    out_end->do_move(move_id);
-    out_end++;
-    
-    valid_moves &= bits64_reset[move_id];
-    
+  while(moves != 0ull){
+    int move_id = bits64_find_first(moves);
+    *out = *this;
+    out->do_move(move_id);
+    out++;
+    moves &= bits64_reset[move_id];
   }
-  return out_end;
+  return out;  
 }
 
 

@@ -24,7 +24,6 @@ int main(int argc,char **argv){
   
   if(parsed_args.start_windowed_game){
     Gtk::Main kit(argc,argv);
-     
     main_window window;
     parsed_args.gc.mw = &window;
     window.control = &parsed_args.gc;

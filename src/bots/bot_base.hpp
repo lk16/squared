@@ -82,7 +82,3 @@ public:
   void disable_shell_output();
   
 };
-
-
-
-
