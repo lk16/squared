@@ -14,8 +14,6 @@
 #include "bots/bot_pvs.hpp"
 #include "book/book.hpp"
 
-#define BOT_ALI_USE_MTDF 0
-
 class bot_ali:
   public bot_pvs
 {
@@ -30,6 +28,9 @@ class bot_ali:
     BOOK_MODE
   };
     
+  // these values pretty much define the behaviour of bot_ali
+  static const int location_values[10];
+  
   /// this board will be used by move evaluation functions and do_move()
   /// it represents the currently inspected move
   board inspected;
@@ -46,10 +47,6 @@ class bot_ali:
   
    
 
-  /// This strongly influences the behaviour of ali, should be constant
-  /// during the entire game, but can be changed from default before the
-  /// game starts with set_location_values_from_file
-  int location_values[10];
   
   
 public:
@@ -63,12 +60,7 @@ public:
   
   // calculates the heuristic for this->inspected
   int heuristic();
-    
-  bool set_location_values_from_file(const std::string& file);
-  
-  void set_location_values(const int* v);
 
-  const int* get_location_values() const;
   
 };
 
