@@ -308,6 +308,6 @@ void book_t::load()
   if(errors > 0){
     std::cout << "Found " << errors;
     std::cout << " incorrect entries in ";
-    std::cout << '\"' << get_filename() << '\"' << std::endl;
+    std::cout << '\"' << get_filename() << "\"\n";
   }
 }

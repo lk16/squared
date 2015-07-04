@@ -51,7 +51,7 @@ public:
   virtual void do_move(const board* in,board* out) = 0;
   
   // perform some action when a new game starts
-  virtual void on_new_game() = 0;
+  virtual void on_new_game();
   
   // does a very rough prediction on the perfect play
   virtual int rough_prediction(const board* b) const;
@@ -204,6 +204,12 @@ inline bool bot_base::get_use_book() const
   return book!=nullptr;
 }
 
+inline void bot_base::on_new_game()
+{
+  if(get_use_book()){
+    book->reload();
+  }
+}
 
 
 

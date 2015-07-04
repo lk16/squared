@@ -5,8 +5,7 @@ REGISTER_BOT(ali);
 const int bot_ali::location_values[] = {347,-39,-23,-40,-119,-35,-33,-10,-7,-5};
 
 
-bot_ali::bot_ali():
-  book(BOOK_PATH + get_name() + "_book.csv")
+bot_ali::bot_ali()
 {
   set_name("ali");
 }
@@ -22,11 +21,7 @@ int bot_ali::heuristic()
   return heur;
 }
 
-bot_ali::~bot_ali(){}
-
 void bot_ali::on_new_game()
 {
-  if(get_use_book()){
-    book.reload();
-  }
+  bot_ali::on_new_game();
 }
