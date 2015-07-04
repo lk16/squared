@@ -102,9 +102,6 @@ struct board{
     
   // returns a bitset of valid moves
   bits64 get_valid_moves() const;
-
-  // returns a bitset which is a superset of all valid moves
-  bits64 get_valid_moves_superset() const;
   
   // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
@@ -122,6 +119,7 @@ struct board{
   // returns the number of opponent moves  
   int count_opponent_moves() const;
   
+  // counts frontier discs
   void count_frontier_discs(int* me,int* opp) const;
   
   // returns a bitset of empty fields
@@ -356,35 +354,9 @@ inline bool board::is_valid_move(int field_id) const
 
 inline void board::undo_move(int field_id,bits64 undo_data)
 {
-  //switch_turn();
-  //me &= ~(undo_data | bits64_set[field_id]);
-  //opp |= (undo_data);  
-  
   bits64 tmp = me;
   me = opp & ~(undo_data | bits64_set[field_id]);
   opp = tmp | undo_data;
- 
-  assert((me & undo_data) == 0ull);
-  assert((opp & undo_data) == undo_data);
-  assert((get_non_empty_fields() & bits64_set[field_id]) == 0ull);
-}
-
-inline bits64 board::get_valid_moves_superset() const{
-  bits64 res = 0ull;
-  bits64 non_empty = get_non_empty_fields();
-  
-  res |= ((opp << 9) & (non_empty << 18) & 0xFEFEFEFEFEFEFEFE);
-  res |= ((opp << 8) & (non_empty << 16) & 0xFEFEFEFEFEFEFEFE);
-  res |= ((opp << 7) & (non_empty << 14) & 0xFEFEFEFEFEFEFEFE);
-  res |= ((opp << 1) & (non_empty << 1) & 0xFEFEFEFEFEFEFEFE);
-  
-  res |= ((opp >> 9) & (non_empty >> 18) & 0x7F7F7F7F7F7F7F7F);
-  res |= ((opp >> 8) & (non_empty >> 16) & 0x7F7F7F7F7F7F7F7F);
-  res |= ((opp >> 7) & (non_empty >> 14) & 0x7F7F7F7F7F7F7F7F);
-  res |= ((opp >> 1) & (non_empty >> 1) & 0x7F7F7F7F7F7F7F7F);
-  
-  res &= ~non_empty;
-  return res;
 }
 
 inline bits64 board::get_valid_moves() const
