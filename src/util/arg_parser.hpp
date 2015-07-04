@@ -8,24 +8,14 @@
 
 
 template<class T>
-struct arg_parser{
+class arg_parser_base{
   
-  
-  typedef std::map<std::string,int(T::*)()> func_map_t;
-  
-  
+protected:
+ 
   const char **current_arg,**end_arg;
   
-  // maps arguments to a function that modifies the argument state
-  // that function should return how many arguments it has used
-  // or IGNORE_OTHER_ARGS or ERROR when appropriate
-  func_map_t func_map;
-  
+
   bool error_flag;
-  
-  // class containing parsing data
-  // should have a member pointer parser of type arg_parser<typeof(T)>*
-  T data;
   
   // check whether there are enough remaining arguments
   // --set-value value -> use n=1
@@ -33,11 +23,17 @@ struct arg_parser{
   bool has_enough_args(int n);
   
   const char* get_arg(int n) const;
+
+  // maps arguments to a function that modifies the argument state
+  // that function should return how many arguments it has used
+  // or IGNORE_OTHER_ARGS or ERROR when appropriate
+  typedef std::map<std::string,int(T::*)()> func_map_t;
+  func_map_t func_map;
   
   
+public:
   
-  
-  arg_parser(int _argc,const char** _argv);
+  arg_parser_base(int _argc,const char** _argv);
   
   //returns false on errors
   bool parse();
@@ -45,25 +41,24 @@ struct arg_parser{
 };
 
 template<class T>
-inline arg_parser<T>::arg_parser(int _argc,const char** _argv):
+inline arg_parser_base<T>::arg_parser_base(int _argc,const char** _argv):
   current_arg(_argv+1),
   end_arg(_argv+_argc),
   error_flag(false)
 {
-  data.parser = this;
 }
 
 
 
 template<class T>
-inline bool arg_parser<T>::parse()
+inline bool arg_parser_base<T>::parse()
 {
   error_flag = false;
   typename func_map_t::const_iterator it;
   while(!error_flag && current_arg<end_arg){
     it = func_map.find(std::string(*current_arg));
     if(it != func_map.end()){
-      int diff = (data.*(it->second))();
+      int diff = (((T*)(this))->*(it->second))();
       if(diff == PARSING_ERROR){
         error_flag = true;
       }
@@ -86,7 +81,7 @@ inline bool arg_parser<T>::parse()
 
 
 template<class T>
-inline bool arg_parser<T>::has_enough_args(int n)
+inline bool arg_parser_base<T>::has_enough_args(int n)
 {
   if(current_arg + n >= end_arg){
     error_flag = true;
@@ -96,7 +91,7 @@ inline bool arg_parser<T>::has_enough_args(int n)
 }
 
 template<class T>
-inline const char* arg_parser<T>::get_arg(int n) const
+inline const char* arg_parser_base<T>::get_arg(int n) const
 {
   return *(current_arg + n);
 }

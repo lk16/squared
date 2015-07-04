@@ -1,56 +1,53 @@
 #include "main/args.hpp"
 
-squared_arg_t::squared_arg_t():
+squared_args::squared_args(int argc,const char **argv):
+  arg_parser_base<squared_args>(argc,argv),
   gc()
 {
   show_flag = false;
   start_windowed_game = true;
-  parser = NULL;
   use_book = true;
+  
+  func_map["--help"] = &squared_args::show_help;
+  func_map["-h"] = &squared_args::show_help;
+  func_map["--testing"] = &squared_args::testing_area_mask;
+  func_map["-s"] = &squared_args::show_board;
+  func_map["--learn"] = &squared_args::learn;
+  func_map["-l"] = &squared_args::learn;
+  func_map["--randomize"] = &squared_args::randomize_board;
+  func_map["-r"] = &squared_args::randomize_board;
+  func_map["-lb"] = &squared_args::set_black_level;
+  func_map["-lw"] = &squared_args::set_white_level;
+  func_map["--board"] = &squared_args::set_board;
+  func_map["-b"] = &squared_args::set_board;
+  func_map["--compress-book"] = &squared_args::compress_book;
+  func_map["-cb"] = &squared_args::compress_book;
+  func_map["-q"] = &squared_args::minus_q_flag;
+  func_map["-nb"] = &squared_args::no_book;
+  func_map["--bot-type"] = &squared_args::set_bot_type;
+  func_map["--loop"] = &squared_args::loop_game;
+  func_map["--speed-test"] = &squared_args::speed_test;
+  func_map["--pgn"] = &squared_args::process_pgn;
+  func_map["--xot"] = &squared_args::use_xot;
 }
 
-void squared_arg_t::init_map()
-{
-  parser->func_map["--help"] = &squared_arg_t::show_help;
-  parser->func_map["-h"] = &squared_arg_t::show_help;
-  parser->func_map["--testing"] = &squared_arg_t::testing_area_mask;
-  parser->func_map["-s"] = &squared_arg_t::show_board;
-  parser->func_map["--learn"] = &squared_arg_t::learn;
-  parser->func_map["-l"] = &squared_arg_t::learn;
-  parser->func_map["--randomize"] = &squared_arg_t::randomize_board;
-  parser->func_map["-r"] = &squared_arg_t::randomize_board;
-  parser->func_map["-lb"] = &squared_arg_t::set_black_level;
-  parser->func_map["-lw"] = &squared_arg_t::set_white_level;
-  parser->func_map["--board"] = &squared_arg_t::set_board;
-  parser->func_map["-b"] = &squared_arg_t::set_board;
-  parser->func_map["--compress-book"] = &squared_arg_t::compress_book;
-  parser->func_map["-cb"] = &squared_arg_t::compress_book;
-  parser->func_map["-q"] = &squared_arg_t::minus_q_flag;
-  parser->func_map["-nb"] = &squared_arg_t::no_book;
-  parser->func_map["--bot-type"] = &squared_arg_t::set_bot_type;
-  parser->func_map["--loop"] = &squared_arg_t::loop_game;
-  parser->func_map["--speed-test"] = &squared_arg_t::speed_test;
-  parser->func_map["--pgn"] = &squared_arg_t::process_pgn;
-  parser->func_map["--xot"] = &squared_arg_t::use_xot;
-}
-
-int squared_arg_t::use_xot()
+int squared_args::use_xot()
 {
   gc.board_state.b.xot();
   return 1;
 }
 
-int squared_arg_t::process_pgn()
+int squared_args::process_pgn()
 {
-  if(!parser->has_enough_args(3)){
+  if(!has_enough_args(3)){
     return PARSING_ERROR;
   }
   start_windowed_game = false;
-  pgn p(parser->get_arg(3));
+  pgn p(get_arg(3));
   bot_base* bot = bot_registration::bots()[gc.bot_type]();
   int level[2];
-  level[0] = from_str<int>(parser->get_arg(1));
-  level[1] = from_str<int>(parser->get_arg(2));
+  level[0] = from_str<int>(get_arg(1));
+  level[1] = from_str<int>(get_arg(2));
   bot->set_search_depth(level[0],level[1]);
   bot->disable_shell_output();
   std::cout << p.analyse(bot,true,true);
@@ -59,12 +56,12 @@ int squared_arg_t::process_pgn()
 }
 
 
-int squared_arg_t::set_bot_type()
+int squared_args::set_bot_type()
 {
-  if(!parser->has_enough_args(1)){
+  if(!has_enough_args(1)){
     return PARSING_ERROR;
   }
-  std::string name = parser->get_arg(1);
+  std::string name = get_arg(1);
   auto map = &bot_registration::bots();
   if(map->find(name) == map->end()){
     std::cout << "ERROR: no bot \"" << name << "\" found.\n";
@@ -79,13 +76,13 @@ int squared_arg_t::set_bot_type()
   return 2;
 }
 
-int squared_arg_t::loop_game()
+int squared_args::loop_game()
 {
   gc.loop_game = true;
   return 1;
 }
 
-int squared_arg_t::no_book()
+int squared_args::no_book()
 {
   use_book = false;
   for(int i=0;i<2;i++){
@@ -97,7 +94,7 @@ int squared_arg_t::no_book()
 }
 
 
-int squared_arg_t::show_help(){
+int squared_args::show_help(){
   std::cout << 
   "-h, --help\n"
   "show this help\n\n"
@@ -122,44 +119,44 @@ int squared_arg_t::show_help(){
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int squared_arg_t::show_board(){
+int squared_args::show_board(){
   start_windowed_game = false;
   show_flag = true;
   return 1;
 }
 
-int squared_arg_t::testing_area_mask(){
+int squared_args::testing_area_mask(){
   start_windowed_game = false;
   testing_area();
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int squared_arg_t::learn(){
-  if(!parser->has_enough_args(1)){
+int squared_args::learn(){
+  if(!has_enough_args(1)){
     return PARSING_ERROR;
   }
   start_windowed_game = false;
-  int threads = from_str<int>(parser->get_arg(1));
+  int threads = from_str<int>(get_arg(1));
   book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
   book.learn(gc.bot_type,threads);
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int squared_arg_t::set_board(){
-  if(!parser->has_enough_args(1)){
+int squared_args::set_board(){
+  if(!has_enough_args(1)){
     return PARSING_ERROR;
   }
-  gc.board_state.b = board(parser->get_arg(1));
+  gc.board_state.b = board(get_arg(1));
   return 2;
 }
 
-int squared_arg_t::set_level(int color)
+int squared_args::set_level(int color)
 {
-  if(!parser->has_enough_args(2)){
+  if(!has_enough_args(2)){
     return PARSING_ERROR;
   }
-  int lvl = from_str<int>(parser->get_arg(1));
-  int perf_lvl = from_str<int>(parser->get_arg(2));
+  int lvl = from_str<int>(get_arg(1));
+  int perf_lvl = from_str<int>(get_arg(2));
   gc.add_bot(color,lvl,perf_lvl);
   if(!use_book){
     gc.bot[color]->disable_book();
@@ -168,28 +165,28 @@ int squared_arg_t::set_level(int color)
 }
 
 
-int squared_arg_t::set_black_level()
+int squared_args::set_black_level()
 {
   return set_level(BLACK);
 }
 
-int squared_arg_t::set_white_level()
+int squared_args::set_white_level()
 {
   return set_level(WHITE);
 }
 
-int squared_arg_t::randomize_board()
+int squared_args::randomize_board()
 {
-  if(!parser->has_enough_args(1)){
+  if(!has_enough_args(1)){
     return PARSING_ERROR;    
   }
   board* b = &gc.board_state.b;
-  int move_count = from_str<int>(parser->get_arg(1));
+  int move_count = from_str<int>(get_arg(1));
   *b = b->do_random_moves(move_count);
   return 2;  
 }
 
-int squared_arg_t::compress_book()
+int squared_args::compress_book()
 {
   book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
   book.clean();
@@ -197,13 +194,13 @@ int squared_arg_t::compress_book()
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int squared_arg_t::minus_q_flag()
+int squared_args::minus_q_flag()
 {
   gc.quit_if_game_over = true;
   return 1;
 }
 
-int squared_arg_t::speed_test()
+int squared_args::speed_test()
 {
   bot_base* bot = bot_registration::bots()[gc.bot_type]();
   bot->disable_shell_output();

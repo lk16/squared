@@ -5,21 +5,19 @@
 #include "util/arg_parser.hpp"
 #include "util/pgn.hpp"
 
-struct squared_arg_t
+struct squared_args:
+  public arg_parser_base<squared_args>
 {
   
-  arg_parser<squared_arg_t>* parser;
+  squared_args(int argc,const char **argv);
+  
   
   game_control gc;
   bool show_flag;
   bool start_windowed_game;
   bool use_book;
   
-  squared_arg_t();
-  
-  void init_map();
-  
-  
+
   int set_valuation(int color);
   int set_level(int color);
   

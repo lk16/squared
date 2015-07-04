@@ -10,30 +10,26 @@
 int main(int argc,char **argv){
   srand(std::time(NULL));
   
-  arg_parser<squared_arg_t> parser(argc,(const char**)argv);
-  
-  parser.data.parser = &parser;
-  parser.data.init_map();
-  
-  if(!parser.parse()){
+  squared_args parsed_args(argc,(const char**)argv);
+
+  if(!parsed_args.parse()){
     return 0;
   }
   
-  squared_arg_t arg_data = parser.data;
 
-  if(arg_data.show_flag){
-    int turn = arg_data.gc.board_state.turn;
-    std::cout << arg_data.gc.board_state.b.to_ascii_art(turn);
+  if(parsed_args.show_flag){
+    int turn = parsed_args.gc.board_state.turn;
+    std::cout << parsed_args.gc.board_state.b.to_ascii_art(turn);
   }
   
-  if(arg_data.start_windowed_game){
+  if(parsed_args.start_windowed_game){
     Gtk::Main kit(argc,argv);
      
     main_window window;
-    arg_data.gc.mw = &window;
-    window.control = &arg_data.gc;
+    parsed_args.gc.mw = &window;
+    window.control = &parsed_args.gc;
     window.update_fields();
-    arg_data.gc.connect_timeout_signal();
+    parsed_args.gc.connect_timeout_signal();
     Gtk::Main::run(window);
   }
   
