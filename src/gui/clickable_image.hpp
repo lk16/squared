@@ -17,31 +17,15 @@ class clickable_image:
   
 public:
   
-  /** 
-  * @brief default ctor, doesnt do anything
-  * WARNING: doesnt initialize anything
-  */
-  clickable_image();
+  clickable_image() = default;
   
-  /**
-  * @brief init values
-  * @p init pointer to main_window
-  * @p field_id id of the field this class is representing
-  * @p imagefile filename of image to show
-  */
+  // initialise values
   void init(main_window* par,int field_id,const std::string& imagefile);
   
-  /**
-  * @brief button press event
-  * @p event event data
-  * @return true, has to be called again whenever a click event occurs
-  */
+  // handles button press event, always returns true
   virtual bool on_button_press_event(GdkEventButton* event);
   
-  /**
-  * @brief show different image 
-  * @p filename filename of new image to be shown
-  */
+  // change the shown image to specified one
   void set_image(const std::string& filename);
   
 };

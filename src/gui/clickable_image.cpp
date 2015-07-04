@@ -1,12 +1,6 @@
 #include "gui/clickable_image.hpp"
 #include "gui/main_window.hpp"
 
-clickable_image::clickable_image():
-  Gtk::EventBox()
-{
-}
-
-
 void clickable_image::init(main_window* par, int _field_id, const std::string& imagefile) 
 {
   add(image);
@@ -18,11 +12,15 @@ void clickable_image::init(main_window* par, int _field_id, const std::string& i
 
 bool clickable_image::on_button_press_event(GdkEventButton* e)
 {
-  if(e->button == 3){
-    parent->control->on_undo();
-  }
-  else{
-    parent->control->on_human_do_move(field_id);
+  switch(e->button){
+    case 1:
+      parent->control->on_human_do_move(field_id);
+      break;
+    case 3:
+      parent->control->on_undo();
+      break;
+    default:
+      break;
   }
   return true;
 }
