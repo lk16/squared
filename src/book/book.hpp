@@ -16,7 +16,6 @@
 #include "bots/bot_register.hpp"
 #include "game/board.hpp"
 #include "util/csv.hpp"
-#include "util/priority_threadpool.hpp"
 #include "util/read_write_lock.hpp"
 
 struct bot_base;
@@ -32,8 +31,33 @@ public:
     COL_HEUR = 3    
   };
   
-  
-  
+    
+  struct learn_job{
+        
+    board b;
+    int depth;
+    
+    learn_job() = default;
+    
+    learn_job(board b,int depth): 
+      b(b),depth(depth){}
+    
+    bool operator<(const learn_job& rhs) const {
+      return priority() < rhs.priority();  
+    }
+
+    int priority() const{
+      if(depth < MIN_LEARN_DEPTH){
+        return 99999999-depth;
+      }
+      
+      int res = 0;
+      res += -7 * b.count_discs();
+      res += -10 * depth;
+      return res;
+    }
+  };
+    
   struct value{
     static const unsigned NEEDED_COLUMNS = 4;
     
@@ -62,18 +86,16 @@ public:
 
 private:
   
+  // the actual container of the book data
   container_t container;
-  csv csv_file;
   read_write_lock container_lock;
+  
+  csv csv_file;
   
   // used only for multithreaded learning
   // and should only be changed in learn()
   std::string bot_name;
   
-  // used only for multithreaded learning
-  // and should only be changed in learn()
-  priority_threadpool* ppool;
-
 public:
   // default ctor
   book_t();
@@ -89,10 +111,13 @@ public:
   void clean() const;
   
   // learn concurrently
-  void learn(const std::string& bot_name,int threads);
+  void learn(const std::string& bot_name,unsigned threads);
+  
+  // learn thread
+  void learn_thread(const std::string& bot_name,std::priority_queue<learn_job>* pq,std::mutex* mutex);
   
   // run a learn job
-  void learn_job(board b,int depth);
+  void learn_execute_job(bot_base* bot,learn_job* job);
   
   
   // lookup a board

@@ -2,14 +2,12 @@
 #include "bots/bot_ali.hpp"
 
 book_t::book_t():
-  csv_file(""),
-  ppool(nullptr)
+  csv_file("")
 { 
 }
 
 book_t::book_t(const std::string& filename):
-  csv_file(filename),
-  ppool(nullptr)
+  csv_file(filename)
 {
   load();
 }
@@ -22,22 +20,6 @@ std::string book_t::get_filename() const
 void book_t::set_csv_file(const std::string& filename)
 {
   csv_file.set_file(filename);
-}
-
-int book_t::job_priority(const board* b, int depth, int last_heur)
-{
-  
-  if(depth < MIN_LEARN_DEPTH){
-    return 99999999-depth;
-  }
-  if(last_heur%(2*EXACT_SCORE_FACTOR)==0 && last_heur!=0){
-    return -99999999;
-  }
-  
-  int res = 0;
-  res += -7 * b->count_discs();
-  res += -10 * depth;
-  return res;
 }
 
 bool book_t::is_suitable_entry(const entry& e) const
@@ -128,40 +110,53 @@ void book_t::print_stats() const
   
 }
 
-void book_t::learn(const std::string& bot_name,int threads)
+void book_t::learn(const std::string& bot_name,unsigned threads)
 {
-  this->bot_name = bot_name;
-  
-  
   print_stats();
   
-  ppool = new priority_threadpool(threads);
+  //ppool = new priority_threadpool(threads);
+
   
-  for(citer it=container.begin();it!=container.end();it++){
-    board b(it->first);
-    int depth = it->second.depth + 1;
-    int prio = job_priority(&b,it->second.depth,it->second.heur);
-    auto func = std::bind(&book_t::learn_job,this,b,depth);
-    ppool->add_job(func,prio);
+  std::priority_queue<learn_job> pq;
+  std::mutex mutex;
+  
+  for(auto it: container){
+    board b(it.first);
+    int depth = it.second.depth + 1;
+    pq.push(learn_job(b,depth));
   }
   
-  ppool->start_workers();
+  std::cout << "done adding all threads to thread pool, spinning forever" << std::endl; 
   
-  std::cout << "done adding all threads to thread pool, spinning forever" << std::endl;  
-  while(!ppool->empty()){
-    sleep(1);
+  std::vector<std::thread*> thread_vec;
+  for(unsigned i=0;i<threads;++i){
+    thread_vec.push_back(new std::thread(&book_t::learn_thread,this,bot_name,&pq,&mutex));
   }
   
-  std::cout << "somehow the threadpool became empty!\n";
-  std::cout << "does the book file exist at all?\n";
-  delete ppool;
+  for(auto th: thread_vec){
+    th->join();
+  }
+   
+  while(true);
 }
 
-void book_t::learn_job(board b, int depth)
+void book_t::learn_thread(const std::string& bot_name, std::priority_queue<book_t::learn_job>* pq, std::mutex* mutex)
 {
-  depth = max(depth,MIN_LEARN_DEPTH);  
-  
   bot_base* bot = bot_registration::bots()[bot_name]();
+  learn_job job;
+  while(true){
+    mutex->lock();
+    job = pq->top();
+    pq->pop();
+    mutex->unlock();
+    learn_execute_job(bot,&job);
+  }
+}
+
+void book_t::learn_execute_job(bot_base* bot,learn_job* job){
+  int depth = max(job->depth,MIN_LEARN_DEPTH);  
+  board b = job->b;
+  
   bot->disable_book();
   bot->disable_shell_output();
   bot->set_search_depth(depth,depth);
@@ -182,11 +177,8 @@ void book_t::learn_job(board b, int depth)
   ss << big_number(bot->stats.get_nodes_per_second()) << "n/sec\n";
   std::cout << ss.str();
   add(&b,&v);
-  
-  auto func = std::bind(&book_t::learn_job,this,b,depth+1);
-  ppool->add_job(func,job_priority(&b,depth+1,heur));
-  
-  delete bot;
+
+
 }
 
 
