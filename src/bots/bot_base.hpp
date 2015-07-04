@@ -45,7 +45,7 @@ public:
   bot_base();
     
   // dtor
-  virtual ~bot_base();
+  virtual ~bot_base() = default;
 
   // perform a move on board in, put result in out
   virtual void do_move(const board* in,board* out) = 0;
@@ -83,133 +83,6 @@ public:
   
 };
 
-inline bot_base::~bot_base()
-{}
-
-inline bot_base::bot_base():
-  name("base"),
-  output_stream(&std::cout),
-  book(nullptr)
-{
-}
-
-inline void bot_base::set_last_move_heur(int heur)
-{
-  last_move_heur = heur;
-}
-
-
-inline int bot_base::get_last_move_heur() const
-{
-  return last_move_heur;
-}
-
-inline int bot_base::rough_prediction(const board* b) const
-{
-  (void)b;
-  std::cout << "warning: bot_" << get_name() << " did not implement ";
-  std::cout << " rough_prediction()\n";
-  return 0;
-}
-
-
-
-inline int bot_base::get_search_depth() const
-{
-  return search_depth; 
-}
-
-inline int bot_base::get_perfect_depth() const
-{
-  return perfect_depth;
-}
-
-inline void bot_base::set_search_depth(int _search_depth, int _perfect_depth)
-{       
-  search_depth = _search_depth;
-  perfect_depth = _perfect_depth;
-}
-
-inline void bot_base::stat_t::start_timer()
-{
-  nodes = 0ull;
-  gettimeofday(&start_time,NULL);
-}
-
-
-inline void bot_base::stat_t::stop_timer()
-{
-  gettimeofday(&stop_time,NULL);
-}
-
-inline double bot_base::stat_t::get_seconds() const
-{
-  return (stop_time.tv_sec + (stop_time.tv_usec / 1000000.0)) - 
-  (start_time.tv_sec + (start_time.tv_usec / 1000000.0)); 
-}
-
-inline unsigned long long bot_base::stat_t::get_nodes_per_second() const
-{
-  if(get_seconds() < 0.00000001){
-    return 0ull;
-  }
-  return (unsigned long long)(nodes / get_seconds());
-}
-
-inline bot_base::stat_t::stat_t()
-{
-  nodes = 0;
-}
-
-inline long long unsigned int bot_base::stat_t::get_nodes() const
-{
-  return nodes;
-}
-
-inline void bot_base::stat_t::inc_nodes()
-{
-  nodes++;
-}
-
-inline void bot_base::disable_book()
-{
-  if(book){
-    delete book;
-    book = nullptr;
-  }
-}
-
-inline void bot_base::disable_shell_output()
-{
-  output_stream = new dummystream;
-}
-
-inline void bot_base::set_name(const std::string& _name)
-{
-  name = _name;
-}
-
-inline std::string bot_base::get_name() const
-{
-  return name;
-}
-
-inline std::ostream& bot_base::output()
-{
-  return *output_stream;
-}
-
-inline bool bot_base::get_use_book() const
-{
-  return book!=nullptr;
-}
-
-inline void bot_base::on_new_game()
-{
-  if(get_use_book()){
-    book->reload();
-  }
-}
 
 
 
