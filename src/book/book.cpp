@@ -7,8 +7,8 @@ book_t::book_t():
 { 
 }
 
-book_t::book_t(const std::string& _filename):
-  csv_file(_filename),
+book_t::book_t(const std::string& filename):
+  csv_file(filename),
   ppool(nullptr)
 {
   load();
@@ -49,36 +49,34 @@ bool book_t::is_correct_entry(const std::string& bs,const book_t::value& bv) con
   
   int error = 0;
   
-  if(!in_bounds<int>(bv.depth,0,60)){ 
+  if(out_bounds<int>(bv.depth,0,60)){
     error = 1;
   }
-  if(!in_bounds<int>(bv.best_move,0,63)){ 
+  if(out_bounds<int>(bv.best_move,0,63)){ 
     error = 2;
   }
-  if(!(bs.length() == 32)){ 
+  if(bs.length() != 32){ 
     error = 3;
   }
-  if(!(bv.depth >= MIN_ACCEPT_DEPTH)){ 
+  if(bv.depth < MIN_ACCEPT_DEPTH){ 
     error = 4;
   }
-  if(!((b.me & b.opp) == 0ull)){ 
+  if((b.me & b.opp) != 0ull){ 
     error = 5;
   }
-  if(!(((b.me | b.opp) & 0x0000001818000000) == 0x0000001818000000)){ 
+  if(((b.me | b.opp) & 0x0000001818000000) != 0x0000001818000000){ 
     error = 6;
   }
-  if(!(b.is_valid_move(bv.best_move))){ 
+  if(!b.is_valid_move(bv.best_move)){ 
     error = 7;
   }
-  if(!(b == b.to_database_board())){ 
+  if(b != b.to_database_board()){ 
     error = 8;
   }
-  
-  if(error == 0){
-    return true;
+  if(error != 0){
+    std::cout << "Incorrect board data: error " << error << std::endl;
   }
-  std::cout << "Incorrect board data: error " << error << std::endl;
-  return false;
+  return error == 0;
 }
 
 book_t::value::value(const csv::line_t& line)
@@ -99,12 +97,11 @@ book_t::value::value(int bm, int d,int h)
 
 void book_t::print_stats() const
 {
-  citer book_it;
   std::map<int,int> book_stats;
   
-  for(book_it = data.begin(); book_it!=data.end(); book_it++){
-    int n = book_it->second.depth;
-    if(book_stats.find(n) == book_stats.end()){
+  for(auto book_it: container){
+    int n = book_it.second.depth;
+    if(book_stats.count(n) == 0){
       book_stats[n] = 1;
     }
     else{
@@ -113,7 +110,7 @@ void book_t::print_stats() const
   }
   
   
-  std::cout << "Total boards in book: " << data.size() << std::endl;
+  std::cout << "Total boards in book: " << container.size() << std::endl;
   for(auto it: book_stats){
     std::cout << "Boards found at depth " << (it.first < 10 ? " " : "");
     std::cout << it.first << ": ";
@@ -122,26 +119,21 @@ void book_t::print_stats() const
   
 }
 
-
-
-
-
-void book_t::learn(const std::string _bot_name,int threads)
+void book_t::learn(const std::string& bot_name,int threads)
 {
-  bot_name = _bot_name;
+  this->bot_name = bot_name;
   
   
   print_stats();
   
   ppool = new priority_threadpool(threads);
   
-  for(citer it=data.begin();it!=data.end();it++){
+  for(citer it=container.begin();it!=container.end();it++){
     board b(it->first);
     int depth = it->second.depth + 1;
     int prio = job_priority(&b,it->second.depth,it->second.heur);
     auto func = std::bind(&book_t::learn_job,this,b,depth);
-    auto func2 = std::bind(&book_t::on_job_done,this);
-    ppool->add_job(func,func2,prio);
+    ppool->add_job(func,prio);
   }
   
   ppool->start_workers();
@@ -154,11 +146,6 @@ void book_t::learn(const std::string _bot_name,int threads)
   std::cout << "somehow the threadpool became empty!\n";
   std::cout << "does the book file exist at all?\n";
   delete ppool;
-}
-
-void book_t::on_job_done()
-{
-  // this function does nothing at all on purpose
 }
 
 void book_t::learn_job(board b, int depth)
@@ -188,8 +175,7 @@ void book_t::learn_job(board b, int depth)
   add(&b,&v);
   
   auto func = std::bind(&book_t::learn_job,this,b,depth+1);
-  auto func2 = std::bind(&book_t::on_job_done,this);
-  ppool->add_job(func,func2,job_priority(&b,depth+1,heur));
+  ppool->add_job(func,job_priority(&b,depth+1,heur));
   
   delete bot;
 }
@@ -200,7 +186,7 @@ void book_t::learn_job(board b, int depth)
 
 bool book_t::add(const board* b,const book_t::value* bv)
 {
-  rw_lock_write_guard guard(data_lock);  
+  rw_lock_write_guard guard(container_lock);  
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
   int rot = b->get_rotation(&before_normalized);
@@ -209,7 +195,7 @@ bool book_t::add(const board* b,const book_t::value* bv)
   board after_normalized = after.rotate(rot);
   int move = before_normalized.get_move_index(&after_normalized);
   std::string str = b->to_database_string();
-  citer it = data.find(str);
+  citer it = container.find(str);
   
   book_t::value fixed_bv = *bv;
   fixed_bv.best_move = move;
@@ -217,7 +203,7 @@ bool book_t::add(const board* b,const book_t::value* bv)
   if(true 
     && (b->count_discs() <= ENTRY_MAX_DISCS)
     && (fixed_bv.depth >= MIN_ACCEPT_DEPTH)
-    && ((it == data.end()) || (bv->depth > it->second.depth))
+    && ((it == container.end()) || (bv->depth > it->second.depth))
     && (bv->heur != bot_base::NO_HEUR_AVAILABLE)
   ){
     
@@ -232,7 +218,7 @@ bool book_t::add(const board* b,const book_t::value* bv)
     
     csv_file.append_line(book_line);
     
-    data[str] = fixed_bv;
+    container[str] = fixed_bv;
     return true;
   }
   return false;
@@ -259,7 +245,7 @@ void book_t::clean() const
   /* fill new file with data */
   csv new_book_file(get_filename());  
   
-  for(auto it: data){
+  for(auto it: container){
     if(is_correct_entry(it.first,it.second)){
       csv::line_t book_line;
       book_line.push_back(it.first);
@@ -277,11 +263,11 @@ void book_t::clean() const
 
 book_t::value book_t::lookup(const board* b,int min_depth)
 {
-  rw_lock_read_guard guard(data_lock);  
+  rw_lock_read_guard guard(container_lock);  
   value res(NOT_FOUND,0,0);
   std::string key = b->to_database_string();
-  citer it = data.find(key);
-  if((it!=data.end()) && (it->second.depth >= min_depth)){
+  citer it = container.find(key);
+  if((it!=container.end()) && (it->second.depth >= min_depth)){
     res = it->second;
     bits64 move_bit = bits64_set[res.best_move];
     int rot = b->to_database_board().get_rotation(b);
@@ -292,7 +278,7 @@ book_t::value book_t::lookup(const board* b,int min_depth)
 
 void book_t::reload()
 {
-  data.clear();
+  container.clear();
   csv_file.get_file()->seekg(std::ios_base::beg);
   load();
 }
@@ -312,7 +298,7 @@ void book_t::load()
     book_t::value bv(line);
     
     if(is_correct_entry(line[0],bv)){
-      data[line[0]] = bv;
+      container[line[0]] = bv;
     }
     else{
       errors++;

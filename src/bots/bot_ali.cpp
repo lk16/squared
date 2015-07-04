@@ -1,5 +1,4 @@
 #include "bot_ali.hpp"
-#include "book/book.hpp"
 
 REGISTER_BOT(ali);
 

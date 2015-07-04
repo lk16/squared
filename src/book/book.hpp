@@ -46,9 +46,9 @@ public:
     int best_move,depth,heur;
   };
   
-  typedef std::unordered_map<std::string,value> data_type;
-  typedef data_type::const_iterator citer;
-  typedef data_type::iterator iter;
+  typedef std::unordered_map<std::string,value> container_t;
+  typedef container_t::const_iterator citer;
+  typedef container_t::iterator iter;
 
   // lowest depth for a move to be stored in the book_stddev
   static const int MIN_ACCEPT_DEPTH = 8;
@@ -61,9 +61,9 @@ public:
 
 private:
   
-  data_type data;
+  container_t container;
   csv csv_file;
-  read_write_lock data_lock;
+  read_write_lock container_lock;
   
   // used only for multithreaded learning
   // and should only be changed in learn()
@@ -84,14 +84,15 @@ public:
   bool add(const board* b,const book_t::value* bv);
 
   // remove redundant lines in the csv filename
-  // should not be used concurrently 
+  // WARNING: should not be used concurrently 
   void clean() const;
   
   // learn concurrently
-  void learn(const std::string _bot_name,int threads);
+  void learn(const std::string& bot_name,int threads);
   
+  // run a learn job
   void learn_job(board b,int depth);
-  void on_job_done();
+  
   
   // lookup a board
   value lookup(const board* b,int min_depth);

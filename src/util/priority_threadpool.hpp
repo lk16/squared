@@ -25,7 +25,7 @@ public:
   
   struct job_data{
     job_data() = default;
-    job_data(job_t f,job_t s,int p): first(f),second(s),priority(p){}
+    job_data(job_t f,int p): first(f),priority(p){}
     
     bool operator<(const job_data& rhs) const{ return priority < rhs.priority; }
     
@@ -44,7 +44,7 @@ public:
 
 
   // add a job to the queue
-  void add_job(job_t job,job_t notification_job,int prio);
+  void add_job(job_t job,int prio);
 
   // returns whether all remaining jobs have STARTED
   bool empty() const;

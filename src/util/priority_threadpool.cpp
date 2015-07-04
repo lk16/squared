@@ -35,10 +35,10 @@ void priority_threadpool::start_workers()
 
 
 
-void priority_threadpool::add_job(job_t job,job_t notification_job,int prio)
+void priority_threadpool::add_job(job_t job,int prio)
 {
   std::unique_lock<std::mutex> lock_list(lock_jobs_list);
-  jobs.push(priority_threadpool::job_data(job,notification_job,prio));
+  jobs.push(priority_threadpool::job_data(job,prio));
   notify_job.notify_one();
 }
 
@@ -68,7 +68,6 @@ void priority_threadpool::loop()
   job_data job;
   while(get_next_job(&job)){
     job.first();
-    job.second();
   }
 }
 
