@@ -59,5 +59,5 @@ private:
   
   // performs null window search
   template<bool sort,bool exact>
-  int null_window(int alpha);
+  int null_window(int alpha,int beta,bool max_node);
 };

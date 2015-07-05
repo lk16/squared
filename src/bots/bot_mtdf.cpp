@@ -95,7 +95,7 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -mtdf<true,exact>(id==0 ? 0 : best_heur,best_heur);
+    int cur_heur = mtdf<true,exact>(id==0 ? 0 : best_heur,best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -158,7 +158,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
     else{
       beta = g;
     }
-    g = null_window<sort,exact>(beta-1);
+    g = null_window<sort,exact>(beta-1,beta,true);
+    std::printf("g=%d  alpha,beta=(%d,%d)\n",g,beta-1,beta);
     if(g < beta){
       upper_bound = g;
     }
@@ -170,16 +171,33 @@ int bot_mtdf::mtdf(int f,int lower_bound)
 }
 
 template<bool sort,bool exact>
-int bot_mtdf::null_window(int alpha)
+int bot_mtdf::null_window(int alpha,int beta,bool max_node)
 {
   // TODO: sorting 
-  
+
+#define USE_HASH_TABLE 0
   
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
     return heuristic();
   }
+
+#if USE_HASH_TABLE
+  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
+    auto it = hash_table.find(inspected);
+    if(it != hash_table.end()){
+      if(it->lower_bound >= beta){
+        return it->lower_bound;
+      }
+      if(it->upper_bound <= alpha){
+        return it->upper_bound;
+      }
+      alpha = max(alpha,it->lower_bound);
+      beta = min(beta,it->upper_bound);
+    }
+  }
+#endif
   
   bits64 valid_moves = inspected.get_valid_moves();
 
@@ -187,49 +205,84 @@ int bot_mtdf::null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();
+      inspected.switch_turn();
+      heur = inspected.get_disc_diff();
       if(!exact){
         heur *= EXACT_SCORE_FACTOR; 
       }
-      heur = alpha + ((heur > alpha) ? 1 : 0);
+      heur = (heur < beta) ? alpha : beta;
     }
     else{
-      heur = -null_window<sort,exact>(-(alpha+1));
+      heur = null_window<sort,exact>(alpha,beta,!max_node);
+      inspected.switch_turn();
     }
-    inspected.switch_turn();
     return heur;
   }
   
-  int move;
   
-  for(int i=0;i<9;i++){
+  bool breakout = false;
+
+  
+  for(int i=0;!breakout && i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(location_moves != 0ull){
+    while(!breakout && location_moves != 0ull){
+      int move = bits64_find_first(location_moves);
+      bits64 undo_data = inspected.do_move(move);
+      moves_left--;
+      int score = null_window<sort,exact>(alpha,beta,!max_node);
+      moves_left++;
+      inspected.undo_move(bits64_set[move],undo_data);
+      location_moves &= bits64_reset[move];
+      if(max_node && score > alpha){
+        ++alpha;
+        breakout = true;
+      }
+      if(!max_node && score < beta){
+        --beta;
+        breakout = true;
+      }
+    }
+  }
+  /*
+  for(int i=0;!breakout && i<9;i++){
+    bits64 location_moves = valid_moves & board::ordered_locations[i];
+    while(!breakout && location_moves!=0ull){
       bits64 move_bit = bits64_first(location_moves);
       location_moves &= ~move_bit;
       move = bits64_find_first(move_bit);
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
-      int score = -null_window<sort,exact>(-(alpha+1));
+      int score = null_window<sort,exact>(alpha,beta,!max_node);
       moves_left++;
       inspected.undo_move(move_bit,undo_data);
       
-      if(score > alpha){
+      if(max_node && score > alpha){
         ++alpha;
-        goto add_ht_input;
+        breakout = true;
+      }
+      if(!max_node && score < beta){
+        --beta;
+        breakout = true;
       }
     }
-  }
+  }*/
   
-  
-  add_ht_input:
-#if 0
+#if USE_HASH_TABLE
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
-    ht_data ht_item;
-    ht_item.best_move = move;
-    ht_item.lower_bound // THIS NEEDS REDESIGNING
+    auto it = hash_table.find(inspected);
+    if(it == hash_table.end()){
+      ht_data value;
+      value.best_move = move;
+      if(max_node){
+        value.lower_bound = ;
+      }
+    }
+    else{
+      
+    }
   }
 #endif
-  return alpha;
+
+  return max_node ? alpha : beta;
 }
 
