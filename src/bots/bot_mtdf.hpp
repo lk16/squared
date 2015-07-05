@@ -62,7 +62,7 @@ private:
   
   // performs mtdf search
   template<bool sort,bool exact>
-  int mtdf(int f);
+  int mtdf(int f,int lower_bound);
   
   // performs null window search
   template<bool sort,bool exact>

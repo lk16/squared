@@ -21,7 +21,7 @@ void bot_mtdf::do_sorting(board* children, int child_count)
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    heur[i] = -mtdf<false,false>(0);
+    heur[i] = -mtdf<false,false>(0,MIN_HEURISTIC);
     moves_left++;
     std::swap(inspected,children[i]);
   }
@@ -95,22 +95,14 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -mtdf<true,exact>(id==0 ? 0 : best_heur);
+    int cur_heur = -mtdf<true,exact>(id==0 ? 0 : best_heur,best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": ";
-    if(exact){
-      output() << best_heur/EXACT_SCORE_FACTOR;
-    }
-    else{
-      output() << best_heur;
-    }
-    output() << std::endl;
-    
+    output() << ": " << best_heur << '\n';    
   }
   
   set_last_move_heur(best_heur);
@@ -154,11 +146,10 @@ void bot_mtdf::do_move(const board* b,board* res)
 }
 
 template<bool sort,bool exact>
-int bot_mtdf::mtdf(int f)
+int bot_mtdf::mtdf(int f,int lower_bound)
 {
   int g = f;
   int upper_bound = MAX_HEURISTIC;
-  int lower_bound = MIN_HEURISTIC;
   int beta;
   while(lower_bound < upper_bound){
     if(g == lower_bound){
