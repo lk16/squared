@@ -100,7 +100,7 @@ struct board{
   bits64 get_valid_moves() const;
   
   // helper function of get_valid_moves()
-  static bits64 get_some_moves(const bits64 me, const bits64 opp_mask, const int dir);
+  bits64 get_some_moves(const bits64 opp_mask, const int dir) const;
   
   // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
@@ -363,7 +363,7 @@ inline void board::undo_move(bits64 move_bit,bits64 undo_data)
   opp = tmp | undo_data;
 }
 
-inline bits64 board::get_some_moves(const bits64 me, const bits64 opp_mask, const int dir) 
+inline bits64 board::get_some_moves(const bits64 opp_mask, const int dir) const
 {
   // this funtion is a modified version of code from Edax
   
@@ -373,14 +373,15 @@ inline bits64 board::get_some_moves(const bits64 me, const bits64 opp_mask, cons
   const bits64 dir2 = dir + dir;
 
   flip_l  = opp_mask & (me << dir);
-  flip_r  = opp_mask & (me >> dir);
   flip_l |= opp_mask & (flip_l << dir);
-  flip_r |= opp_mask & (flip_r >> dir);
   mask_l  = opp_mask & (opp_mask << dir);
+  flip_l |= mask_l & (flip_l << dir2);
+  flip_l |= mask_l & (flip_l << dir2);
+ 
+  flip_r  = opp_mask & (me >> dir);
+  flip_r |= opp_mask & (flip_r >> dir);
   mask_r  = opp_mask & (opp_mask >> dir);
-  flip_l |= mask_l & (flip_l << dir2);
   flip_r |= mask_r & (flip_r >> dir2);
-  flip_l |= mask_l & (flip_l << dir2);
   flip_r |= mask_r & (flip_r >> dir2);
 
   return (flip_l << dir) | (flip_r >> dir);
@@ -392,10 +393,10 @@ inline bits64 board::get_valid_moves() const
   const bits64 mask = opp & 0x7E7E7E7E7E7E7E7Eull;
 
   return (0ull
-    | get_some_moves(me,mask,1) // horizontal
-    | get_some_moves(me,opp,8) // vertical
-    | get_some_moves(me,mask,7) // diagonals
-    | get_some_moves(me,mask,9)
+    | get_some_moves(mask,1) // horizontal
+    | get_some_moves(opp,8) // vertical
+    | get_some_moves(mask,7) // diagonals
+    | get_some_moves(mask,9)
   )
   & get_empty_fields(); // mask with empties
 }
