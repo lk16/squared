@@ -165,71 +165,8 @@ struct board{
   // reverses position_to_index
   static std::string index_to_position(int index);
   
-  // does named move
-  bits64 do_move_A1();
-  bits64 do_move_A2();
-  bits64 do_move_A3();
-  bits64 do_move_A4();
-  bits64 do_move_A5();
-  bits64 do_move_A6();
-  bits64 do_move_A7();
-  bits64 do_move_A8();
-  bits64 do_move_B1();
-  bits64 do_move_B2();
-  bits64 do_move_B3();
-  bits64 do_move_B4();
-  bits64 do_move_B5();
-  bits64 do_move_B6();
-  bits64 do_move_B7();
-  bits64 do_move_B8();
-  bits64 do_move_C1();
-  bits64 do_move_C2();
-  bits64 do_move_C3();
-  bits64 do_move_C4();
-  bits64 do_move_C5();
-  bits64 do_move_C6();
-  bits64 do_move_C7();
-  bits64 do_move_C8();
-  bits64 do_move_D1();
-  bits64 do_move_D2();
-  bits64 do_move_D3();
-  bits64 do_move_D4();
-  bits64 do_move_D5();
-  bits64 do_move_D6();
-  bits64 do_move_D7();
-  bits64 do_move_D8();
-  bits64 do_move_E1();
-  bits64 do_move_E2();
-  bits64 do_move_E3();
-  bits64 do_move_E4();
-  bits64 do_move_E5();
-  bits64 do_move_E6();
-  bits64 do_move_E7();
-  bits64 do_move_E8();
-  bits64 do_move_F1();
-  bits64 do_move_F2();
-  bits64 do_move_F3();
-  bits64 do_move_F4();
-  bits64 do_move_F5();
-  bits64 do_move_F6();
-  bits64 do_move_F7();
-  bits64 do_move_F8();
-  bits64 do_move_G1();
-  bits64 do_move_G2();
-  bits64 do_move_G3();
-  bits64 do_move_G4();
-  bits64 do_move_G5();
-  bits64 do_move_G6();
-  bits64 do_move_G7();
-  bits64 do_move_G8();
-  bits64 do_move_H1();
-  bits64 do_move_H2();
-  bits64 do_move_H3();
-  bits64 do_move_H4();
-  bits64 do_move_H5();
-  bits64 do_move_H6();
-  bits64 do_move_H7();
-  bits64 do_move_H8();
+  template<int field_id>
+  bits64 do_move_internal();
   
   // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(bits64 move_bit,bits64 undo_data); 
@@ -426,4 +363,128 @@ inline int board::count_opponent_moves() const
   board copy(*this);
   copy.switch_turn();
   return copy.count_valid_moves();
+}
+
+template<int field_id>
+inline bits64 board::do_move_internal()
+{
+  bits64 line,flipped = 0ull;
+  int end;
+  
+  bits64 left_border_mask,right_border_mask;
+  
+  switch(field_id%8){
+    case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
+    case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
+    case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
+    case 3: right_border_mask = 0xF0F0F0F0F0F0F0F0; break;
+    case 4: right_border_mask = 0xE0E0E0E0E0E0E0E0; break;
+    case 5: right_border_mask = 0xC0C0C0C0C0C0C0C0; break;
+    default: right_border_mask = 0x0; break;
+  }
+  
+  switch(field_id%8){
+    case 2: left_border_mask = 0x0303030303030303; break;
+    case 3: left_border_mask = 0x0707070707070707; break;
+    case 4: left_border_mask = 0x0F0F0F0F0F0F0F0F; break;
+    case 5: left_border_mask = 0x1F1F1F1F1F1F1F1F; break;
+    case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
+    case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
+    default: left_border_mask = 0x0; break;
+  }
+  
+  /* down */
+  if(field_id/8 < 6){
+    line = 0x0101010101010100l << field_id;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* up */
+  if(field_id/8 > 1){
+    line = 0x0080808080808080l >> (63-field_id);
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* left */
+  if(field_id%8 > 1){
+    line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* right */
+  if(field_id%8 < 6){
+    line = (0x00000000000000FEl << field_id) & right_border_mask;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* right down */
+  if((field_id%8 < 6) && (field_id/8 < 6)){
+    line = (0x8040201008040200 << field_id) & right_border_mask;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* left up */
+  if((field_id%8 > 1) && (field_id/8 > 1)){
+    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* right up */
+  if((field_id%8 < 6) && (field_id/8 > 1)){
+    if(field_id<=56){
+      line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;
+    }
+    else{
+      line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
+    }
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+     if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* left down */
+  if((field_id%8 > 1) && (field_id/8 < 6)){
+    if(field_id>=7){
+      line = (0x0102040810204000 << (field_id-7)) & left_border_mask;
+    }
+    else{
+      line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
+    }
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  me |= bits64_set[field_id] | flipped;
+  opp &= ~me;
+  switch_turn();  
+  return flipped; 
 }
