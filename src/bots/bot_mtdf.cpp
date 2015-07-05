@@ -200,12 +200,14 @@ int bot_mtdf::null_window(int alpha)
     return heur;
   }
   
+  int move;
+  
   for(int i=0;i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
     while(location_moves != 0ull){
       bits64 move_bit = bits64_first(location_moves);
       location_moves &= ~move_bit;
-      int move = bits64_find_first(move_bit);
+      move = bits64_find_first(move_bit);
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
       int score = -null_window<sort,exact>(-(alpha+1));
@@ -213,10 +215,21 @@ int bot_mtdf::null_window(int alpha)
       inspected.undo_move(move_bit,undo_data);
       
       if(score > alpha){
-        return alpha+1;
+        ++alpha;
+        goto add_ht_input;
       }
     }
   }
+  
+  
+  add_ht_input:
+#if 0
+  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
+    ht_data ht_item;
+    ht_item.best_move = move;
+    ht_item.lower_bound // THIS NEEDS REDESIGNING
+  }
+#endif
   return alpha;
 }
 
