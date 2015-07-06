@@ -9,7 +9,7 @@ class bot_mtdf:
   int moves_left;
   
   static const int NORMAL_MOVE_SORT_DEPTH = 4;
-  static const int PERFECT_MOVE_SORT_DEPTH = 7;
+  static const int PERFECT_MOVE_SORT_DEPTH = 13;
   
   static const int HASH_TABLE_MIN_DEPTH = 3;
   static const int HASH_TABLE_MAX_DEPTH = 7;

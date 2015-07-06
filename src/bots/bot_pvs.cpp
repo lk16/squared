@@ -23,13 +23,8 @@ template<bool sort,bool exact>
 int bot_pvs::pvs(int alpha, int beta)
 {
   
-  if(sort){
-    if(exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)){
-      return pvs<false,true>(alpha,beta);
-    }
-    if((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)){
-      return pvs<false,false>(alpha,beta);
-    }
+  if(sort && ((exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)) || ((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)))){
+      return pvs<false,exact>(alpha,beta);
   }
 
   stats.inc_nodes();

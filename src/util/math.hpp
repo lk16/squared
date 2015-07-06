@@ -37,7 +37,7 @@ inline bool out_bounds(T x,T min,T max){
 }
 
 template<class T>
-void ugly_sort(T *t,int* heurs, int count)
+inline void ugly_sort(T *t,int* heurs, int count)
 {
   bool loop;
   do{
