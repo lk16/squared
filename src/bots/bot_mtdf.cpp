@@ -157,7 +157,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
     else{
       beta = g;
     }
-    g = null_window<sort,exact>(beta-1,beta,false);
+    g = null_window<sort,exact,false>(beta-1,beta);
     if(g < beta){
       upper_bound = g;
     }
@@ -168,8 +168,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
   return g;
 }
 
-template<bool sort,bool exact>
-int bot_mtdf::null_window(int alpha,int beta,bool max_node)
+template<bool sort,bool exact,bool max_node>
+int bot_mtdf::null_window(int alpha,int beta)
 {
   
   // TODO: sorting 
@@ -213,45 +213,54 @@ int bot_mtdf::null_window(int alpha,int beta,bool max_node)
       heur = (heur < beta) ? alpha : beta;
     }
     else{
-      heur = null_window<sort,exact>(alpha,beta,!max_node);
+      heur = null_window<sort,exact,!max_node>(alpha,beta);
       inspected.switch_turn();
     }
     return heur;
   }
   
   
-  bool breakout = false;
+  bool cutoff = false;
+  int move;
 
   
-  for(int i=0;!breakout && i<9;i++){
+  for(int i=0;!cutoff && i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(!breakout && location_moves != 0ull){
-      int move = bits64_find_first(location_moves);
+    while(!cutoff && location_moves != 0ull){
+      move = bits64_find_first(location_moves);
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
-      int score = null_window<sort,exact>(alpha,beta,!max_node);
+      int score = null_window<sort,exact,!max_node>(alpha,beta);
       moves_left++;
       inspected.undo_move(bits64_set[move],undo_data);
       location_moves &= bits64_reset[move];
       if(max_node && score > alpha){
         ++alpha;
-        breakout = true;
+        cutoff = true;
       }
       if(!max_node && score < beta){
         --beta;
-        breakout = true;
+        cutoff = true;
       }
     }
   }
 
 #if USE_HASH_TABLE
+  // TODO FINISH AND TRIPLE CHECK THIS
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
     auto it = hash_table.find(inspected);
     if(it == hash_table.end()){
       ht_data value;
       value.best_move = move;
-      if(max_node){
-        value.lower_bound = ;
+      value.lower_bound = MIN_PERFECT_HEURISTIC;
+      value.upper_bound = MAX_PERFECT_HEURISTIC;
+      if(cutoff){
+        if(max_node){
+          value.lower_bound = max(value.lower_bound,alpha);
+        }
+        else{
+          value.upper_bound = min(value.upper_bound,beta);
+        }
       }
     }
     else{
