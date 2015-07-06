@@ -77,13 +77,12 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     output() << "at depth " << get_search_depth() << '\n';
   }
   
-  if(exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH)){
+  /*
+  if((exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH))
+    || ((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH)
+  ){
     do_sorting(children,child_count);
-  }
-  
-  if((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
-    do_sorting(children,child_count);
-  }
+  }*/
 
   moves_left = get_search_depth();
   
@@ -159,7 +158,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
       beta = g;
     }
     g = null_window<sort,exact>(beta-1,beta,true);
-    std::printf("g=%d  alpha,beta=(%d,%d)\n",g,beta-1,beta);
+    printf("null_window(%d,%d,true) = %d\n",beta-1,beta,g);
     if(g < beta){
       upper_bound = g;
     }
@@ -173,6 +172,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
 template<bool sort,bool exact>
 int bot_mtdf::null_window(int alpha,int beta,bool max_node)
 {
+  
   // TODO: sorting 
 
 #define USE_HASH_TABLE 0
@@ -180,7 +180,7 @@ int bot_mtdf::null_window(int alpha,int beta,bool max_node)
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
-    return heuristic();
+    return (max_node ? 1 : -1) * heuristic();
   }
 
 #if USE_HASH_TABLE
@@ -243,30 +243,7 @@ int bot_mtdf::null_window(int alpha,int beta,bool max_node)
       }
     }
   }
-  /*
-  for(int i=0;!breakout && i<9;i++){
-    bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(!breakout && location_moves!=0ull){
-      bits64 move_bit = bits64_first(location_moves);
-      location_moves &= ~move_bit;
-      move = bits64_find_first(move_bit);
-      bits64 undo_data = inspected.do_move(move);
-      moves_left--;
-      int score = null_window<sort,exact>(alpha,beta,!max_node);
-      moves_left++;
-      inspected.undo_move(move_bit,undo_data);
-      
-      if(max_node && score > alpha){
-        ++alpha;
-        breakout = true;
-      }
-      if(!max_node && score < beta){
-        --beta;
-        breakout = true;
-      }
-    }
-  }*/
-  
+
 #if USE_HASH_TABLE
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
     auto it = hash_table.find(inspected);

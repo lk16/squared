@@ -39,8 +39,8 @@ public:
     
     learn_job() = default;
     
-    learn_job(board b,int depth): 
-      b(b),depth(depth){}
+    learn_job(board _b,int _depth): 
+      b(_b),depth(_depth){}
     
     bool operator<(const learn_job& rhs) const {
       return priority() < rhs.priority();  
@@ -91,10 +91,6 @@ private:
   read_write_lock container_lock;
   
   csv csv_file;
-  
-  // used only for multithreaded learning
-  // and should only be changed in learn()
-  std::string bot_name;
   
 public:
   // default ctor

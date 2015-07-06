@@ -140,7 +140,7 @@ void book_t::learn(const std::string& bot_name,unsigned threads)
   while(true);
 }
 
-void book_t::learn_thread(const std::string& bot_name, std::priority_queue<book_t::learn_job>* pq, std::mutex* mutex)
+void book_t::learn_thread(const std::string& bot_name,std::priority_queue<book_t::learn_job>* pq, std::mutex* mutex)
 {
   bot_base* bot = bot_registration::bots()[bot_name]();
   learn_job job;
