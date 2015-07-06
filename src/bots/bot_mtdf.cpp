@@ -157,8 +157,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
     else{
       beta = g;
     }
-    g = null_window<sort,exact>(beta-1,beta,true);
-    printf("null_window(%d,%d,true) = %d\n",beta-1,beta,g);
+    g = null_window<sort,exact>(beta-1,beta,false);
     if(g < beta){
       upper_bound = g;
     }
@@ -180,7 +179,8 @@ int bot_mtdf::null_window(int alpha,int beta,bool max_node)
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
-    return (max_node ? 1 : -1) * heuristic();
+    int heur = (max_node ? 1 : -1) * heuristic();
+    return heur<beta ? alpha : beta;
   }
 
 #if USE_HASH_TABLE

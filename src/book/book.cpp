@@ -114,9 +114,6 @@ void book_t::learn(const std::string& bot_name,unsigned threads)
 {
   print_stats();
   
-  //ppool = new priority_threadpool(threads);
-
-  
   std::priority_queue<learn_job> pq;
   std::mutex mutex;
   
