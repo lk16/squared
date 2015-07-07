@@ -14,7 +14,9 @@ extern const bits64 bits64_after[65];
 
 // returns 64 if b==0ul, returns least significant bit otherwise
 inline int bits64_find_first(bits64 b){
-  assert(b != 0ull);
+  if(b == 0){
+    return 64;
+  }
 #if 0 
   return __builtin_ffsl(b) - 1;
 #else
@@ -105,3 +107,6 @@ inline bits64 bits64_rotate(bits64 x,int n)
 }
 
 void bits64_show(bits64 b);
+
+
+

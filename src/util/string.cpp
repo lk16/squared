@@ -3,27 +3,34 @@
 std::string big_number(long long x){
   std::stringstream ss;
  
-  static const long long tenpowers[6] = {
+  static const long long tenpowers[7] = {
     1000000000000000000ull,
     1000000000000000ull,
     1000000000000ull,
     1000000000ull,
     1000000ull,
-    1000ull
+    1000ull,
+    1ull
   };
   
   if(x < 0){
     ss << '-';
     x = -x;
   }
-  
-  for(int i=0;i<6;++i){
+  bool first = true;
+  for(int i=0;i<7;++i){
     if(x > tenpowers[i]){
       long long tmp = x / tenpowers[i];
-      ss << tmp%1000 << ',';
+      if(!first){
+        ss << std::setfill('0') << std::setw(3);
+      }
+      ss << tmp%1000;
+      if(i != 6){
+        ss << ',';
+      }
+      first = false;
     }
   }
-  ss << x%1000;
   
   
   return ss.str();

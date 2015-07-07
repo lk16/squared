@@ -18,7 +18,9 @@ class bot_mtdf:
     int lower_bound,upper_bound,best_move;
   };
  
-  std::unordered_map<board,ht_data,board_hash> hash_table;
+  typedef std::unordered_map<board,ht_data,board_hash> hash_table_t;
+  hash_table_t hash_table;
+  
   
 public:
   board inspected;

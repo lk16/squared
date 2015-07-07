@@ -185,25 +185,51 @@ int bot_mtdf::null_window(int alpha,int beta)
     return null_window<false,exact>(alpha,beta); 
   }
   
+  bool cutoff = false;
+  int move = -1;
+  
+  bits64 valid_moves;
   
 #if USE_HASH_TABLE
+  hash_table_t::iterator ht_iter;
+
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
-    auto it = hash_table.find(inspected);
-    if(it != hash_table.end()){
-      if(it->second.lower_bound >= beta){
-        return it->second.lower_bound;
+    ht_iter = hash_table.find(inspected.to_database_board());
+    if(ht_iter != hash_table.end()){
+      if(ht_iter->second.lower_bound >= beta){
+        return beta;
       }
-      if(it->second.upper_bound <= alpha){
-        return it->second.upper_bound;
+      if(ht_iter->second.upper_bound <= alpha){
+        return alpha;
+      }    
+      bits64 undo_data = inspected.do_move(ht_iter->second.best_move);
+      moves_left--;
+      int score = -null_window<sort,exact>(-beta,-alpha);
+      moves_left++;
+      inspected.undo_move(bits64_set[ht_iter->second.best_move],undo_data);
+      move = ht_iter->second.best_move;
+      if(score > alpha){
+        ++alpha;
+        cutoff = true;
+        goto add_hash_entry;
       }
-      alpha = max(alpha,it->second.lower_bound);
-      beta = min(beta,it->second.upper_bound);
     }
+
   }
 #endif
   
-  bits64 valid_moves = inspected.get_valid_moves();
+  valid_moves = inspected.get_valid_moves();
 
+  
+#if USE_HASH_TABLE  
+  if(ht_iter != hash_table.end()){
+    valid_moves &= bits64_reset[move];
+  }
+#endif
+  
+  
+  
+  
   if(valid_moves == 0ull){
     int heur;
     inspected.switch_turn();
@@ -222,9 +248,7 @@ int bot_mtdf::null_window(int alpha,int beta)
     return heur;
   }
   
-  
-  bool cutoff = false;
-  int move = -1;
+
   
   if(sort){
     board children[32]; 
@@ -268,13 +292,17 @@ int bot_mtdf::null_window(int alpha,int beta)
       }
     }
   }
+  
+  add_hash_entry:
 
 #if USE_HASH_TABLE
-  // TODO FINISH AND TRIPLE CHECK THIS
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
-    auto it = hash_table.find(inspected);
+    board inspected_normalised = inspected.to_database_board();
+    int rot = inspected.get_rotation(&inspected_normalised);
+    auto it = hash_table.find(inspected_normalised);
     ht_data value;
-    value.best_move = move;
+    int move_normalised = bits64_find_first(bits64_rotate(bits64_set[move],rot));
+    value.best_move = move_normalised;
     if(it == hash_table.end()){
       value.lower_bound = MIN_PERFECT_HEURISTIC;
       value.upper_bound = MAX_PERFECT_HEURISTIC;
