@@ -158,7 +158,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
     else{
       beta = g;
     }
-    g = null_window<sort,exact,false>(beta-1,beta);
+    g = -null_window<sort,exact>(-beta,1-beta);
     if(g < beta){
       upper_bound = g;
     }
@@ -169,21 +169,20 @@ int bot_mtdf::mtdf(int f,int lower_bound)
   return g;
 }
 
-template<bool sort,bool exact,bool max_node>
+template<bool sort,bool exact>
 int bot_mtdf::null_window(int alpha,int beta)
 {
   
-#define USE_HASH_TABLE 0
+#define USE_HASH_TABLE 1
   
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
-    int heur = (max_node ? 1 : -1) * heuristic();
-    return heur<beta ? alpha : beta;
+    return heuristic();
   }
 
   if(sort && ((!exact && moves_left<NORMAL_MOVE_SORT_DEPTH) || (exact && moves_left<PERFECT_MOVE_SORT_DEPTH))){
-    return null_window<false,exact,max_node>(alpha,beta); 
+    return null_window<false,exact>(alpha,beta); 
   }
   
   
@@ -216,7 +215,7 @@ int bot_mtdf::null_window(int alpha,int beta)
       }
     }
     else{
-      heur = null_window<sort,exact,!max_node>(alpha,beta);
+      heur = -null_window<sort,exact>(-beta,-alpha);
       inspected.switch_turn();
     }
     heur = (heur < beta) ? alpha : beta;
@@ -238,18 +237,13 @@ int bot_mtdf::null_window(int alpha,int beta)
       move = children[i].get_move_index(&inspected);
       std::swap(inspected,children[i]);
       moves_left--;
-      int score = null_window<sort,exact,!max_node>(alpha,beta);
+      int score = -null_window<sort,exact>(-beta,-alpha);
       moves_left++;
       std::swap(inspected,children[i]);
-      if(max_node && score > alpha){
+      if(score > alpha){
         ++alpha;
         cutoff = true;
       }
-      if(!max_node && score < beta){
-        --beta;
-        cutoff = true;
-      }
-      
     }
     
     
@@ -263,16 +257,12 @@ int bot_mtdf::null_window(int alpha,int beta)
         move = bits64_find_first(location_moves);
         bits64 undo_data = inspected.do_move(move);
         moves_left--;
-        int score = null_window<sort,exact,!max_node>(alpha,beta);
+        int score = -null_window<sort,exact>(-beta,-alpha);
         moves_left++;
         inspected.undo_move(bits64_set[move],undo_data);
         location_moves &= bits64_reset[move];
-        if(max_node && score > alpha){
+        if(score > alpha){
           ++alpha;
-          cutoff = true;
-        }
-        if(!max_node && score < beta){
-          --beta;
           cutoff = true;
         }
       }
@@ -288,7 +278,7 @@ int bot_mtdf::null_window(int alpha,int beta)
     if(it == hash_table.end()){
       value.lower_bound = MIN_PERFECT_HEURISTIC;
       value.upper_bound = MAX_PERFECT_HEURISTIC;
-      if((cutoff && max_node) || (!cutoff && !max_node)){
+      if(cutoff){
         value.lower_bound = max(value.lower_bound,alpha);
       }
       else{
@@ -297,7 +287,7 @@ int bot_mtdf::null_window(int alpha,int beta)
     }
     else{
       value = it->second;
-      if((cutoff && max_node) || (!cutoff && !max_node)){
+      if(cutoff){
         value.lower_bound = max(value.lower_bound,alpha);
       }
       else{
@@ -308,6 +298,6 @@ int bot_mtdf::null_window(int alpha,int beta)
   }
 #endif
 
-  return max_node ? alpha : beta;
+  return alpha;
 }
 
