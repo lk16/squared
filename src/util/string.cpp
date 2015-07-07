@@ -2,21 +2,29 @@
 
 std::string big_number(long long x){
   std::stringstream ss;
-  if(x>10000000000l){
-    x /= 1000000000l;
-    ss << x << 'G'; 
+ 
+  static const long long tenpowers[6] = {
+    1000000000000000000ull,
+    1000000000000000ull,
+    1000000000000ull,
+    1000000000ull,
+    1000000ull,
+    1000ull
+  };
+  
+  if(x < 0){
+    ss << '-';
+    x = -x;
   }
-  else if(x>10000000l){
-    x /= 1000000l;
-    ss << x << 'M';
+  
+  for(int i=0;i<6;++i){
+    if(x > tenpowers[i]){
+      long long tmp = x / tenpowers[i];
+      ss << tmp%1000 << ',';
+    }
   }
-  else if(x>1000l){
-    x /= 1000l;
-    ss << x << 'K';
-  }
-  else{
-    ss << x;
-  }
+  ss << x%1000;
+  
   
   return ss.str();
 }

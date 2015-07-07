@@ -153,10 +153,7 @@ struct board{
   // does move field_id
   // returns flipped discs
   bits64 do_move(int field_id);
-  
-  // experimental code for making specific move functions for each field
-  bits64 do_move_experimental(const int field_id);
-  
+    
   // converts for example "a1" to 0
   // converts "--" to -1
   // converts anything else to -2
