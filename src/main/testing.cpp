@@ -310,17 +310,23 @@ board demo_rotate_left(const board* b){
 }
 
 void testing_area(){
-  char buff[1024];
-  std::ifstream file("xot");
-  board b;
-  while(!file.eof()){
-    file.getline(buff,1024,'\n');
-    b.reset();
-    for(int i=0;i<8;i++){
-      b.do_move(buff[2*i]-'a'+(8*(buff[(2*i)+1]-'1')));     
-    }
-    std::cout << "{0x" << std::hex << b.me << ",0x" << b.opp << "},\n"; 
-    
-  }
-  
+  std::cout << left_shift<-3>(32) << '\n';
+  std::cout << left_shift<-2>(32) << '\n';
+  std::cout << left_shift<-1>(32) << '\n';
+  std::cout << left_shift<0>(32) << '\n';
+  std::cout << left_shift<1>(32) << '\n';
+  std::cout << left_shift<2>(32) << '\n';
+  std::cout << left_shift<3>(32) << '\n';
+  std::cout << left_shift<4>(32) << '\n';
+  std::cout << left_shift<5>(32) << '\n';
+  std::cout << "--------------\n";
+  std::cout << right_shift<-3>(32) << '\n';
+  std::cout << right_shift<-2>(32) << '\n';
+  std::cout << right_shift<-1>(32) << '\n';
+  std::cout << right_shift<0>(32) << '\n';
+  std::cout << right_shift<1>(32) << '\n';
+  std::cout << right_shift<2>(32) << '\n';
+  std::cout << right_shift<3>(32) << '\n';
+  std::cout << right_shift<4>(32) << '\n';
+  std::cout << right_shift<5>(32) << '\n';
 }

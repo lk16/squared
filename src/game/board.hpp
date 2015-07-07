@@ -90,7 +90,7 @@ struct board{
   void xot();
   
   // switches me and opp
-  void switch_turn();
+  board* switch_turn();
   
   // checks whether field_id is a valid move
   // WARNING not efficient
@@ -153,10 +153,7 @@ struct board{
   // does move field_id
   // returns flipped discs
   bits64 do_move(int field_id);
-  
-  // experimental code for making specific move functions for each field
-  bits64 do_move_experimental(const int field_id);
-  
+    
   // converts for example "a1" to 0
   // converts "--" to -1
   // converts anything else to -2
@@ -258,9 +255,10 @@ inline bool board::operator!=(const board& b) const
 }
 
 
-inline void board::switch_turn()
+inline board* board::switch_turn()
 {
   std::swap<bits64>(me,opp);
+  return this;
 }
 
 inline bool board::operator<(const board& b) const
@@ -300,6 +298,7 @@ inline void board::undo_move(bits64 move_bit,bits64 undo_data)
   opp = tmp | undo_data;
 }
 
+#if 0
 inline bits64 board::get_some_moves(const bits64 opp_mask, const int dir) const
 {
   // this funtion is a modified version of code from Edax
@@ -323,19 +322,67 @@ inline bits64 board::get_some_moves(const bits64 opp_mask, const int dir) const
 
   return (flip_l << dir) | (flip_r >> dir);
 }
+#endif
 
 inline bits64 board::get_valid_moves() const
 {
+
+bits64 flip_l, flip_r,mask_l, mask_r;
+bits64 res = 0ull;
+  
   // this funtion is a modified version of code from Edax
   const bits64 mask = opp & 0x7E7E7E7E7E7E7E7Eull;
 
-  return (0ull
-    | get_some_moves(mask,1) // horizontal
-    | get_some_moves(opp,8) // vertical
-    | get_some_moves(mask,7) // diagonals
-    | get_some_moves(mask,9)
-  )
-  & get_empty_fields(); // mask with empties
+  flip_l = mask & (me << 1);
+  flip_l |= mask & (flip_l << 1);
+  mask_l = mask & (mask << 1);
+  flip_l |= mask_l & (flip_l << 2);
+  flip_l |= mask_l & (flip_l << 2);
+  flip_r = mask & (me >> 1);
+  flip_r |= mask & (flip_r >> 1);
+  mask_r = mask & (mask >> 1);
+  flip_r |= mask_r & (flip_r >> 2);
+  flip_r |= mask_r & (flip_r >> 2);
+  res |= (flip_l << 1) | (flip_r >> 1);
+
+  flip_l = opp & (me << 8);
+  flip_l |= opp & (flip_l << 8);
+  mask_l = opp & (opp << 8);
+  flip_l |= mask_l & (flip_l << 16);
+  flip_l |= mask_l & (flip_l << 16);
+  flip_r = opp & (me >> 8);
+  flip_r |= opp & (flip_r >> 8);
+  mask_r = opp & (opp >> 8);
+  flip_r |= mask_r & (flip_r >> 16);
+  flip_r |= mask_r & (flip_r >> 16);
+  res |= (flip_l << 8) | (flip_r >> 8);
+
+  flip_l = mask & (me << 7);
+  flip_l |= mask & (flip_l << 7);
+  mask_l = mask & (mask << 7);
+  flip_l |= mask_l & (flip_l << 14);
+  flip_l |= mask_l & (flip_l << 14);
+  flip_r = mask & (me >> 7);
+  flip_r |= mask & (flip_r >> 7);
+  mask_r = mask & (mask >> 7);
+  flip_r |= mask_r & (flip_r >> 14);
+  flip_r |= mask_r & (flip_r >> 14);
+  res |= (flip_l << 7) | (flip_r >> 7);
+
+  flip_l = mask & (me << 9);
+  flip_l |= mask & (flip_l << 9);
+  mask_l = mask & (mask << 9);
+  flip_l |= mask_l & (flip_l << 18);
+  flip_l |= mask_l & (flip_l << 18);
+  flip_r = mask & (me >> 9);
+  flip_r |= mask & (flip_r >> 9);
+  mask_r = mask & (mask >> 9);
+  flip_r |= mask_r & (flip_r >> 18);
+  flip_r |= mask_r & (flip_r >> 18);
+  res |= (flip_l << 9) | (flip_r >> 9);
+
+  
+  return res & get_empty_fields(); // mask with empties
 }
 
 inline int board::get_rotation(const board* b) const
@@ -360,9 +407,7 @@ inline int board::count_empty_fields() const
 
 inline int board::count_opponent_moves() const
 {
-  board copy(*this);
-  copy.switch_turn();
-  return copy.count_valid_moves();
+  return board(*this).switch_turn()->count_valid_moves();
 }
 
 template<int field_id>
@@ -455,12 +500,7 @@ inline bits64 board::do_move_internal()
   
   /* right up */
   if((field_id%8 < 6) && (field_id/8 > 1)){
-    if(field_id<=56){
-      line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;
-    }
-    else{
-      line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
-    }
+    line = right_shift<56-field_id>(0x0002040810204080) & right_border_mask;
     end = bits64_find_last(line & me);
     line &= bits64_after[end];
      if((opp & line) == line){
@@ -470,12 +510,7 @@ inline bits64 board::do_move_internal()
   
   /* left down */
   if((field_id%8 > 1) && (field_id/8 < 6)){
-    if(field_id>=7){
-      line = (0x0102040810204000 << (field_id-7)) & left_border_mask;
-    }
-    else{
-      line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
-    }
+    line = left_shift<field_id-7>(0x0102040810204000) & left_border_mask;
     end = bits64_find_first(line & me);
     line &= bits64_before[end];
     if((opp & line) == line){

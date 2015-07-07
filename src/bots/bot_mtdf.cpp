@@ -21,7 +21,7 @@ void bot_mtdf::do_sorting(board* children, int child_count)
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    heur[i] = -mtdf<false,false>(0);
+    heur[i] = -mtdf<false,false>(0,MIN_HEURISTIC);
     moves_left++;
     std::swap(inspected,children[i]);
   }
@@ -77,13 +77,12 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     output() << "at depth " << get_search_depth() << '\n';
   }
   
-  if(exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH)){
+  /*
+  if((exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH))
+    || ((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH)
+  ){
     do_sorting(children,child_count);
-  }
-  
-  if((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
-    do_sorting(children,child_count);
-  }
+  }*/
 
   moves_left = get_search_depth();
   
@@ -95,22 +94,14 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -mtdf<true,exact>(id==0 ? 0 : best_heur);
+    int cur_heur = mtdf<true,exact>(id==0 ? 0 : best_heur,best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": ";
-    if(exact){
-      output() << best_heur/EXACT_SCORE_FACTOR;
-    }
-    else{
-      output() << best_heur;
-    }
-    output() << std::endl;
-    
+    output() << ": " << best_heur << '\n';    
   }
   
   set_last_move_heur(best_heur);
@@ -151,14 +142,14 @@ void bot_mtdf::do_move(const board* b,board* res)
   else{
     do_move_search<true>(b,res);
   }
+  hash_table.clear();
 }
 
 template<bool sort,bool exact>
-int bot_mtdf::mtdf(int f)
+int bot_mtdf::mtdf(int f,int lower_bound)
 {
   int g = f;
   int upper_bound = MAX_HEURISTIC;
-  int lower_bound = MIN_HEURISTIC;
   int beta;
   while(lower_bound < upper_bound){
     if(g == lower_bound){
@@ -167,7 +158,7 @@ int bot_mtdf::mtdf(int f)
     else{
       beta = g;
     }
-    g = null_window<sort,exact>(beta-1);
+    g = -null_window<sort,exact>(-beta,1-beta);
     if(g < beta){
       upper_bound = g;
     }
@@ -179,53 +170,156 @@ int bot_mtdf::mtdf(int f)
 }
 
 template<bool sort,bool exact>
-int bot_mtdf::null_window(int alpha)
+int bot_mtdf::null_window(int alpha,int beta)
 {
-  // TODO: sorting 
   
+#define USE_HASH_TABLE 1
   
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
     return heuristic();
   }
-  
-  bits64 valid_moves = inspected.get_valid_moves();
 
+  if(sort && ((!exact && moves_left<NORMAL_MOVE_SORT_DEPTH) || (exact && moves_left<PERFECT_MOVE_SORT_DEPTH))){
+    return null_window<false,exact>(alpha,beta); 
+  }
+  
+  bool cutoff = false;
+  int move = -1;
+  
+  bits64 valid_moves;
+  
+#if USE_HASH_TABLE
+  hash_table_t::iterator ht_iter;
+
+  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
+    ht_iter = hash_table.find(inspected.to_database_board());
+    if(ht_iter != hash_table.end()){
+      if(ht_iter->second.lower_bound >= beta){
+        return beta;
+      }
+      if(ht_iter->second.upper_bound <= alpha){
+        return alpha;
+      }    
+      bits64 undo_data = inspected.do_move(ht_iter->second.best_move);
+      moves_left--;
+      int score = -null_window<sort,exact>(-beta,-alpha);
+      moves_left++;
+      inspected.undo_move(bits64_set[ht_iter->second.best_move],undo_data);
+      move = ht_iter->second.best_move;
+      if(score > alpha){
+        ++alpha;
+        cutoff = true;
+        goto add_hash_entry;
+      }
+    }
+
+  }
+#endif
+  
+  valid_moves = inspected.get_valid_moves();
+
+  
+#if USE_HASH_TABLE  
+  if(ht_iter != hash_table.end()){
+    valid_moves &= bits64_reset[move];
+  }
+#endif
+  
+  
+  
+  
   if(valid_moves == 0ull){
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -inspected.get_disc_diff();
+      inspected.switch_turn();
+      heur = inspected.get_disc_diff();
       if(!exact){
         heur *= EXACT_SCORE_FACTOR; 
       }
-      heur = alpha + ((heur > alpha) ? 1 : 0);
     }
     else{
-      heur = -null_window<sort,exact>(-(alpha+1));
+      heur = -null_window<sort,exact>(-beta,-alpha);
+      inspected.switch_turn();
     }
-    inspected.switch_turn();
-    return heur;
+    return (heur < beta) ? alpha : beta;
   }
   
-  for(int i=0;i<9;i++){
-    bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(location_moves != 0ull){
-      bits64 move_bit = bits64_first(location_moves);
-      location_moves &= ~move_bit;
-      int move = bits64_find_first(move_bit);
-      bits64 undo_data = inspected.do_move(move);
+
+  
+  if(sort){
+    board children[32]; 
+    int child_count = inspected.get_children(children,valid_moves) - children;
+    
+    if(sort){
+      do_sorting(children,child_count);
+    }
+    for(int i=0;!cutoff && i<child_count;++i){
+      move = children[i].get_move_index(&inspected);
+      std::swap(inspected,children[i]);
       moves_left--;
-      int score = -null_window<sort,exact>(-(alpha+1));
+      int score = -null_window<sort,exact>(-beta,-alpha);
       moves_left++;
-      inspected.undo_move(move_bit,undo_data);
-      
+      std::swap(inspected,children[i]);
       if(score > alpha){
-        return alpha+1;
+        ++alpha;
+        cutoff = true;
+      }
+    }
+    
+    
+    
+    
+  }
+  else{
+    for(int i=0;!cutoff && i<9;i++){
+      bits64 location_moves = valid_moves & board::ordered_locations[i];
+      while(!cutoff && location_moves != 0ull){
+        move = bits64_find_first(location_moves);
+        bits64 undo_data = inspected.do_move(move);
+        moves_left--;
+        int score = -null_window<sort,exact>(-beta,-alpha);
+        moves_left++;
+        inspected.undo_move(bits64_set[move],undo_data);
+        location_moves &= bits64_reset[move];
+        if(score > alpha){
+          ++alpha;
+          cutoff = true;
+        }
       }
     }
   }
+  
+  add_hash_entry:
+
+#if USE_HASH_TABLE
+  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
+    board inspected_normalised = inspected.to_database_board();
+    int rot = inspected.get_rotation(&inspected_normalised);
+    auto it = hash_table.find(inspected_normalised);
+    ht_data value;
+    int move_normalised = bits64_find_first(bits64_rotate(bits64_set[move],rot));
+    value.best_move = move_normalised;
+    if(it == hash_table.end()){
+      it = hash_table.insert(std::pair<const board,ht_data>(inspected,ht_data())).first;
+      it->second.lower_bound = MIN_PERFECT_HEURISTIC;
+      it->second.upper_bound = MAX_PERFECT_HEURISTIC;
+    }
+    else{
+      value = it->second;
+    }
+    
+    if(cutoff){
+      it->second.lower_bound = max(it->second.lower_bound,alpha);
+    }
+    else{
+      it->second.upper_bound = min(it->second.upper_bound,beta);
+    }
+  }
+#endif
+
   return alpha;
 }
 

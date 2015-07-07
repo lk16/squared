@@ -130,9 +130,7 @@ board* board::get_children(board* out_begin) const
 }
 
 board* board::get_children(board* out, bits64 moves) const
-{
-  assert(out);
-  
+{  
   while(moves != 0ull){
     int move_id = bits64_find_first(moves);
     *out = *this;
@@ -333,50 +331,45 @@ std::string board::to_string() const {
 }
 
 board::board(const std::string& in){
-  
-  try{
-    if(in.length() != 32){
-      throw 0;
-    }
-    
-    opp = me = 0ull;
-    
-    unsigned long long x;
-    for(int i=0;i<16;i++){
-      if((in[i]>='0') && (in[i]<='9')){
-        x = in[i]-'0';
-      }
-      else if((in[i]>='a') && (in[i]<='f')){
-        x = 10 + in[i] - 'a';      
-      }
-      else{
-        throw 1;
-      }
-      me |= ((x & 0xF) << (i*4));
-    }
-    
-    for(int i=0;i<16;i++){
-      if((in[16+i]>='0') && (in[16+i]<='9')){
-        x = in[16+i]-'0';
-      }
-      else if((in[16+i]>='a') && (in[16+i]<='f')){
-        x = 10 + in[16+i] - 'a';      
-      }
-      else{
-        throw 2;
-      }
-      opp |= ((x & 0xF) << (i*4));
+
+  opp = me = 0ull;
+  bool error = false;
+  if(in.length() != 32){
+    error = true;
+  }
+  for(unsigned i=0;i<in.length();++i){
+    if(out_bounds(in[i],'0','9') && out_bounds(in[i],'a','f')){
+      error = true;
     }
   }
-  catch(int i){
-    me = opp = 0ull;
-    std::cout << "ERROR: invalid board format fed to board(std::string): ";
-    std::cout << in << "\n";
-    std::cout << "Exception " << i << '\n';
+  
+  if(error){
+    std::cerr << "ERROR in board::board(): invalid string: \"" << in << "\".\n";
     return;
-    
   }
   
+  
+  unsigned long long x;
+  for(int i=0;i<16;i++){
+    if((in[i]>='0') && (in[i]<='9')){
+      x = in[i]-'0';
+    }
+    else{
+      x = 10 + in[i] - 'a';      
+    }
+    me |= ((x & 0xF) << (i*4));
+  }
+  
+  for(int i=0;i<16;i++){
+    if((in[16+i]>='0') && (in[16+i]<='9')){
+      x = in[16+i]-'0';
+    }
+    else{
+      x = 10 + in[16+i] - 'a';      
+    }
+    opp |= ((x & 0xF) << (i*4));
+  }
+
   
 }
 
@@ -427,130 +420,6 @@ board board::to_database_board() const
   }
   
   return min; 
-}
-
-
-bits64 board::do_move_experimental(const int field_id){
-  bits64 line,flipped = 0ull;
-  int end;
-  
-  bits64 left_border_mask,right_border_mask;
-  left_border_mask = right_border_mask = 0x0;
-  
-  switch(field_id%8){
-    case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
-    case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
-    case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
-    case 3: right_border_mask = 0xF0F0F0F0F0F0F0F0; break;
-    case 4: right_border_mask = 0xE0E0E0E0E0E0E0E0; break;
-    case 5: right_border_mask = 0xC0C0C0C0C0C0C0C0; break;
-    default: right_border_mask = 0x0; break;
-  }
-  
-  switch(field_id%8){
-    case 2: left_border_mask = 0x0303030303030303; break;
-    case 3: left_border_mask = 0x0707070707070707; break;
-    case 4: left_border_mask = 0x0F0F0F0F0F0F0F0F; break;
-    case 5: left_border_mask = 0x1F1F1F1F1F1F1F1F; break;
-    case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
-    case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
-    default: left_border_mask = 0x0; break;
-  }
-  
-  /* down */
-  if(field_id/8 < 6){
-    line = 0x0101010101010100l << field_id;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* up */
-  if(field_id/8 > 1){
-    line = 0x0080808080808080l >> (63-field_id);
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* left */
-  if(field_id%8 > 1){
-    line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* right */
-  if(field_id%8 < 6){
-    line = (0x00000000000000FEl << field_id) & right_border_mask;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* right down */
-  if((field_id%8 < 6) && (field_id/8 < 6)){
-    line = (0x8040201008040200 << field_id) & right_border_mask;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* left up */
-  if((field_id%8 > 1) && (field_id/8 > 1)){
-    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* right up */
-  if((field_id%8 < 6) && (field_id/8 > 1)){
-    if(field_id<=56){
-      line = (0x0002040810204080 >> (56-field_id)) & right_border_mask;
-    }
-    else{
-      line = (0x0002040810204080 << (field_id-56)) & right_border_mask;
-    }
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-     if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* left down */
-  if((field_id%8 > 1) && (field_id/8 < 6)){
-    if(field_id>=7){
-      line = (0x0102040810204000 << (field_id-7)) & left_border_mask;
-    }
-    else{
-      line = (0x0102040810204000 >> (7-field_id)) & left_border_mask;
-    }
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  me |= bits64_set[field_id] | flipped;
-  opp &= ~me;
-  switch_turn();  
-  return flipped;
 }
 
 void board::count_frontier_discs(int* me,int* opp) const

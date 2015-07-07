@@ -5,6 +5,8 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "bitset.hpp"
+
 template<class T>
 inline T min(T x,T y){
   return ((x<y) ? x : y);
@@ -37,7 +39,7 @@ inline bool out_bounds(T x,T min,T max){
 }
 
 template<class T>
-void ugly_sort(T *t,int* heurs, int count)
+inline void ugly_sort(T *t,int* heurs, int count)
 {
   bool loop;
   do{
@@ -52,7 +54,25 @@ void ugly_sort(T *t,int* heurs, int count)
   }while(loop);
 }
 
-template<class T>
-inline T sqrt(T x) {
-  return (T)std::sqrt((T)x);
+inline bits64 left_shift_internal(std::true_type,bits64 lhs,int rhs){
+  return lhs << rhs; 
+}
+
+inline bits64 left_shift_internal(std::false_type,bits64 lhs,int rhs){
+  return lhs >> (-rhs);
+}
+
+
+template<int rhs>
+inline bits64 left_shift(bits64 lhs){
+  constexpr bool is_positive_shift = (rhs > 0);
+  typedef std::integral_constant<bool,is_positive_shift> is_positive_shift_t;
+  return left_shift_internal(is_positive_shift_t(),lhs,rhs);
+}
+
+template<int rhs>
+inline bits64 right_shift(bits64 lhs){
+  constexpr bool is_negative_shift = (rhs < 0);
+  typedef std::integral_constant<bool,is_negative_shift> is_negative_shift_t;
+  return left_shift_internal(is_negative_shift_t(),lhs,-rhs);
 }
