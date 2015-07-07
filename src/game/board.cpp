@@ -130,9 +130,7 @@ board* board::get_children(board* out_begin) const
 }
 
 board* board::get_children(board* out, bits64 moves) const
-{
-  assert(out);
-  
+{  
   while(moves != 0ull){
     int move_id = bits64_find_first(moves);
     *out = *this;
@@ -333,50 +331,45 @@ std::string board::to_string() const {
 }
 
 board::board(const std::string& in){
-  
-  try{
-    if(in.length() != 32){
-      throw 0;
-    }
-    
-    opp = me = 0ull;
-    
-    unsigned long long x;
-    for(int i=0;i<16;i++){
-      if((in[i]>='0') && (in[i]<='9')){
-        x = in[i]-'0';
-      }
-      else if((in[i]>='a') && (in[i]<='f')){
-        x = 10 + in[i] - 'a';      
-      }
-      else{
-        throw 1;
-      }
-      me |= ((x & 0xF) << (i*4));
-    }
-    
-    for(int i=0;i<16;i++){
-      if((in[16+i]>='0') && (in[16+i]<='9')){
-        x = in[16+i]-'0';
-      }
-      else if((in[16+i]>='a') && (in[16+i]<='f')){
-        x = 10 + in[16+i] - 'a';      
-      }
-      else{
-        throw 2;
-      }
-      opp |= ((x & 0xF) << (i*4));
+
+  opp = me = 0ull;
+  bool error = false;
+  if(in.length() != 32){
+    error = true;
+  }
+  for(unsigned i=0;i<in.length();++i){
+    if(out_bounds(in[i],'0','9') || out_bounds(in[i],'a','f')){
+      error = true;
     }
   }
-  catch(int i){
-    me = opp = 0ull;
-    std::cout << "ERROR: invalid board format fed to board(std::string): ";
-    std::cout << in << "\n";
-    std::cout << "Exception " << i << '\n';
+  
+  if(error){
+    std::cerr << "ERROR in board::board(): invalid string: \"" << in << "\".\n";
     return;
-    
   }
   
+  
+  unsigned long long x;
+  for(int i=0;i<16;i++){
+    if((in[i]>='0') && (in[i]<='9')){
+      x = in[i]-'0';
+    }
+    else if((in[i]>='a') && (in[i]<='f')){
+      x = 10 + in[i] - 'a';      
+    }
+    me |= ((x & 0xF) << (i*4));
+  }
+  
+  for(int i=0;i<16;i++){
+    if((in[16+i]>='0') && (in[16+i]<='9')){
+      x = in[16+i]-'0';
+    }
+    else if((in[16+i]>='a') && (in[16+i]<='f')){
+      x = 10 + in[16+i] - 'a';      
+    }
+    opp |= ((x & 0xF) << (i*4));
+  }
+
   
 }
 
