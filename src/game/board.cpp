@@ -338,7 +338,7 @@ board::board(const std::string& in){
     error = true;
   }
   for(unsigned i=0;i<in.length();++i){
-    if(out_bounds(in[i],'0','9') || out_bounds(in[i],'a','f')){
+    if(out_bounds(in[i],'0','9') && out_bounds(in[i],'a','f')){
       error = true;
     }
   }
@@ -354,7 +354,7 @@ board::board(const std::string& in){
     if((in[i]>='0') && (in[i]<='9')){
       x = in[i]-'0';
     }
-    else if((in[i]>='a') && (in[i]<='f')){
+    else{
       x = 10 + in[i] - 'a';      
     }
     me |= ((x & 0xF) << (i*4));
@@ -364,7 +364,7 @@ board::board(const std::string& in){
     if((in[16+i]>='0') && (in[16+i]<='9')){
       x = in[16+i]-'0';
     }
-    else if((in[16+i]>='a') && (in[16+i]<='f')){
+    else{
       x = 10 + in[16+i] - 'a';      
     }
     opp |= ((x & 0xF) << (i*4));

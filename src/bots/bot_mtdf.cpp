@@ -244,8 +244,7 @@ int bot_mtdf::null_window(int alpha,int beta)
       heur = -null_window<sort,exact>(-beta,-alpha);
       inspected.switch_turn();
     }
-    heur = (heur < beta) ? alpha : beta;
-    return heur;
+    return (heur < beta) ? alpha : beta;
   }
   
 
@@ -304,25 +303,20 @@ int bot_mtdf::null_window(int alpha,int beta)
     int move_normalised = bits64_find_first(bits64_rotate(bits64_set[move],rot));
     value.best_move = move_normalised;
     if(it == hash_table.end()){
-      value.lower_bound = MIN_PERFECT_HEURISTIC;
-      value.upper_bound = MAX_PERFECT_HEURISTIC;
-      if(cutoff){
-        value.lower_bound = max(value.lower_bound,alpha);
-      }
-      else{
-        value.upper_bound = min(value.upper_bound,beta);
-      }
+      it = hash_table.insert(std::pair<const board,ht_data>(inspected,ht_data())).first;
+      it->second.lower_bound = MIN_PERFECT_HEURISTIC;
+      it->second.upper_bound = MAX_PERFECT_HEURISTIC;
     }
     else{
       value = it->second;
-      if(cutoff){
-        value.lower_bound = max(value.lower_bound,alpha);
-      }
-      else{
-        value.upper_bound = min(value.upper_bound,beta);
-      }
     }
-    hash_table[inspected] = value;
+    
+    if(cutoff){
+      it->second.lower_bound = max(it->second.lower_bound,alpha);
+    }
+    else{
+      it->second.upper_bound = min(it->second.upper_bound,beta);
+    }
   }
 #endif
 
