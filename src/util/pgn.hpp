@@ -9,6 +9,13 @@
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 
+struct pgn_task_t{
+  std::string filename;
+  int search_depth,perfect_depth;
+};
+
+
+
 class pgn{
     
   std::map<std::string,std::string> data;

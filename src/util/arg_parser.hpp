@@ -40,7 +40,6 @@ protected:
   typedef std::map<std::string,int(T::*)()> func_map_t;
   func_map_t func_map;
   
-  
 public:
   
   arg_parser_base(int _argc,const char** _argv);

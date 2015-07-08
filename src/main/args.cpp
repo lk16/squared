@@ -4,10 +4,6 @@ squared_args::squared_args(int argc,const char **argv):
   arg_parser_base<squared_args>(argc,argv),
   gc()
 {
-  show_flag = false;
-  start_windowed_game = true;
-  use_book = true;
-  
   func_map["--help"] = &squared_args::show_help;
   func_map["-h"] = &squared_args::show_help;
   func_map["--testing"] = &squared_args::testing_area_mask;
@@ -16,24 +12,26 @@ squared_args::squared_args(int argc,const char **argv):
   func_map["-l"] = &squared_args::learn;
   func_map["--randomize"] = &squared_args::randomize_board;
   func_map["-r"] = &squared_args::randomize_board;
-  func_map["-lb"] = &squared_args::set_black_level;
-  func_map["-lw"] = &squared_args::set_white_level;
   func_map["--board"] = &squared_args::set_board;
   func_map["-b"] = &squared_args::set_board;
   func_map["--compress-book"] = &squared_args::compress_book;
   func_map["-cb"] = &squared_args::compress_book;
-  func_map["-q"] = &squared_args::minus_q_flag;
+  func_map["-q"] = &squared_args::quit_if_game_over;
   func_map["-nb"] = &squared_args::no_book;
   func_map["--bot-type"] = &squared_args::set_bot_type;
   func_map["--loop"] = &squared_args::loop_game;
   func_map["--speed-test"] = &squared_args::speed_test;
   func_map["--pgn"] = &squared_args::process_pgn;
   func_map["--xot"] = &squared_args::use_xot;
+  func_map["--lvl"] = &squared_args::set_level;
+  func_map["-bbot"] = &squared_args::add_black_bot;
+  func_map["-wbot"] = &squared_args::add_white_bot;
+  
 }
 
 int squared_args::use_xot()
 {
-  gc.board_state.b.xot();
+  gc->use_xot = true;
   return 1;
 }
 
@@ -42,16 +40,11 @@ int squared_args::process_pgn()
   if(!has_enough_args(3)){
     return PARSING_ERROR;
   }
-  start_windowed_game = false;
-  pgn p(get_arg(3));
-  bot_base* bot = bot_registration::bots()[gc.bot_type]();
-  int level[2];
-  level[0] = from_str<int>(get_arg(1));
-  level[1] = from_str<int>(get_arg(2));
-  bot->set_search_depth(level[0],level[1]);
-  bot->disable_shell_output();
-  std::cout << p.analyse(bot,true,true);
-  delete bot;
+  gc->start_windowed_game = false;
+  gc->pgn_task = new pgn_task_t;
+  gc->pgn_task->search_depth = from_str<int>(std::string(get_arg(1)));
+  gc->pgn_task->perfect_depth = from_str<int>(std::string(get_arg(2)));
+  gc->pgn_task->filename = get_arg(3);
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -72,24 +65,19 @@ int squared_args::set_bot_type()
     std::cout << '\n';
     return PARSING_ERROR;
   } 
-  gc.bot_type = name;
+  gc->bot_type = name;
   return 2;
 }
 
 int squared_args::loop_game()
 {
-  gc.loop_game = true;
+  gc->loop_game = true;
   return 1;
 }
 
 int squared_args::no_book()
 {
-  use_book = false;
-  for(int i=0;i<2;i++){
-    if(gc.bot[i]){
-      gc.bot[i]->disable_book();
-    }
-  }
+  gc->use_book = false;
   return 1;
 }
 
@@ -115,18 +103,18 @@ int squared_args::show_help(){
   "This can only be used after the appropriate -l[w|b] has been used.\n\n"
   "-q\n"
   "Quit program when game is finished\n\n";
-  start_windowed_game = false;
+  gc->start_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
 int squared_args::show_board(){
-  start_windowed_game = false;
-  show_flag = true;
+  gc->start_windowed_game = false;
+  gc->show_board_flag = true;
   return 1;
 }
 
 int squared_args::testing_area_mask(){
-  start_windowed_game = false;
+  gc->start_windowed_game = false;
   testing_area();
   return PARSING_IGNORE_OTHER_ARGS;
 }
@@ -135,10 +123,8 @@ int squared_args::learn(){
   if(!has_enough_args(1)){
     return PARSING_ERROR;
   }
-  start_windowed_game = false;
-  int threads = from_str<int>(get_arg(1));
-  book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
-  book.learn(gc.bot_type,threads);
+  gc->start_windowed_game = false;
+  gc->learn_threads = from_str<int>(get_arg(1));
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -146,79 +132,59 @@ int squared_args::set_board(){
   if(!has_enough_args(1)){
     return PARSING_ERROR;
   }
-  gc.board_state.b = board(get_arg(1));
+  gc->board_state.b = board(get_arg(1));
   return 2;
 }
 
-int squared_args::set_level(int color)
+int squared_args::set_level()
 {
   if(!has_enough_args(2)){
     return PARSING_ERROR;
   }
-  int lvl = from_str<int>(get_arg(1));
-  int perf_lvl = from_str<int>(get_arg(2));
-  gc.add_bot(color,lvl,perf_lvl);
-  if(!use_book){
-    gc.bot[color]->disable_book();
-  }
+  gc->search_depth = from_str<int>(get_arg(1));
+  gc->perfect_depth = from_str<int>(get_arg(2));
   return 3;
 }
 
-
-int squared_args::set_black_level()
+int squared_args::add_black_bot()
 {
-  return set_level(BLACK);
+  gc->add_bot(BLACK);
+  return 1;
 }
 
-int squared_args::set_white_level()
+
+int squared_args::add_white_bot()
 {
-  return set_level(WHITE);
+  gc->add_bot(WHITE);
+  return 1;
 }
+
 
 int squared_args::randomize_board()
 {
   if(!has_enough_args(1)){
     return PARSING_ERROR;    
   }
-  board* b = &gc.board_state.b;
-  int move_count = from_str<int>(get_arg(1));
-  *b = b->do_random_moves(move_count);
-  return 2;  
+  gc->random_moves = from_str<int>(get_arg(1));
+  return 2;
 }
 
 int squared_args::compress_book()
 {
-  book_t book(BOOK_PATH + gc.bot_type + "_book.csv");
-  book.clean();
-  start_windowed_game = false;
+  gc->start_windowed_game = false;
+  gc->compress_book = true;
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
-int squared_args::minus_q_flag()
+int squared_args::quit_if_game_over()
 {
-  gc.quit_if_game_over = true;
+  gc->quit_if_game_over = true;
   return 1;
 }
 
 int squared_args::speed_test()
 {
-  bot_base* bot = bot_registration::bots()[gc.bot_type]();
-  bot->disable_shell_output();
-  bot->disable_book();
-  std::cout << "testing speed of bot_" << gc.bot_type << " on this board:\n";
-  std::cout << gc.board_state.b.to_ascii_art(gc.board_state.turn);
-  for(int i=1;i<=60;i++){
-    board b,dummy;
-    b = gc.board_state.b;
-    bot->set_search_depth(i,i);
-    bot->do_move(&b,&dummy);
-    long long speed = bot->stats.get_nodes_per_second();
-    std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
-    std::cout << "\ttook " << bot->stats.get_seconds() << " seconds.\n";
-    if(bot->stats.get_seconds() > 10.0){
-      break;
-    }
-  }
-  start_windowed_game = false;
+  gc->run_speed_test = true;
+  gc->start_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;
 }

@@ -7,6 +7,8 @@
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 #include "util/csv.hpp"
+#include "util/pgn.hpp"
+
 
 class main_window;
 
@@ -23,7 +25,7 @@ struct game_control{
   };
   
   
-  // NULL pointer means human player 
+  // robots (NULL means human)
   bot_base* bot[2]; 
   
   // window
@@ -35,16 +37,32 @@ struct game_control{
   // undo and redo data
   std::stack<board_state_t> undo_stack,redo_stack;
  
+  
+  // game modifiers  
   bool quit_if_game_over;
   bool loop_game;
+  bool show_board_flag;
+  bool use_book;
+  bool use_xot;
   
+  // behaviour modifiers
+  bool run_speed_test;
+  bool start_windowed_game;
+  bool compress_book;
+  pgn_task_t* pgn_task;
+  int random_moves;
+  int learn_threads;
+  
+  
+  // bot modifiers
   std::string bot_type;
+  int search_depth,perfect_depth;
   
   
   game_control();
   ~game_control();
   
-  void add_bot(int color, int _depth, int _perfect_depth);
+  void add_bot(int color);
   void remove_bot(int color);
   bot_base* get_bot_to_move();
   
@@ -57,6 +75,7 @@ struct game_control{
   void on_human_do_move(int field_id);
   void on_bot_do_move();
   void on_any_move();
+  
   
   bool timeout_handler();
   

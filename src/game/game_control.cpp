@@ -3,14 +3,26 @@
 
 game_control::game_control()
 {
-  bot[0] = bot[1] = NULL;
-  board_state.b.reset();
-  board_state.turn = BLACK;
   quit_if_game_over = false;
   loop_game = false;
+  show_board_flag = false;
+  use_book = false;
+  use_xot = false;
+  
+  run_speed_test = false;
+  start_windowed_game = true;
+  compress_book = false;
+  pgn_task = NULL;
+  random_moves = 0;
+  learn_threads = 0;
+  
   bot_type = "moves";
+  search_depth = 10;
+  perfect_depth = 16;
+  
+  board_state.b.reset();
+  board_state.turn = BLACK;
 }
-
 
 
 game_control::~game_control()
@@ -170,12 +182,9 @@ void game_control::on_game_ended()
 bool game_control::timeout_handler()
 {
   if(!board_state.b.has_valid_moves()){
-    board_state.switch_turn();
-    if(!board_state.b.has_valid_moves()){
-      board_state.switch_turn();
+    if(!board_state.b.count_opponent_moves() != 0){
       return true;
     }
-    board_state.switch_turn();
   }
   if(bot[board_state.turn]){
     on_bot_do_move();  
@@ -183,24 +192,24 @@ bool game_control::timeout_handler()
   return true;
 }
 
-void game_control::add_bot(int c, int d,int pd)
+void game_control::add_bot(int colour)
 {
-  assert(c==0 || c==1);
+  assert(colour==BLACK || colour==WHITE);
   
-  if(bot[c]){
-    delete bot[c];
+  if(bot[colour]){
+    delete bot[colour];
   }
-  bot[c] = bot_registration::bots()[bot_type](); 
-  bot[c]->set_search_depth(d,pd);
+  bot[colour] = bot_registration::bots()[bot_type](); 
+  bot[colour]->set_search_depth(search_depth,perfect_depth);
 }
 
-void game_control::remove_bot(int c)
+void game_control::remove_bot(int colour)
 {
-  assert(c==WHITE || c==BLACK);
+  assert(colour==BLACK || colour==WHITE);
   
-  if(bot[c]){
-    delete bot[c];
-    bot[c] = NULL;
+  if(bot[colour]){
+    delete bot[colour];
+    bot[colour] = NULL;
   }
 }
 
