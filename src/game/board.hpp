@@ -298,32 +298,6 @@ inline void board::undo_move(bits64 move_bit,bits64 undo_data)
   opp = tmp | undo_data;
 }
 
-#if 0
-inline bits64 board::get_some_moves(const bits64 opp_mask, const int dir) const
-{
-  // this funtion is a modified version of code from Edax
-  
-  // 1-stage Parallel Prefix (intermediate between kogge stone & sequential) 
-  // 6 << + 6 >> + 7 | + 10 &
-  bits64 flip_l, flip_r,mask_l, mask_r;
-  const bits64 dir2 = dir + dir;
-
-  flip_l  = opp_mask & (me << dir);
-  flip_l |= opp_mask & (flip_l << dir);
-  mask_l  = opp_mask & (opp_mask << dir);
-  flip_l |= mask_l & (flip_l << dir2);
-  flip_l |= mask_l & (flip_l << dir2);
- 
-  flip_r  = opp_mask & (me >> dir);
-  flip_r |= opp_mask & (flip_r >> dir);
-  mask_r  = opp_mask & (opp_mask >> dir);
-  flip_r |= mask_r & (flip_r >> dir2);
-  flip_r |= mask_r & (flip_r >> dir2);
-
-  return (flip_l << dir) | (flip_r >> dir);
-}
-#endif
-
 inline bits64 board::get_valid_moves() const
 {
 

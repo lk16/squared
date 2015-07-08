@@ -6,6 +6,16 @@
 
 #include "util/const.hpp"
 
+/* HOW TO USE:
+ * create a class x_parser (where x could be the program name)
+ * that inherits from arg_parser_base<x_parser>
+ * 
+ * x_parser should have modifier functions with this signature:
+ * int x_parser::handle_some_flag()
+ * 
+ * 
+ * 
+ */
 
 template<class T>
 class arg_parser_base{
