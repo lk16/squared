@@ -183,7 +183,7 @@ void book_t::learn_execute_job(bot_base* bot,learn_job* job){
 
 
 bool book_t::add(const board* b,const book_t::value* bv)
-{
+{  
   rw_lock_write_guard guard(container_lock);  
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
@@ -193,12 +193,12 @@ bool book_t::add(const board* b,const book_t::value* bv)
   board after_normalized = after.rotate(rot);
   int move = before_normalized.get_move_index(&after_normalized);
   std::string str = b->to_database_string();
-  citer it = container.find(str);
+  iter it = container.find(str);
   
   book_t::value fixed_bv = *bv;
   fixed_bv.best_move = move;
   
-  if(it==container.end() || !is_suitable_entry(*it)){
+  if(!is_suitable_entry(*it)){
     return false;  
   }
   
@@ -226,6 +226,7 @@ void book_t::value::add_to_line(csv::line_t* l) const
 
 void book_t::clean() const
 {
+ 
   /* test if file exists, return if not */
   if(access(get_filename().c_str(), F_OK) == -1){
     std::cout << "file \"" << get_filename() << "\" not found." << std::endl;

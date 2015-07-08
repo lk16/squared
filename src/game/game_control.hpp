@@ -47,8 +47,8 @@ struct game_control{
   
   // behaviour modifiers
   bool run_speed_test;
-  bool start_windowed_game;
   bool compress_book;
+  bool run_windowed_game;
   pgn_task_t* pgn_task;
   int random_moves;
   int learn_threads;
@@ -80,7 +80,12 @@ struct game_control{
   bool timeout_handler();
   
   void connect_timeout_signal();
-    
+  
+  void run();
+  
+  // does special tasks, if any 
+  // returns true if one is run
+  bool do_special_tasks();
 };
 
 

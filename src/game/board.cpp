@@ -422,7 +422,7 @@ board board::to_database_board() const
   return min; 
 }
 
-void board::count_frontier_discs(int* me,int* opp) const
+void board::get_frontier_discs(int* _me,int* _opp) const
 {
   bits64 both = get_non_empty_fields();
   bits64 mask = both;
@@ -436,7 +436,7 @@ void board::count_frontier_discs(int* me,int* opp) const
   mask &= ((both >> 8));
   mask &= ((both >> 9) & 0x7F7F7F7F7F7F7F7F);
   
-  *me = mask & this->me;
-  *opp = mask & this->opp;
+  *_me = mask & this->me;
+  *_opp = mask & this->opp;
   
 }

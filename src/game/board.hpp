@@ -124,7 +124,7 @@ struct board{
   int count_opponent_moves() const;
   
   // counts frontier discs
-  void count_frontier_discs(int* me,int* opp) const;
+  void get_frontier_discs(int* me,int* opp) const;
   
   // returns a bitset of empty fields
   bits64 get_empty_fields() const;

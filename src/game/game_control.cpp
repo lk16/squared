@@ -10,15 +10,18 @@ game_control::game_control()
   use_xot = false;
   
   run_speed_test = false;
-  start_windowed_game = true;
   compress_book = false;
   pgn_task = NULL;
   random_moves = 0;
   learn_threads = 0;
+  run_windowed_game = true;
   
   bot_type = "moves";
   search_depth = 10;
   perfect_depth = 16;
+  
+  bot[BLACK] = NULL;
+  bot[WHITE] = NULL;
   
   board_state.b.reset();
   board_state.turn = BLACK;
@@ -29,7 +32,82 @@ game_control::~game_control()
 {
   remove_bot(BLACK);
   remove_bot(WHITE);
+  if(pgn_task){
+    delete pgn_task;
+  }
 }
+
+void game_control::run()
+{
+  if(do_special_tasks()){
+    return;
+  }
+  if(run_windowed_game){
+    Gtk::Main kit(0,NULL);
+    main_window window;
+    mw = &window;
+    window.control = this;
+    window.update_fields();
+    connect_timeout_signal();
+    on_new_game();
+    Gtk::Main::run(window);
+  }
+}
+
+bool game_control::do_special_tasks()
+{
+  if(show_board_flag){
+    const game_control::board_state_t* state = &board_state;
+    std::cout << state->b.to_ascii_art(state->turn);
+    return true;
+  }
+  
+  if(pgn_task){
+    const pgn_task_t* task = pgn_task;
+    bot_base* pgn_bot = bot_registration::bots()[bot_type]();
+    pgn_bot->set_search_depth(task->search_depth,task->perfect_depth);
+    pgn_bot->disable_shell_output();
+    pgn pgn_file(task->filename);
+    std::cout << pgn_file.analyse(pgn_bot,true,true);
+    delete pgn_bot;
+    return true;
+  }
+  
+  if(run_speed_test){
+    bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
+    speedrun_bot->disable_shell_output();
+    speedrun_bot->disable_book();
+    std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
+    std::cout << board_state.b.to_ascii_art(board_state.turn);
+    for(int i=1;i<=60;i++){
+      board dummy;
+      speedrun_bot->set_search_depth(i,i);
+      speedrun_bot->do_move(&board_state.b,&dummy);
+      long long speed = speedrun_bot->stats.get_nodes_per_second();
+      std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
+      std::cout << "\ttook " << speedrun_bot->stats.get_seconds() << " seconds.\n";
+      if(speedrun_bot->stats.get_seconds() > 10.0){
+        break;
+      }
+    }
+    return true;
+  }
+  
+  if(learn_threads != 0){
+    std::cout << "learn book: " << BOOK_PATH + bot_type + "_book.csv" << '\n';
+    book_t(BOOK_PATH + bot_type + "_book.csv").learn(bot_type,learn_threads);
+    return true;
+  }
+  
+  if(compress_book){
+    book_t(BOOK_PATH + bot_type + "_book.csv").clean();
+    return true;
+  }
+  
+  return false;
+}
+
+
 
 void game_control::connect_timeout_signal()
 {
@@ -139,6 +217,11 @@ void game_control::on_new_game()
   } 
   
   board_state.b.reset();
+  if(use_xot){
+    board_state.b.xot();
+  }
+  
+  
   board_state.turn = BLACK;
   mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
