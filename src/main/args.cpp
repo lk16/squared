@@ -4,43 +4,43 @@ squared_args::squared_args(int argc,const char **argv):
   arg_parser_base<squared_args>(argc,argv),
   gc()
 {
-  add_modifier("--testing",&squared_args::testing_area_mask,"Run test area. For developers only.");
+  add_modifier("--testing",&squared_args::testing_area_mask,"","Run test area. For developers only.");
   duplicate_modifier("-t","--testing");
   
-  add_modifier("--show",&squared_args::show_board,"Print a specified board to standard output and exit. Useful for developers.");
+  add_modifier("--show",&squared_args::show_board,"","Print a specified board to standard output and exit. Useful for developers.");
   duplicate_modifier("-s","--show");
   
-  add_modifier("--learn",&squared_args::learn,"Learn the book.");
+  add_modifier("--learn",&squared_args::learn,"<num_threads>","Learn the book with.");
   duplicate_modifier("-l","--learn");
   
-  add_modifier("--random-moves",&squared_args::randomize_board,"Does specified number of random moves from start position.");
+  add_modifier("--random-moves",&squared_args::randomize_board,"<num_moves>","Transform board by doing random moves.");
   duplicate_modifier("-r","--random-moves");
   
-  add_modifier("--board",&squared_args::set_board,"Set the start board.");
+  add_modifier("--board",&squared_args::set_board,"<board_string>,","Set the start board.");
   duplicate_modifier("-b","--board");
   
-  add_modifier("--compress-book",&squared_args::compress_book,"Remove incorrect and duplicate entries from the book.");
+  add_modifier("--compress-book",&squared_args::compress_book,"","Remove incorrect and duplicate entries from the book.");
   duplicate_modifier("-cb","--compress-book");
   
-  add_modifier("-q",&squared_args::quit_if_game_over,"Quit the program after one game.");
+  add_modifier("-q",&squared_args::quit_if_game_over,"","Quit the program after one game.");
   
-  add_modifier("-nb",&squared_args::no_book,"Disable the opening book.");
+  add_modifier("-nb",&squared_args::no_book,"","Disable the opening book.");
   
-  add_modifier("--bot-type",&squared_args::set_bot_type,"Specify the bot type to use.");
+  add_modifier("--bot-type",&squared_args::set_bot_type,"<bot_name>","Specify the bot type to use.");
   
-  add_modifier("--loop",&squared_args::loop_game,"Restart game automatically after a game has finished.");
+  add_modifier("--loop",&squared_args::loop_game,"","Restart game automatically after a game has finished.");
   
-  add_modifier("--speed-test",&squared_args::speed_test,"Run the speed test. Useful for developers.");
+  add_modifier("--speed-test",&squared_args::speed_test,"","Run the speed test. Useful for developers.");
   
-  add_modifier("--pgn",&squared_args::process_pgn,"Process PGN files.");
+  add_modifier("--pgn",&squared_args::process_pgn,"<path_to_pgn>","Process PGN files.");
   
-  add_modifier("--xot",&squared_args::use_xot,"Run a xot game.");
+  add_modifier("--xot",&squared_args::use_xot,"","Run a xot game.");
   
-  add_modifier("-lvl",&squared_args::set_level,"Set the bot level. Needs two integers behind it.");
+  add_modifier("-lvl",&squared_args::set_level,"<search_depth> <perfect_depth>","Set the bot level. Needs two integers behind it.");
   
-  add_modifier("-bbot",&squared_args::add_black_bot,"Enable a white bot. Can be used in combination with black bot.");
+  add_modifier("-bbot",&squared_args::add_black_bot,"","Enable a white bot. Can be used in combination with black bot.");
   
-  add_modifier("-wbot",&squared_args::add_white_bot,"Enable a black bot. Can be used in combination with white bot.");
+  add_modifier("-wbot",&squared_args::add_white_bot,"","Enable a black bot. Can be used in combination with white bot.");
   
 }
 
@@ -52,13 +52,11 @@ int squared_args::use_xot()
 
 int squared_args::process_pgn()
 {
-  if(!has_enough_subargs(3)){
+  if(!has_enough_subargs(1)){
     return PARSING_ERROR;
   }
   gc->pgn_task = new pgn_task_t;
-  gc->pgn_task->search_depth = from_str<int>(std::string(get_subarg(1)));
-  gc->pgn_task->perfect_depth = from_str<int>(std::string(get_subarg(2)));
-  gc->pgn_task->filename = get_subarg(3);
+  gc->pgn_task->filename = get_subarg(1);
   gc->run_windowed_game = false;
   return PARSING_IGNORE_OTHER_ARGS;
 }

@@ -111,7 +111,7 @@ bool game_control::do_special_tasks()
 
 void game_control::connect_timeout_signal()
 {
-  Glib::signal_timeout().connect(sigc::mem_fun(*this,&game_control::timeout_handler),20);
+  Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
 }
 
 

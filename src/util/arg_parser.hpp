@@ -35,7 +35,7 @@ private:
   
   struct modifier{
     int(T::*func)();
-    std::string description;
+    std::string description,sub_args;
   };
   
   // maps arguments to a function that modifies the argument state
@@ -47,7 +47,7 @@ public:
   
   arg_parser_base(int _argc,const char** _argv);
   
-  void add_modifier(const std::string& arg,int(T::*func)(),const std::string& description);
+  void add_modifier(const std::string& arg,int(T::*func)(),const std::string& sub_args,const std::string& description);
   
   void duplicate_modifier(const std::string& arg,const std::string& original);
   
@@ -68,7 +68,7 @@ inline arg_parser_base<T>::arg_parser_base(int _argc,const char** _argv):
 }
 
 template<class T>
-inline void arg_parser_base<T>::add_modifier(const std::string& arg, int(T::*func)(),const std::string& description)
+inline void arg_parser_base<T>::add_modifier(const std::string& arg, int(T::*func)(),const std::string& sub_args,const std::string& description)
 {
   if(arg == "-h" || arg == "--help"){
     std::cerr << "WARNING from arg_parser_base::add_modifier(): you can not add a help function manually.\n";
@@ -77,6 +77,7 @@ inline void arg_parser_base<T>::add_modifier(const std::string& arg, int(T::*fun
   modifier mod;
   mod.func = func;
   mod.description = description;
+  mod.sub_args = sub_args;
   func_map[arg] = mod;
 }
 
@@ -125,7 +126,7 @@ inline bool arg_parser_base<T>::parse()
     }
   }
   if(error_flag){
-    std::cout << "Invalid argument syntax. For help use: -h or --help, optionally with a flag you want help with.\n";
+    std::cout << "Argument error. For help use: -h or --help, optionally supplied with a flag you want help with.\n";
   }
   return !error_flag;
 }
@@ -150,12 +151,12 @@ inline const char* arg_parser_base<T>::get_subarg(int n) const
 template<class T>
 inline void arg_parser_base<T>::print_specific_help(const std::string& arg) const
 {
-  std::cout << arg << '\n';
   auto it = func_map.find(arg);  
   if(it == func_map.end()){
     std::cout << "Flag \"" << arg << "\" does not exist.\n";
     return;
   }
+  std::cout << arg << ' ' << it->second.sub_args << '\n';
   std::cout << it->second.description << '\n';
 }
 
