@@ -8,7 +8,7 @@
 #include "bots/bot_base.hpp"
 #include "util/csv.hpp"
 #include "util/pgn.hpp"
-
+#include "util/tournament.hpp"
 
 class main_window;
 
@@ -52,6 +52,8 @@ struct game_control{
   pgn_task_t* pgn_task;
   int random_moves;
   int learn_threads;
+  tournament_t* tournament;
+  
   
   
   // bot modifiers

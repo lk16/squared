@@ -42,6 +42,7 @@ squared_args::squared_args(int argc,const char **argv):
   
   add_modifier("-wbot",&squared_args::add_white_bot,"","Enable a black bot. Can be used in combination with white bot.");
   
+  add_modifier("--tournament",&squared_args::tournament_flag,"","Run a tournament between bots.");
 }
 
 int squared_args::use_xot()
@@ -172,5 +173,16 @@ int squared_args::speed_test()
 {
   gc->run_windowed_game = false;
   gc->run_speed_test = true;
+  return PARSING_IGNORE_OTHER_ARGS;
+}
+
+int squared_args::tournament_flag()
+{
+  gc->tournament = new tournament_t;
+  
+  for(int i=1;i<=7;i+=2){
+    std::string name = "moves lvl " + to_str<int>(i);
+    gc->tournament->add_entrant("moves",name,i,i);
+  }
   return PARSING_IGNORE_OTHER_ARGS;
 }

@@ -5,11 +5,13 @@
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 
-#define MAX_TOURNAMENT_ENTRANTS (100)
-#define TOURNAMENT_INIT_RATING (1500)
-#define K_FACTOR (32.0)
 
-class tournament{
+
+class tournament_t{
+  
+  const int TOURNAMENT_INIT_RATING = 1500;
+  const double K_FACTOR = 32.0;
+  
   
   enum game_result{
     WHITE_WINS,
@@ -20,7 +22,7 @@ class tournament{
   struct entrant{
     bot_base* bot;
     int rating;
-    std::string name;
+    std::string nick;
     
     bool operator<(const entrant& rhs) const{
       return rating < rhs.rating;
@@ -29,26 +31,18 @@ class tournament{
   
   std::vector<entrant> entrants;
   
-  enum game_result play_othello_game(struct board b,struct player* black,struct player* white);
+  game_result play_othello_game(bot_base* black,bot_base* white);
 
-  void entrant_update_rating(struct entrant* black,struct entrant* white,enum game_result res);
+  void entrant_update_rating(entrant* black,entrant* white,game_result res);
 
-  void play_tournament(struct tournament* t);
-
-  void show_tournament_stats(const struct tournament* t);
-
-  int entrant_compare(const void* lhs,const void* rhs);
-
-  void tournament_add(struct tournament* t,enum player_type type,int depth,int perfect_depth,FILE* out);
+public:
+  
+  tournament_t() = default;
+  ~tournament_t();
+  
+  void run();
+  void show_stats() const;
+  void add_entrant(const std::string& bot_name,const std::string& nick,int depth,int perfect_depth);
   
 };
 
-
-
-
-
-
-struct tournament{
-  int num_entrants;
-  struct entrant entrants[MAX_TOURNAMENT_ENTRANTS];
-};

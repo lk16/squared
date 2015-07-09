@@ -4,6 +4,7 @@
 #include "main/testing.hpp"
 #include "util/arg_parser.hpp"
 #include "util/pgn.hpp"
+#include "util/tournament.hpp"
 
 struct squared_args:
   public arg_parser_base<squared_args>
@@ -38,4 +39,5 @@ struct squared_args:
   int speed_test();
   int process_pgn();
   int use_xot();
+  int tournament_flag();
 };

@@ -15,6 +15,7 @@ game_control::game_control()
   random_moves = 0;
   learn_threads = 0;
   run_windowed_game = true;
+  tournament = NULL;
   
   bot_type = "moves";
   search_depth = 10;
@@ -101,6 +102,11 @@ bool game_control::do_special_tasks()
   
   if(compress_book){
     book_t(BOOK_PATH + bot_type + "_book.csv").clean();
+    return true;
+  }
+  
+  if(tournament){
+    tournament->run();
     return true;
   }
   
