@@ -420,7 +420,7 @@ void bot_bully::do_move_normally(const board* b, board* res)
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": " << best_heur << std::endl;
+    output() << ": " << best_heur << '\n';
     
   }
   
@@ -467,7 +467,7 @@ void bot_bully::do_move_perfectly(const board* b, board* res)
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": " << ((best_heur <= 0) ? best_heur : (66 - best_heur)) << std::endl;
+    output() << ": " << ((best_heur <= 0) ? best_heur : (66 - best_heur)) << '\n';
   }
   
   *res = children[best_id];

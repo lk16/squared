@@ -146,7 +146,7 @@ void game_control::on_bot_do_move()
 void game_control::on_any_move()
 {  
   
-  std::cout << board_state.b.to_string() << std::endl;
+  std::cout << board_state.b.to_string() << '\n';
   
   board_state.switch_turn();
   
@@ -236,7 +236,7 @@ void game_control::on_new_game()
 void game_control::on_game_ended()
 {
   //board_state.b.show();
-  std::cout << board_state.b.to_string() << std::endl;
+  std::cout << board_state.b.to_string() << '\n';
   
   int b_count = bits64_count(board_state.b.opp);
   int w_count = bits64_count(board_state.b.me);
@@ -249,7 +249,7 @@ void game_control::on_game_ended()
   std::string text = "Game has ended. White (" + to_str<int>(w_count) + ") - Black (";
   text += to_str<int>(b_count)+ ")";
   
-  std::cout << text << std::endl;
+  std::cout << text << '\n';
   mw->update_status_bar(text);
   
   if(quit_if_game_over){

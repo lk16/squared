@@ -173,7 +173,7 @@ template<bool sort,bool exact>
 int bot_mtdf::null_window(int alpha,int beta)
 {
   
-#define USE_HASH_TABLE 1
+#define USE_HASH_TABLE 0
   
   stats.inc_nodes();
   
@@ -292,9 +292,10 @@ int bot_mtdf::null_window(int alpha,int beta)
     }
   }
   
-  add_hash_entry:
 
 #if USE_HASH_TABLE
+  add_hash_entry:
+
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
     board inspected_normalised = inspected.to_database_board();
     int rot = inspected.get_rotation(&inspected_normalised);

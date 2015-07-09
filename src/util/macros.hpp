@@ -6,7 +6,7 @@
 
 #ifndef NDEBUG
 
-#define SHOW_VAR(a) std::cout << LOCATION << #a << " = " << (a) << std::endl 
+#define SHOW_VAR(a) std::cout << LOCATION << #a << " = " << (a) << '\n' 
 #define SHOW_VAR2(a,b)     SHOW_VAR(a);      SHOW_VAR(b)
 #define SHOW_VAR3(a,b,c)   SHOW_VAR2(a,b);   SHOW_VAR(c)
 #define SHOW_VAR4(a,b,c,d) SHOW_VAR3(a,b,c); SHOW_VAR(d)
