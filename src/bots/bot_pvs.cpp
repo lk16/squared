@@ -204,11 +204,11 @@ void bot_pvs::do_move_search(const board* b, board* res)
   
   int best_heur,best_id=0;
   
-  best_heur = MIN_HEURISTIC;
+  best_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs<true,exact>(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,exact>(exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
