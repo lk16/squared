@@ -226,6 +226,9 @@ void game_control::on_new_game()
   if(use_xot){
     board_state.b.xot();
   }
+  if(random_moves != 0){
+    board_state.b = board_state.b.do_random_moves(random_moves);
+  }
   
   
   board_state.turn = BLACK;
