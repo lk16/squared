@@ -75,6 +75,8 @@ bool game_control::do_special_tasks()
   }
   
   if(run_speed_test){
+    board_state.b = board_state.b.do_random_moves(1);
+    
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
     speedrun_bot->disable_book();
@@ -86,7 +88,8 @@ bool game_control::do_special_tasks()
       speedrun_bot->do_move(&board_state.b,&dummy);
       long long speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
-      std::cout << "\ttook " << speedrun_bot->stats.get_seconds() << " seconds.\n";
+      std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
+      std::cout << speedrun_bot->stats.get_seconds() << " seconds.\n";
       if(speedrun_bot->stats.get_seconds() > 10.0){
         break;
       }

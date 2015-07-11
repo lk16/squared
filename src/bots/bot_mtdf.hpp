@@ -61,5 +61,5 @@ private:
   
   // performs null window search
   template<bool sort,bool exact>
-  int null_window(int alpha,int beta);
+  int null_window(int alpha);
 };

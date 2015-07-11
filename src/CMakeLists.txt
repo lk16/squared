@@ -19,12 +19,12 @@ set(OPTIMIZED_DEBUG_FLAGS
   "-I .. -std=c++0x -pthread -Wall -Wextra -g -O2 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
-set(OPTIMIZING_FLAGS
+set(OPTIMISING_FLAGS
   "-I .. -std=c++0x -pthread -Wall -Wextra -DNDEBUG -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
 )
 
 set(CMAKE_CXX_FLAGS 
-  ${OPTIMIZING_FLAGS}
+  ${OPTIMISING_FLAGS}
   #${OPTIMIZED_DEBUG_FLAGS}
   #${DEBUG_FLAGS}
 ) 

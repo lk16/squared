@@ -158,7 +158,7 @@ int bot_mtdf::mtdf(int f,int lower_bound)
     else{
       beta = g;
     }
-    g = -null_window<sort,exact>(-beta,1-beta);
+    g = -null_window<sort,exact>(-beta);
     if(g < beta){
       upper_bound = g;
     }
@@ -170,8 +170,9 @@ int bot_mtdf::mtdf(int f,int lower_bound)
 }
 
 template<bool sort,bool exact>
-int bot_mtdf::null_window(int alpha,int beta)
+int bot_mtdf::null_window(int alpha)
 {
+  
   
 #define USE_HASH_TABLE 0
   
@@ -182,11 +183,11 @@ int bot_mtdf::null_window(int alpha,int beta)
   }
 
   if(sort && ((!exact && moves_left<NORMAL_MOVE_SORT_DEPTH) || (exact && moves_left<PERFECT_MOVE_SORT_DEPTH))){
-    return null_window<false,exact>(alpha,beta); 
+    return null_window<false,exact>(alpha); 
   }
   
-  bool cutoff = false;
   int move = -1;
+  int res = alpha;
   
   bits64 valid_moves;
   
@@ -196,21 +197,20 @@ int bot_mtdf::null_window(int alpha,int beta)
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
     ht_iter = hash_table.find(inspected.to_database_board());
     if(ht_iter != hash_table.end()){
-      if(ht_iter->second.lower_bound >= beta){
-        return beta;
+      if(ht_iter->second.lower_bound >= alpha+1){
+        return alpha+1;
       }
       if(ht_iter->second.upper_bound <= alpha){
         return alpha;
       }    
       bits64 undo_data = inspected.do_move(ht_iter->second.best_move);
       moves_left--;
-      int score = -null_window<sort,exact>(-beta,-alpha);
+      int score = -null_window<sort,exact>(-alpha-1);
       moves_left++;
       inspected.undo_move(bits64_set[ht_iter->second.best_move],undo_data);
       move = ht_iter->second.best_move;
       if(score > alpha){
-        ++alpha;
-        cutoff = true;
+        ++res;
         goto add_hash_entry;
       }
     }
@@ -241,10 +241,10 @@ int bot_mtdf::null_window(int alpha,int beta)
       }
     }
     else{
-      heur = -null_window<sort,exact>(-beta,-alpha);
+      heur = -null_window<sort,exact>(-alpha-1);
       inspected.switch_turn();
     }
-    return (heur < beta) ? alpha : beta;
+    return res + (heur > alpha);
   }
   
 
@@ -256,16 +256,16 @@ int bot_mtdf::null_window(int alpha,int beta)
     if(sort){
       do_sorting(children,child_count);
     }
-    for(int i=0;!cutoff && i<child_count;++i){
+    for(int i=0;i<child_count;++i){
       move = children[i].get_move_index(&inspected);
       std::swap(inspected,children[i]);
       moves_left--;
-      int score = -null_window<sort,exact>(-beta,-alpha);
+      int score = -null_window<sort,exact>(-alpha-1);
       moves_left++;
       std::swap(inspected,children[i]);
       if(score > alpha){
-        ++alpha;
-        cutoff = true;
+        ++res;
+        break;
       }
     }
     
@@ -274,27 +274,28 @@ int bot_mtdf::null_window(int alpha,int beta)
     
   }
   else{
-    for(int i=0;!cutoff && i<9;i++){
+    for(int i=0;i<9;i++){
       bits64 location_moves = valid_moves & board::ordered_locations[i];
-      while(!cutoff && location_moves != 0ull){
+      while(location_moves != 0ull){
         move = bits64_find_first(location_moves);
         bits64 undo_data = inspected.do_move(move);
         moves_left--;
-        int score = -null_window<sort,exact>(-beta,-alpha);
+        int score = -null_window<sort,exact>(-alpha-1);
         moves_left++;
         inspected.undo_move(bits64_set[move],undo_data);
         location_moves &= bits64_reset[move];
         if(score > alpha){
-          ++alpha;
-          cutoff = true;
+          ++res;
+          goto add_hash_entry;
         }
       }
     }
   }
   
 
-#if USE_HASH_TABLE
   add_hash_entry:
+  
+#if USE_HASH_TABLE
 
   if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
     board inspected_normalised = inspected.to_database_board();
@@ -316,11 +317,11 @@ int bot_mtdf::null_window(int alpha,int beta)
       it->second.lower_bound = max(it->second.lower_bound,alpha);
     }
     else{
-      it->second.upper_bound = min(it->second.upper_bound,beta);
+      it->second.upper_bound = min(it->second.upper_bound,alpha+1);
     }
   }
 #endif
 
-  return alpha;
+  return res;
 }
 
