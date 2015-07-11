@@ -174,7 +174,7 @@ int bot_mtdf::null_window(int alpha)
 {
   
   
-#define USE_HASH_TABLE 0
+#define USE_HASH_TABLE 1
   
   stats.inc_nodes();
   
@@ -313,7 +313,7 @@ int bot_mtdf::null_window(int alpha)
       value = it->second;
     }
     
-    if(cutoff){
+    if(res > alpha){
       it->second.lower_bound = max(it->second.lower_bound,alpha);
     }
     else{
