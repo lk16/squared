@@ -66,19 +66,10 @@ private:
   
   // returns res
   template<bool exact>
-  int add_hash_entry(int alpha,int res,int move);
+  int update_hash_table(int alpha,int res,int move);
   
   
   template<bool exact>
-  inline bool suitable_hashtable_entry(){
-    int moves_done = inspected.count_discs() - discs_on_searched_board;
-    
-    if(exact){
-      return moves_done<=8;
-    }
-    else{
-      return moves_done<=6;
-    }
-  }
+  bool suitable_hashtable_entry();
 
 };
