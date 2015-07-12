@@ -76,21 +76,12 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   else{ 
     output() << "at depth " << get_search_depth() << '\n';
   }
-  
-  /*
-  if((exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH))
-    || ((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH)
-  ){
-    do_sorting(children,child_count);
-  }*/
-
   moves_left = get_search_depth();
   
 
   
-  int best_heur,best_id=0;
   
-  best_heur = MIN_HEURISTIC;
+  int best_heur = MIN_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
@@ -98,14 +89,13 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
-      best_id = id;
+      *res = children[id];
     }
     output() << "move " << (id+1) << "/" << (child_count);
     output() << ": " << best_heur << '\n';    
   }
   
   set_last_move_heur(best_heur);
-  *res = children[best_id];
   
   if((!exact) && get_use_book()){
     int move = b->get_move_index(res);
@@ -129,6 +119,8 @@ void bot_mtdf::do_move_search(const board* b, board* res)
 
 void bot_mtdf::do_move(const board* b,board* res)
 {
+  discs_on_searched_board = b->count_discs();
+  
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
     return;
@@ -151,13 +143,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
   int g = f;
   int upper_bound = MAX_HEURISTIC;
   int beta;
-  while(lower_bound < upper_bound){
-    if(g == lower_bound){
-      beta = g+1;
-    }
-    else{
-      beta = g;
-    }
+  while(upper_bound > lower_bound){
+    beta = g + ((g==lower_bound) ? 1 : 0);
     g = -null_window<sort,exact>(-beta);
     if(g < beta){
       upper_bound = g;
@@ -193,9 +180,9 @@ int bot_mtdf::null_window(int alpha)
   
 #if USE_HASH_TABLE
   hash_table_t::iterator ht_iter;
-
-  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
-    ht_iter = hash_table.find(inspected.to_database_board());
+  
+  if(suitable_hashtable_entry<exact>()){
+    ht_iter = hash_table.find(inspected);
     if(ht_iter != hash_table.end()){
       if(ht_iter->second.lower_bound >= alpha+1){
         return alpha+1;
@@ -297,21 +284,14 @@ int bot_mtdf::null_window(int alpha)
   
 #if USE_HASH_TABLE
 
-  if(moves_left>=HASH_TABLE_MIN_DEPTH && moves_left<=HASH_TABLE_MAX_DEPTH){
-    board inspected_normalised = inspected.to_database_board();
-    int rot = inspected.get_rotation(&inspected_normalised);
-    auto it = hash_table.find(inspected_normalised);
-    ht_data value;
-    int move_normalised = bits64_find_first(bits64_rotate(bits64_set[move],rot));
-    value.best_move = move_normalised;
+  if(suitable_hashtable_entry<exact>()){
+    auto it = hash_table.find(inspected);
     if(it == hash_table.end()){
       it = hash_table.insert(std::pair<const board,ht_data>(inspected,ht_data())).first;
       it->second.lower_bound = MIN_PERFECT_HEURISTIC;
       it->second.upper_bound = MAX_PERFECT_HEURISTIC;
     }
-    else{
-      value = it->second;
-    }
+    it->second.best_move = move;
     
     if(res > alpha){
       it->second.lower_bound = max(it->second.lower_bound,alpha);

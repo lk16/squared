@@ -232,6 +232,9 @@ void game_control::on_new_game()
   if(random_moves != 0){
     board_state.b = board_state.b.do_random_moves(random_moves);
   }
+  if(board_string != ""){
+    board_state.b = board(board_string);
+  }
   
   
   board_state.turn = BLACK;

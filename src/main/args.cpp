@@ -119,7 +119,7 @@ int squared_args::set_board(){
   if(!has_enough_subargs(1)){
     return PARSING_ERROR;
   }
-  gc->board_state.b = board(get_subarg(1));
+  gc->board_string = get_subarg(1);
   return 2;
 }
 

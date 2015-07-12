@@ -46,7 +46,7 @@ int bot_pvs::pvs(int alpha, int beta)
     int heur;
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
-      int heur = -inspected.get_disc_diff();
+      heur = -inspected.get_disc_diff();
       inspected.switch_turn();
       if(!exact){
         heur *= EXACT_SCORE_FACTOR; 

@@ -6,13 +6,14 @@ class bot_mtdf:
   public bot_base
 {
   int search_max_sort_depth;
+  
   int moves_left;
+  
+  int discs_on_searched_board;
+  
   
   static const int NORMAL_MOVE_SORT_DEPTH = 4;
   static const int PERFECT_MOVE_SORT_DEPTH = 13;
-  
-  static const int HASH_TABLE_MIN_DEPTH = 3;
-  static const int HASH_TABLE_MAX_DEPTH = 7;
   
   struct ht_data{
     int lower_bound,upper_bound,best_move;
@@ -62,4 +63,18 @@ private:
   // performs null window search
   template<bool sort,bool exact>
   int null_window(int alpha);
+  
+  
+  template<bool exact>
+  inline bool suitable_hashtable_entry(){
+    int moves_done = inspected.count_discs() - discs_on_searched_board;
+    
+    if(exact){
+      return moves_done<=10;
+    }
+    else{
+      return moves_done<=6;
+    }
+  }
+
 };

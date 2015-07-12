@@ -44,6 +44,7 @@ struct game_control{
   bool show_board_flag;
   bool use_book;
   bool use_xot;
+  std::string board_string;
   
   // behaviour modifiers
   bool run_speed_test;
