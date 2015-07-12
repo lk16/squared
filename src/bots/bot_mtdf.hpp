@@ -35,7 +35,7 @@ public:
   virtual void do_move(const board* b,board* res);
     
   // does something when a new game starts
-  virtual void on_new_game() = 0;
+  virtual void on_new_game();
   
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
@@ -70,7 +70,7 @@ private:
     int moves_done = inspected.count_discs() - discs_on_searched_board;
     
     if(exact){
-      return moves_done<=10;
+      return moves_done<=8;
     }
     else{
       return moves_done<=6;

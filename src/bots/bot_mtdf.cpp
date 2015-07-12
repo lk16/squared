@@ -21,7 +21,8 @@ void bot_mtdf::do_sorting(board* children, int child_count)
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    heur[i] = -mtdf<false,false>(0,MIN_HEURISTIC);
+    // WARNING: do not use mtdf() here, it messes up the hashtable
+    heur[i] = -heuristic(); 
     moves_left++;
     std::swap(inspected,children[i]);
   }
@@ -129,12 +130,12 @@ void bot_mtdf::do_move(const board* b,board* res)
     (void)0;
   }  
   else if(b->count_empty_fields() > get_perfect_depth()){
+    hash_table.clear();
     do_move_search<false>(b,res);
   }
   else{
     do_move_search<true>(b,res);
   }
-  hash_table.clear();
 }
 
 template<bool sort,bool exact>
@@ -160,9 +161,6 @@ template<bool sort,bool exact>
 int bot_mtdf::null_window(int alpha)
 {
   
-  
-#define USE_HASH_TABLE 1
-  
   stats.inc_nodes();
   
   if((!exact) && moves_left == 0){
@@ -178,13 +176,12 @@ int bot_mtdf::null_window(int alpha)
   
   bits64 valid_moves;
   
-#if USE_HASH_TABLE
   hash_table_t::iterator ht_iter;
   
   if(suitable_hashtable_entry<exact>()){
     ht_iter = hash_table.find(inspected);
     if(ht_iter != hash_table.end()){
-      if(ht_iter->second.lower_bound >= alpha+1){
+      if(ht_iter->second.lower_bound > alpha){
         return alpha+1;
       }
       if(ht_iter->second.upper_bound <= alpha){
@@ -195,24 +192,22 @@ int bot_mtdf::null_window(int alpha)
       int score = -null_window<sort,exact>(-alpha-1);
       moves_left++;
       inspected.undo_move(bits64_set[ht_iter->second.best_move],undo_data);
-      move = ht_iter->second.best_move;
       if(score > alpha){
+        move = ht_iter->second.best_move;
         ++res;
         goto add_hash_entry;
       }
     }
 
   }
-#endif
   
   valid_moves = inspected.get_valid_moves();
 
   
-#if USE_HASH_TABLE  
-  if(ht_iter != hash_table.end()){
+  if(move != -1){
     valid_moves &= bits64_reset[move];
+    assert(valid_moves != 0ull);
   }
-#endif
   
   
   
@@ -240,9 +235,7 @@ int bot_mtdf::null_window(int alpha)
     board children[32]; 
     int child_count = inspected.get_children(children,valid_moves) - children;
     
-    if(sort){
-      do_sorting(children,child_count);
-    }
+    do_sorting(children,child_count);
     for(int i=0;i<child_count;++i){
       move = children[i].get_move_index(&inspected);
       std::swap(inspected,children[i]);
@@ -281,27 +274,32 @@ int bot_mtdf::null_window(int alpha)
   
 
   add_hash_entry:
-  
-#if USE_HASH_TABLE
 
   if(suitable_hashtable_entry<exact>()){
     auto it = hash_table.find(inspected);
     if(it == hash_table.end()){
       it = hash_table.insert(std::pair<const board,ht_data>(inspected,ht_data())).first;
-      it->second.lower_bound = MIN_PERFECT_HEURISTIC;
-      it->second.upper_bound = MAX_PERFECT_HEURISTIC;
+      it->second.lower_bound = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
+      it->second.upper_bound = exact ? MAX_PERFECT_HEURISTIC : MAX_HEURISTIC;
     }
     it->second.best_move = move;
     
     if(res > alpha){
-      it->second.lower_bound = max(it->second.lower_bound,alpha);
+      it->second.lower_bound = max(it->second.lower_bound,alpha+1);
     }
     else{
-      it->second.upper_bound = min(it->second.upper_bound,alpha+1);
+      it->second.upper_bound = min(it->second.upper_bound,alpha);
     }
   }
-#endif
 
+  assert(res==alpha || res==alpha+1);
   return res;
 }
+
+void bot_mtdf::on_new_game()
+{
+  bot_base::on_new_game();
+  hash_table.clear();
+}
+
 

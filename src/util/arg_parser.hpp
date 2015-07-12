@@ -57,6 +57,9 @@ public:
   //returns false on errors
   bool parse();
   
+  // parsing constants
+  static const int PARSING_IGNORE_OTHER_ARGS = -1;
+  static const int PARSING_ERROR = -2;
 };
 
 template<class T>
