@@ -64,6 +64,10 @@ private:
   template<bool sort,bool exact>
   int null_window(int alpha);
   
+  // returns res
+  template<bool exact>
+  int add_hash_entry(int alpha,int res,int move);
+  
   
   template<bool exact>
   inline bool suitable_hashtable_entry(){

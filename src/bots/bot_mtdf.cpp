@@ -195,7 +195,7 @@ int bot_mtdf::null_window(int alpha)
       if(score > alpha){
         move = ht_iter->second.best_move;
         ++res;
-        goto add_hash_entry;
+        return add_hash_entry<exact>(alpha,res,move);
       }
     }
 
@@ -245,7 +245,7 @@ int bot_mtdf::null_window(int alpha)
       std::swap(inspected,children[i]);
       if(score > alpha){
         ++res;
-        break;
+        return add_hash_entry<exact>(alpha,res,move);
       }
     }
     
@@ -266,15 +266,19 @@ int bot_mtdf::null_window(int alpha)
         location_moves &= bits64_reset[move];
         if(score > alpha){
           ++res;
-          goto add_hash_entry;
+          return add_hash_entry<exact>(alpha,res,move);
         }
       }
     }
   }
-  
 
-  add_hash_entry:
+  return add_hash_entry<exact>(alpha,res,move);
+}
 
+
+template<bool exact>
+int bot_mtdf::add_hash_entry(int alpha, int res, int move)
+{
   if(suitable_hashtable_entry<exact>()){
     auto it = hash_table.find(inspected);
     if(it == hash_table.end()){
@@ -291,10 +295,10 @@ int bot_mtdf::null_window(int alpha)
       it->second.upper_bound = min(it->second.upper_bound,alpha);
     }
   }
-
-  assert(res==alpha || res==alpha+1);
+  
   return res;
 }
+
 
 void bot_mtdf::on_new_game()
 {
