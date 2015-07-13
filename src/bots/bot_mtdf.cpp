@@ -84,10 +84,12 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   
   
   int best_heur = MIN_HEURISTIC;
+  int first_guess = heuristic();
+  
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = mtdf<true,exact>(id==0 ? 0 : best_heur,best_heur);
+    int cur_heur = mtdf<true,exact>(id==0 ? first_guess  : best_heur,best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;

@@ -19,7 +19,8 @@ int bot_pluto::heuristic()
   }
   
   int res = 0;
-  res += (10*(my_moves+opp_moves));
+  
+  res += my_moves - opp_moves;
   res -= disc_diff;
   
   return res;
