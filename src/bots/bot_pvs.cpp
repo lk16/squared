@@ -215,8 +215,8 @@ void bot_pvs::do_move_search(const board* b, board* res)
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
+    output() << " (" << board::index_to_position(b->get_move_index(children+id)) << ')';
     output() << ": " << best_heur << '\n';
-    
   }
   
   set_last_move_heur(best_heur);

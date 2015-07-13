@@ -6,10 +6,6 @@ bot_mtdf_moves::bot_mtdf_moves(){
   set_name("mtdf_moves");
 }
 
-
-bot_mtdf_moves::~bot_mtdf_moves(){  
-}
-
 int bot_mtdf_moves::heuristic()
 {
   int res = inspected.count_valid_moves();

@@ -6,6 +6,9 @@ bot_moves::bot_moves(){
   set_name("moves");
 }
 
+
+
+
 int bot_moves::heuristic()
 {
   int res = inspected.count_valid_moves();

@@ -13,6 +13,7 @@ bot_mtdf::~bot_mtdf()
 
 void bot_mtdf::do_sorting(board* children, int child_count)
 {
+  return;
   int heur[32];
   
   int tmp = moves_left;
@@ -93,6 +94,8 @@ void bot_mtdf::do_move_search(const board* b, board* res)
       *res = children[id];
     }
     output() << "move " << (id+1) << "/" << (child_count);
+    output() << " (" << board::index_to_position(b->get_move_index(children+id)) << ')';
+    
     output() << ": " << best_heur << '\n';    
   }
   
