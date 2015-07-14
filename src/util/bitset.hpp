@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 
 typedef unsigned long long bits64;
 
@@ -108,5 +109,5 @@ inline bits64 bits64_rotate(bits64 x,int n)
 
 void bits64_show(bits64 b);
 
-
+std::string bits64_to_ascii(bits64 b);
 

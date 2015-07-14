@@ -23,6 +23,9 @@ struct board{
   static const bits64 location[10];    
   
   static const bits64 ordered_locations[10];
+ 
+  static const bits64 dir_mask[8][64];
+  
   
   // 0,1,2,3,3,2,1,0,
   // 1,4,5,6,6,5,4,1,
