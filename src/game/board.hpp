@@ -393,7 +393,115 @@ inline int board::count_opponent_moves() const
 template<int field_id>
 inline bits64 board::do_move_internal()
 {
+
+  bits64 line,flipped = 0ull;
+  int end;
+#if 1  
+  bits64 left_border_mask,right_border_mask;
   
+  switch(field_id%8){
+    case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
+    case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
+    case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
+    case 3: right_border_mask = 0xF0F0F0F0F0F0F0F0; break;
+    case 4: right_border_mask = 0xE0E0E0E0E0E0E0E0; break;
+    case 5: right_border_mask = 0xC0C0C0C0C0C0C0C0; break;
+    default: right_border_mask = 0x0; break;
+  }
+  
+  switch(field_id%8){
+    case 2: left_border_mask = 0x0303030303030303; break;
+    case 3: left_border_mask = 0x0707070707070707; break;
+    case 4: left_border_mask = 0x0F0F0F0F0F0F0F0F; break;
+    case 5: left_border_mask = 0x1F1F1F1F1F1F1F1F; break;
+    case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
+    case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
+    default: left_border_mask = 0x0; break;
+  }
+  
+  
+  /* left up */
+  if((field_id%8 > 1) && (field_id/8 > 1)){
+    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* up */
+  if(field_id/8 > 1){
+    line = 0x0080808080808080l >> (63-field_id);
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* right up */
+  if((field_id%8 < 6) && (field_id/8 > 1)){
+    line = right_shift<56-field_id>(0x0002040810204080) & right_border_mask;
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+     if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* left */
+  if(field_id%8 > 1){
+    line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
+    end = bits64_find_last(line & me);
+    line &= bits64_after[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* right */
+  if(field_id%8 < 6){
+    line = (0x00000000000000FEl << field_id) & right_border_mask;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* left down */
+  if((field_id%8 > 1) && (field_id/8 < 6)){
+    line = left_shift<field_id-7>(0x0102040810204000) & left_border_mask;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+  /* down */
+  if(field_id/8 < 6){
+    line = dir_mask[6][field_id];  //0x0101010101010100l << field_id;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+  
+
+  /* right down */
+  if((field_id%8 < 6) && (field_id/8 < 6)){
+    line = (0x8040201008040200 << field_id) & right_border_mask;
+    end = bits64_find_first(line & me);
+    line &= bits64_before[end];
+    if((opp & line) == line){
+      flipped |= line;
+    }
+  }
+#else
+
   const bool valid_dir[8] = {
     (field_id%8 > 1) && (field_id/8 > 1),
     (field_id/8 > 1),
@@ -405,19 +513,17 @@ inline bits64 board::do_move_internal()
     (field_id%8 < 6) && (field_id/8 < 6)
   };
   
-  bits64 flipped = 0ull;
-  
   for(int d=0;d<8;++d){
     if(valid_dir[d]){
-      bits64 line = dir_mask[d][field_id];
-      int end = (d<4) ? bits64_find_last(line & me) : bits64_find_first(line & me);
+      line = dir_mask[d][field_id];
+      end = (d<4) ? bits64_find_last(line & me) : bits64_find_first(line & me);
       line &= (d<4) ? bits64_after[end] : bits64_before[end];
       if((opp & line) == line){
         flipped |= line;
       }
     }
   }
-  
+#endif
   
   
   me |= bits64_set[field_id] | flipped;
