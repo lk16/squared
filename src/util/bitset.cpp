@@ -20,7 +20,7 @@ std::string bits64_to_ascii(bits64 b)
           ss << "@ ";
       }
       else{
-        ss << "  ";
+        ss << "- ";
       }
     }
     ss << "|\n";

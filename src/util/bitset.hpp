@@ -34,7 +34,6 @@ inline int bits64_find_first(bits64 b){
 
    return index64[((b & -b) * 0x03f79d71b4cb0a89) >> 58];
 #endif
-  
 }
 
 // returns 64 if b==0ull, returns most significant bit otherwise
