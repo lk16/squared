@@ -19,11 +19,14 @@ void bot_mtdf::do_sorting(board* children, int child_count)
   int tmp = moves_left;
   moves_left = 2;
   
+  
+  int guess = heuristic();
+  int best = MIN_HEURISTIC;
   for(int i=0;i<child_count;i++){
     std::swap(inspected,children[i]);
     moves_left--;
-    // WARNING: do not use mtdf() here, it messes up the hashtable
-    heur[i] = -heuristic(); 
+    heur[i] = mtdf<false,false>(guess,best);
+    best = max(best,heur[i]);
     moves_left++;
     std::swap(inspected,children[i]);
   }

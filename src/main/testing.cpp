@@ -20,15 +20,20 @@ bits64 get_dir_mask(int,int);
 
 void testing_area()
 {
-  std::cout << "static const int dir_mask[8][64] = {\n";
-  for(int d=0;d<8;++d){
+#if 0  
+  std::cout << "const bits64 board::dir_mask[64][8] = {\n";
+  for(int i=0;i<64;i++){
     std::cout << "\t{\n";
-    for(int i=0;i<64;i++){
-      std::cout << "\t\t0x" << std::hex << get_dir_mask(d,i) << ",\n";
+    for(int d=0;d<8;++d){
+      std::cout << "\t\t0x" << std::hex << get_dir_mask(d,i) << (d==8 ? "" : ",") << "\n";
     }
-    std::cout << "},\n";
+    std::cout << "}" <<  (i==63 ? "":",") << "\n";
   }
   std::cout << "};\n";
+#endif
+  
+  bits64_show(bits64_is_subset_of_mask(0x4,0xc));
+  bits64_show(bits64_is_subset_of_mask(0xc,0x4));
 }
 
 bits64 rshift(bits64 lhs,int rhs){
@@ -42,9 +47,11 @@ bits64 lshift(bits64 lhs,int rhs){
   if(rhs >= 0){
     return lhs << rhs;
   }
-  return lhs << (-rhs);
+  return lhs >> (-rhs);
 }
 
+
+// dir = 5, field_id = 4
 
 bits64 get_dir_mask(int dir,int field_id){
   bits64 line;

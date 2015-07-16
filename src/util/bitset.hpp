@@ -106,6 +106,25 @@ inline bits64 bits64_rotate(bits64 x,int n)
   return x;
 }
 
+inline bits64 bits64_is_subset_of_mask(bits64 set,bits64 subset){
+  bits64 x = !(~set & subset);
+  
+  x |= x << 1;
+  x |= x << 2;
+  x |= x << 4;
+  x |= x << 8;
+  x |= x << 16;
+  x |= x << 32;
+  
+  return x;
+}
+
+
+
+
+
+
+
 void bits64_show(bits64 b);
 
 std::string bits64_to_ascii(bits64 b);
