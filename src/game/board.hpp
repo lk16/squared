@@ -401,19 +401,19 @@ inline bits64 board::do_move_internal()
     end = bits64_find_last(line & me);
     line &= bits64_after[end];
     flipped |= bits64_is_subset_of_mask(opp,line) & line;
-    if((opp & line) == line){
+    /*if((opp & line) == line){
       flipped |= line;
-    }
+    }*/
   }
   
   for(int d=4;d<8;++d){
     line = mask[d];
     end = bits64_find_first(line & me);
     line &= bits64_before[end];
-    //flipped |= bits64_is_subset_of_mask(opp,line) & line;
-    if((opp & line) == line){
+    flipped |= bits64_is_subset_of_mask(opp,line) & line;
+    /*if((opp & line) == line){
       flipped |= line;
-    }
+    }*/
   }
   
   me |= bits64_set[field_id] | flipped;
