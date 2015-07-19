@@ -32,10 +32,7 @@ struct game_control{
   main_window* mw;
   
   // current board state
-  board_state_t board_state;
-  
-  // undo and redo data
-  std::stack<board_state_t> undo_stack,redo_stack;
+  board_state_t *board_states,*current_state,*last_redo;
  
   
   // game modifiers  

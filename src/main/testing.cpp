@@ -32,8 +32,12 @@ void testing_area()
   std::cout << "};\n";
 #endif
   
-  bits64_show(bits64_is_subset_of_mask(0x4,0xc));
-  bits64_show(bits64_is_subset_of_mask(0xc,0x4));
+  bits64_show(bits64_first(0xc));
+  bits64_show(bits64_last(0xc));
+  bits64_show(bits64_first(0xFFFFFFFFFFFFFFFF));
+  bits64_show(bits64_last(0xFFFFFFFFFFFFFFFF));
+  bits64_show(bits64_first(0x0));
+  bits64_show(bits64_last(0x0));
 }
 
 bits64 rshift(bits64 lhs,int rhs){

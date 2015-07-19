@@ -24,8 +24,14 @@ game_control::game_control()
   bot[BLACK] = NULL;
   bot[WHITE] = NULL;
   
-  board_state.b.reset();
-  board_state.turn = BLACK;
+  // account for passed moves
+  board_states = new board_state_t[100];
+  
+  current_state = last_redo = board_states;
+  
+  
+  current_state->b.reset();
+  current_state->turn = BLACK;
 }
 
 
@@ -36,6 +42,7 @@ game_control::~game_control()
   if(pgn_task){
     delete pgn_task;
   }
+  delete[] board_states;
 }
 
 void game_control::run()
@@ -58,7 +65,7 @@ void game_control::run()
 bool game_control::do_special_tasks()
 {
   if(show_board_flag){
-    const game_control::board_state_t* state = &board_state;
+    const game_control::board_state_t* state = current_state;
     std::cout << state->b.to_ascii_art(state->turn);
     return true;
   }
@@ -75,17 +82,17 @@ bool game_control::do_special_tasks()
   }
   
   if(run_speed_test){
-    board_state.b = board_state.b.do_random_moves(1);
+    current_state->b = current_state->b.do_random_moves(1);
     
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
     speedrun_bot->disable_book();
     std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
-    std::cout << board_state.b.to_ascii_art(board_state.turn);
+    std::cout << current_state->b.to_ascii_art(current_state->turn);
     for(int i=1;i<=60;i++){
       board dummy;
       speedrun_bot->set_search_depth(i,i);
-      speedrun_bot->do_move(&board_state.b,&dummy);
+      speedrun_bot->do_move(&current_state->b,&dummy);
       long long speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
@@ -126,53 +133,52 @@ void game_control::connect_timeout_signal()
 
 void game_control::on_human_do_move(int field_id)
 {
-  if(get_bot_to_move()){
+  if(get_bot_to_move() || !current_state->b.is_valid_move(field_id)){
     return;
   }
-
  
- if(board_state.b.is_valid_move(field_id)){
-    undo_stack.push(board_state);
-    board_state.b.do_move(field_id);
-    
-    on_any_move();
-  }
+  ++current_state;
+  *current_state = *(current_state-1);
+  current_state->b.do_move(field_id);
+  on_any_move();
 }
 
 void game_control::on_bot_do_move()
 {
-  if(!board_state.b.has_valid_moves()){
+  if(!current_state->b.has_valid_moves()){
     return;
   }
   
-  board_state_t old = board_state;
-  
-  bot[board_state.turn]->do_move(&old.b,&board_state.b);
-  undo_stack.push(old);
+  ++current_state;
+  *current_state = *(current_state-1);
+  get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
   on_any_move(); 
 }
 
 void game_control::on_any_move()
 {  
   
-  std::cout << board_state.b.to_string() << '\n';
+  std::cout << current_state->b.to_string() << '\n';
   
-  board_state.switch_turn();
+  current_state->switch_turn();
+  last_redo = current_state;
+
+  const board* b = &current_state->b;
   
-  while(!redo_stack.empty()){
-    redo_stack.pop();
-  }
-  
-  if(!board_state.b.has_valid_moves()){
-    board_state.switch_turn();
-    board_state.b.switch_turn();
-    if(!board_state.b.has_valid_moves()){
+  if(!b->has_valid_moves()){
+    if(!b->opponent_has_moves()){
       on_game_ended();
+    }
+    else{
+      ++current_state;
+      *current_state = *(current_state-1);
+      current_state->switch_turn();
+      current_state->b.switch_turn();
     }
   }
   mw->update_fields();
   if(bot[BLACK] && bot[WHITE]){
-    std::cout << board_state.b.to_ascii_art(board_state.turn);
+    std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
 }
 
@@ -180,64 +186,49 @@ void game_control::on_any_move()
 
 void game_control::on_undo()
 {
-  while(!undo_stack.empty() && bot[(int)(undo_stack.top().turn)]){
-    redo_stack.push(board_state);
-    board_state = undo_stack.top();
-    undo_stack.pop();
-  } 
-  
-  if(undo_stack.empty()){
-    mw->update_status_bar("Cannot undo");
-  }
-  else{
-    redo_stack.push(board_state);
-    board_state = undo_stack.top();
-    undo_stack.pop();
-  }
+  board_state_t* undo = current_state;
+  do{
+    --undo;
+    if(undo<board_states){
+      mw->update_status_bar("Cannot undo");
+      return;
+    }
+  }while(bot[undo->turn] || !undo->b.has_valid_moves());
+  current_state = undo;
   mw->update_fields();
 }
 
 void game_control::on_redo()
 { 
-  while(!redo_stack.empty() && bot[(int)(redo_stack.top().turn)]){
-    undo_stack.push(board_state);
-    board_state = redo_stack.top();
-    redo_stack.pop();
-  } 
-  
-  if(redo_stack.empty()){
-    mw->update_status_bar("Cannot redo");
-  }
-  else{
-    undo_stack.push(board_state);
-    board_state = redo_stack.top();
-    redo_stack.pop();
-  }
+  board_state_t* redo = current_state;
+  do{
+    ++redo;
+    if(redo>last_redo){
+      mw->update_status_bar("Cannot redo");
+      return;
+    }
+  }while(bot[redo->turn]);
+  current_state = redo;
   mw->update_fields();
 }
 
 void game_control::on_new_game()
 {
-  while(!redo_stack.empty()){
-    redo_stack.pop();
-  } 
-  while(!undo_stack.empty()){
-    undo_stack.pop();
-  } 
+  current_state = last_redo = board_states;
+  current_state->turn = BLACK;
   
-  board_state.b.reset();
+  current_state->b.reset();
   if(use_xot){
-    board_state.b.xot();
+    current_state->b.xot();
   }
   if(random_moves != 0){
-    board_state.b = board_state.b.do_random_moves(random_moves);
+    current_state->b = current_state->b.do_random_moves(random_moves);
   }
   if(board_string != ""){
-    board_state.b = board(board_string);
+    current_state->b = board(board_string);
   }
   
   
-  board_state.turn = BLACK;
   mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
   
@@ -250,13 +241,13 @@ void game_control::on_new_game()
 
 void game_control::on_game_ended()
 {
-  //board_state.b.show();
-  std::cout << board_state.b.to_string() << '\n';
+  //current_state->b.show();
+  std::cout << current_state->b.to_string() << '\n';
   
-  int b_count = bits64_count(board_state.b.opp);
-  int w_count = bits64_count(board_state.b.me);
+  int b_count = bits64_count(current_state->b.opp);
+  int w_count = bits64_count(current_state->b.me);
   
-  if(board_state.turn == BLACK){
+  if(current_state->turn == BLACK){
     std::swap<int>(b_count,w_count);
   }
   
@@ -268,7 +259,7 @@ void game_control::on_game_ended()
   mw->update_status_bar(text);
   
   if(quit_if_game_over){
-    std::cout << board_state.b.to_ascii_art(board_state.turn);
+    std::cout << current_state->b.to_ascii_art(current_state->turn);
     mw->hide();
     exit(0);
   }
@@ -279,12 +270,12 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  if(!board_state.b.has_valid_moves()){
-    if(!board_state.b.count_opponent_moves() != 0){
+  if(!current_state->b.has_valid_moves()){
+    if(!current_state->b.count_opponent_moves() != 0){
       return true;
     }
   }
-  if(bot[board_state.turn]){
+  if(bot[current_state->turn]){
     on_bot_do_move();  
   }
   return true;
@@ -313,6 +304,6 @@ void game_control::remove_bot(int colour)
 
 bot_base* game_control::get_bot_to_move()
 {
-  return bot[board_state.turn];
+  return bot[current_state->turn];
 }
 

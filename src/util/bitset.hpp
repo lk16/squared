@@ -88,9 +88,19 @@ inline bits64 rotate_left(bits64 x){
   return mirror_vertical_line(x);
 }
 
+// return least significant bit
 inline bits64 bits64_first(bits64 x)
+{  
+  return x & -x;
+}
+
+// return most significant bit
+inline bits64 bits64_last(bits64 x)
 {
-  return x ^ (x & (x-1));
+  if(x==0ull){
+    return x;
+  }
+  return 1ull << (63 - __builtin_clzl(x));
 }
 
 inline bits64 bits64_rotate(bits64 x,int n)

@@ -201,11 +201,13 @@ int bot_mtdf::null_window(int alpha)
       move = ht_iter->second.best_move;
       if(move != -1){
         bits64 undo_data = inspected.do_move(move);
-        moves_left--;
+        if(!exact){
+          moves_left--;
+        }
         int score = -null_window<sort,exact>(-alpha-1);
-        
-        
-        moves_left++;
+        if(!exact){
+          moves_left++;
+        }
         inspected.undo_move(bits64_set[move],undo_data);
         if(score > alpha){
           move = ht_iter->second.best_move;
@@ -256,9 +258,13 @@ int bot_mtdf::null_window(int alpha)
     for(int i=0;i<child_count;++i){
       move = children[i].get_move_index(&inspected);
       std::swap(inspected,children[i]);
-      moves_left--;
+      if(!exact){
+        moves_left--;
+      }
       int score = -null_window<sort,exact>(-alpha-1);
-      moves_left++;
+      if(!exact){
+        moves_left++;
+      }
       std::swap(inspected,children[i]);
       if(score > alpha){
         return update_hash_table<exact>(alpha,alpha+1,move);
@@ -275,9 +281,13 @@ int bot_mtdf::null_window(int alpha)
       while(location_moves != 0ull){
         move = bits64_find_first(location_moves);
         bits64 undo_data = inspected.do_move(move);
-        moves_left--;
+        if(!exact){
+          moves_left--;
+        }
         int score = -null_window<sort,exact>(-alpha-1);
-        moves_left++;
+        if(!exact){
+          moves_left++;
+        }
         inspected.undo_move(bits64_set[move],undo_data);
         location_moves &= bits64_reset[move];
         if(score > alpha){

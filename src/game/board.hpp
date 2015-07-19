@@ -123,6 +123,9 @@ struct board{
   // returns the number of valid moves
   int count_valid_moves() const;
   
+  // returns whether the opponent has moves
+  bool opponent_has_moves() const;
+  
   // returns the number of opponent moves  
   int count_opponent_moves() const;
   
@@ -283,6 +286,13 @@ inline bool board::has_valid_moves() const
 {
   return get_valid_moves() != 0ull;
 }
+
+inline bool board::opponent_has_moves() const
+{
+  return count_opponent_moves() != 0;
+}
+
+
 
 inline int board::count_valid_moves() const
 {
