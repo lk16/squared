@@ -11,6 +11,7 @@ class bot_mtdf:
   
   int discs_on_searched_board;
   
+  bool last_search_exact;
   
   static const int NORMAL_MOVE_SORT_DEPTH = 4;
   static const int PERFECT_MOVE_SORT_DEPTH = 13;

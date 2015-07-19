@@ -131,8 +131,11 @@ board* board::get_children(board* out_begin) const
 
 board* board::get_children(board* out, bits64 moves) const
 {  
-  while(moves != 0ull){
+  while(true){
     int move_id = bits64_find_first(moves);
+    if(move_id == 64){
+      break;
+    }
     *out = *this;
     out->do_move(move_id);
     out++;
@@ -156,20 +159,19 @@ bool board::only_similar_siblings(const board* siblings, int n)
 
 int board::get_disc_diff() const
 {
-  int count[2];
   
-  count[0] = bits64_count(me);
-  count[1] = bits64_count(opp);
+  int me_count = bits64_count(me);
+  int opp_count = bits64_count(opp);
   
-  if(count[0] > count[1]){ /* I win */
-    return 64 - (2*count[1]);
+  int diff = me_count - opp_count;
+  int empties = 64 - me_count - opp_count;
+  if(diff > 0){
+    return diff + empties;
   }
-  else if(count[0] < count[1]){ /* Opp wins */
-    return -64 + (2*count[0]);
+  else if(diff < 0){
+    return diff - empties;
   }
-  else{ /* draw */
-    return 0;
-  }
+  return diff;
 }
 
 std::string board::to_html_table(int turn) const

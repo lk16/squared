@@ -61,8 +61,9 @@ bool bot_mtdf::do_move_book(const board* b, board* res)
 template<bool exact>
 void bot_mtdf::do_move_search(const board* b, board* res)
 {
- stats.start_timer();
-  
+  stats.start_timer();
+  last_search_exact = exact;
+ 
   board children[32];
   int child_count = b->get_children(children) - children;
   
@@ -142,6 +143,9 @@ void bot_mtdf::do_move(const board* b,board* res)
     do_move_search<false>(b,res);
   }
   else{
+    if(!last_search_exact){
+      hash_table.clear();
+    }
     do_move_search<true>(b,res);
   }
 }

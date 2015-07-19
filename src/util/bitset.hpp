@@ -117,14 +117,7 @@ inline bits64 bits64_rotate(bits64 x,int n)
 }
 
 inline bits64 bits64_is_subset_of_mask(bits64 set,bits64 subset){
-  
-  static const bits64 table[2] = {
-    0xFFFFFFFFFFFFFFFF,
-    0x0000000000000000
-  };
-  
-  
-  return table[(bool)(~set & subset)];
+  return ((bits64)(bool)(~set & subset))-1;
 }
 
 
