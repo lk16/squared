@@ -82,7 +82,10 @@ bool game_control::do_special_tasks()
   }
   
   if(run_speed_test){
-    current_state->b = current_state->b.do_random_moves(1);
+    if(random_moves == 0){
+      random_moves = 1;
+    }
+    current_state->b = current_state->b.do_random_moves(random_moves);
     
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
