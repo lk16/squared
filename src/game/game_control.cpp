@@ -89,6 +89,7 @@ bool game_control::do_special_tasks()
     speedrun_bot->disable_book();
     std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
     std::cout << current_state->b.to_ascii_art(current_state->turn);
+    std::cout << "Interrupt whenever you like.\n";
     for(int i=1;i<=60;i++){
       board dummy;
       speedrun_bot->set_search_depth(i,i);
@@ -97,9 +98,6 @@ bool game_control::do_special_tasks()
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
       std::cout << speedrun_bot->stats.get_seconds() << " seconds.\n";
-      if(speedrun_bot->stats.get_seconds() > 10.0){
-        break;
-      }
     }
     return true;
   }

@@ -14,7 +14,7 @@ class bot_mtdf:
   bool last_search_exact;
   
   static const int NORMAL_MOVE_SORT_DEPTH = 4;
-  static const int PERFECT_MOVE_SORT_DEPTH = 13;
+  static const int PERFECT_MOVE_SORT_DEPTH = 11;
   
   struct ht_data{
     int lower_bound,upper_bound,best_move;

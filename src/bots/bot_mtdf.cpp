@@ -331,19 +331,13 @@ inline int bot_mtdf::update_hash_table(int alpha, int res, int move)
 template<bool exact>
 inline bool bot_mtdf::suitable_hashtable_entry(){
   int moves_done = inspected.count_discs() - discs_on_searched_board;
-  
-  if(exact){
-    return moves_done<=8;
-  }
-  else{
-    return moves_done<=6;
-  }
+  (void)exact;
+  return moves_done<=8;
 }
 
 void bot_mtdf::on_new_game()
 {
   bot_base::on_new_game();
-  hash_table.clear();
 }
 
 
