@@ -283,7 +283,8 @@ int bot_mtdf::null_window(int alpha)
     for(int i=0;i<9;i++){
       bits64 location_moves = valid_moves & board::ordered_locations[i];
       while(location_moves != 0ull){
-        move = bits64_find_first(location_moves);
+        bits64 bit = bits64_first(location_moves);
+        move = bits64_only_bit_index(bit);
         bits64 undo_data = inspected.do_move(move);
         if(!exact){
           moves_left--;
@@ -292,8 +293,8 @@ int bot_mtdf::null_window(int alpha)
         if(!exact){
           moves_left++;
         }
-        inspected.undo_move(bits64_set[move],undo_data);
-        location_moves &= bits64_reset[move];
+        inspected.undo_move(bit,undo_data);
+        location_moves ^= bit;
         if(score > alpha){
           return update_hash_table<exact>(alpha,alpha+1,move);
         }

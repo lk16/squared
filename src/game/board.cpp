@@ -131,15 +131,13 @@ board* board::get_children(board* out_begin) const
 
 board* board::get_children(board* out, bits64 moves) const
 {  
-  while(true){
-    int move_id = bits64_find_first(moves);
-    if(move_id == 64){
-      break;
-    }
+  while(moves != 0ull){
+    bits64 bit = bits64_first(moves);
+    int index = bits64_only_bit_index(bit);
     *out = *this;
-    out->do_move(move_id);
+    out->do_move(index);
     out++;
-    moves &= bits64_reset[move_id];
+    moves ^= bit;
   }
   return out;  
 }

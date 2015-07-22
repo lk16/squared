@@ -126,3 +126,25 @@ void bits64_show(bits64 b);
 
 std::string bits64_to_ascii(bits64 b);
 
+// returns index of bitset where at most 1 bit is set
+// 64 is returned if b == 0ull
+inline int bits64_only_bit_index(bits64 b){
+  static const int table[83] = {
+    64, 0, 1,-1, 2,27,-1, 8,
+     3,62,28,24,-1,-1, 9,17,
+     4,56,63,47,29,-1,25,60,
+    -1,54,-1,52,10,12,18,38,
+     5,14,57,35,-1,20,48,-1,
+    30,40,-1,-1,26, 7,61,23,
+    -1,16,55,46,-1,59,53,51,
+    11,37,13,34,19,-1,39,-1,
+     6,22,15,45,58,50,36,33,
+    -1,-1,21,44,49,32,-1,43,
+    31,42,41
+  };
+  
+  assert(bits64_count(b) <= 1);
+  
+  return table[b%83];
+  
+}

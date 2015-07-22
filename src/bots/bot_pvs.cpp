@@ -123,17 +123,18 @@ int bot_pvs::pvs_null_window(int alpha)
   for(int i=0;i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
     while(location_moves != 0ull){
-      int move = bits64_find_first(location_moves);
+      bits64 bit = bits64_first(location_moves);
+      int move = bits64_only_bit_index(bit);
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
       int score = -pvs_null_window<exact>(-alpha-1);
       moves_left++;
-      inspected.undo_move(bits64_set[move],undo_data);
+      inspected.undo_move(bit,undo_data);
       
       if(score > alpha){
         return alpha+1;
       }
-      location_moves &= bits64_reset[move];
+      location_moves ^= bit;
     }
   }
   return alpha;
