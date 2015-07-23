@@ -120,12 +120,6 @@ inline bits64 bits64_is_subset_of_mask(bits64 set,bits64 subset){
   return ((bits64)(bool)(~set & subset))-1;
 }
 
-
-
-void bits64_show(bits64 b);
-
-std::string bits64_to_ascii(bits64 b);
-
 // returns index of bitset where at most 1 bit is set
 // 64 is returned if b == 0ull
 inline int bits64_only_bit_index(bits64 b){
@@ -144,7 +138,9 @@ inline int bits64_only_bit_index(bits64 b){
   };
   
   assert(bits64_count(b) <= 1);
-  
   return table[b%83];
-  
 }
+
+void bits64_show(bits64 b);
+
+std::string bits64_to_ascii(bits64 b);
