@@ -51,6 +51,8 @@ public:
   
   void duplicate_modifier(const std::string& arg,const std::string& original);
   
+  int count_remaining_args() const;
+  
   void print_general_help() const;
   void print_specific_help(const std::string& arg) const;
   
@@ -94,6 +96,11 @@ inline void arg_parser_base<T>::duplicate_modifier(const std::string& arg, const
   func_map[arg] = func_map[original];
 }
 
+template<class T>
+int arg_parser_base<T>::count_remaining_args() const
+{
+  return end_arg-current_arg;
+}
 
 
 template<class T>
@@ -120,6 +127,7 @@ inline bool arg_parser_base<T>::parse()
     int diff = (((T*)(this))->*(it->second.func))();
     if(diff == PARSING_ERROR){
       error_flag = true;
+      break;
     }
     else if(diff == PARSING_IGNORE_OTHER_ARGS){
       break;
@@ -138,7 +146,7 @@ inline bool arg_parser_base<T>::parse()
 template<class T>
 inline bool arg_parser_base<T>::has_enough_subargs(int n)
 {
-  if(current_arg + n >= end_arg){
+  if(count_remaining_args() < n){
     error_flag = true;
     return false;
   }  
@@ -150,6 +158,9 @@ inline const char* arg_parser_base<T>::get_subarg(int n) const
 {
   return *(current_arg + n);
 }
+
+
+
 
 template<class T>
 inline void arg_parser_base<T>::print_specific_help(const std::string& arg) const

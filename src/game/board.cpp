@@ -142,6 +142,20 @@ board* board::get_children(board* out, bits64 moves) const
   return out;  
 }
 
+int board::get_mobility(bits64 moves) const
+{
+  board copy;
+  int total = 0;
+  while(moves != 0ull){
+    copy = *this;
+    bits64 bit = bits64_first(moves);
+    int index = bits64_only_bit_index(bit);
+    total += bits64_count(copy.do_move(index));
+    moves ^= bit;
+  }
+  return total;
+}
+
 
 bool board::only_similar_siblings(const board* siblings, int n)
 {

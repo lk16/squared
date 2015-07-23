@@ -14,26 +14,25 @@ class tournament_t{
   
   
   enum game_result{
-    WHITE_WINS,
-    BLACK_WINS,
-    DRAW
+    WHITE_WINS = 0,
+    DRAW = 1,
+    BLACK_WINS = 2
   };
 
   struct entrant{
     bot_base* bot;
     int rating;
-    std::string nick;
+    int game_results[3]; // win,loss,draw
     
-    bool operator<(const entrant& rhs) const{
-      return rating < rhs.rating;
-    }
+    std::string nick() const;
+    bool operator<(const entrant& rhs) const;
   };
   
   std::vector<entrant> entrants;
   
   game_result play_othello_game(bot_base* black,bot_base* white);
 
-  void entrant_update_rating(entrant* black,entrant* white,game_result res);
+  void update_entrants(entrant* black,entrant* white,game_result res);
 
 public:
   
@@ -41,8 +40,8 @@ public:
   ~tournament_t();
   
   void run();
-  void show_stats() const;
-  void add_entrant(const std::string& bot_name,const std::string& nick,int depth,int perfect_depth);
+  void show_stats();
+  void add_entrant(const std::string& bot_name,int depth,int perfect_depth);
   
 };
 

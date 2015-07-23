@@ -13,26 +13,10 @@ bot_mtdf::~bot_mtdf()
 
 void bot_mtdf::do_sorting(board* children, int child_count)
 {
+  // TODO implement this properly
+  (void)children;
+  (void)child_count;
   return;
-  int heur[32];
-  
-  int tmp = moves_left;
-  moves_left = 2;
-  
-  
-  int guess = heuristic();
-  int best = MIN_HEURISTIC;
-  for(int i=0;i<child_count;i++){
-    std::swap(inspected,children[i]);
-    moves_left--;
-    heur[i] = mtdf<false,false>(guess,best);
-    best = max(best,heur[i]);
-    moves_left++;
-    std::swap(inspected,children[i]);
-  }
-  
-  ugly_sort<board>(children,heur,child_count);
-  moves_left = tmp;
 }
 
 void bot_mtdf::do_move_one_possibility(const board* b, board* res)
@@ -82,13 +66,28 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   else{ 
     output() << "at depth " << get_search_depth() << '\n';
   }
-  moves_left = get_search_depth();
   
-
+  moves_left = exact ? get_perfect_depth() : get_search_depth();
+  
+  do_sorting(children,child_count);
   
   
-  int best_heur = MIN_HEURISTIC;
-  int first_guess = heuristic();
+  int best_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
+  int first_guess;
+  {
+    int tmp = moves_left - 6;
+    if(tmp < 0){
+      first_guess = heuristic();
+    }
+    else{
+      std::swap(tmp,moves_left);
+      first_guess = mtdf<false,false>(0,best_heur);
+      std::swap(tmp,moves_left);
+    }
+  }
+  
+  
+  
   
   for(int id=0;id<child_count;++id){
     inspected = children[id];
@@ -135,10 +134,11 @@ void bot_mtdf::do_move(const board* b,board* res)
     do_move_one_possibility(b,res);
     return;
   }
-  else if(do_move_book(b,res)){
-    (void)0;
+  if(do_move_book(b,res)){
+    return;
   }  
-  else if(b->count_empty_fields() > get_perfect_depth()){
+  
+  if(b->count_empty_fields() > get_perfect_depth()){
     hash_table.clear();
     do_move_search<false>(b,res);
   }
@@ -148,6 +148,20 @@ void bot_mtdf::do_move(const board* b,board* res)
     }
     do_move_search<true>(b,res);
   }
+
+    
+  std::cout << "ht size = " << hash_table.size() << '\n';
+  std::map<int,int,std::greater<int>> histo;
+  for(const auto& x:hash_table){
+    ++histo[x.second.uses];
+  }
+  for(const auto& x: histo){
+    std::cout << x.first << " -> " << x.second << '\n';
+  }
+  
+  
+  
+  
 }
 
 template<bool sort,bool exact>
@@ -157,7 +171,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
   int upper_bound = MAX_HEURISTIC;
   int beta;
   while(upper_bound > lower_bound){
-    beta = g + ((g==lower_bound) ? 1 : 0);
+    beta = g + ((g==lower_bound) ? (exact ? 2 : 1) : 0);
+    std::cout << "g = " << g << '\n';
     g = -null_window<sort,exact>(-beta);
     if(g < beta){
       upper_bound = g;
@@ -196,6 +211,7 @@ int bot_mtdf::null_window(int alpha)
   if(suitable_hashtable_entry<exact>()){
     hash_table_t::iterator ht_iter = hash_table.find(inspected);
     if(ht_iter != hash_table.end()){
+      ++ht_iter->second.uses;
       if(ht_iter->second.lower_bound > alpha){
         return alpha+1;
       }
@@ -315,6 +331,10 @@ inline int bot_mtdf::update_hash_table(int alpha, int res, int move)
       it = hash_table.insert(std::pair<const board,ht_data>(inspected,ht_data())).first;
       it->second.lower_bound = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
       it->second.upper_bound = exact ? MAX_PERFECT_HEURISTIC : MAX_HEURISTIC;
+      it->second.uses = 0;
+    }
+    else{
+      ++it->second.uses;
     }
     it->second.best_move = move;
     

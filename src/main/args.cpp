@@ -42,7 +42,7 @@ squared_args::squared_args(int argc,const char **argv):
   
   add_modifier("-wbot",&squared_args::add_white_bot,"","Enable a black bot. Can be used in combination with white bot.");
   
-  add_modifier("--tournament",&squared_args::tournament_flag,"","Run a tournament between bots.");
+  add_modifier("--tournament",&squared_args::tournament_flag,"Mix of {-lvl <search_depth> <perfect_depth>} and any bot name","Runs a tournament between bots. Change in level applies to bots specified after the bot names only.");
 }
 
 int squared_args::use_xot()
@@ -179,10 +179,33 @@ int squared_args::speed_test()
 int squared_args::tournament_flag()
 {
   gc->tournament = new tournament_t;
+  int n = 1; 
   
-  for(int i=1;i<=7;i+=2){
-    std::string name = "moves lvl " + to_str<int>(i);
-    gc->tournament->add_entrant("moves",name,i,i);
+  while(n != count_remaining_args()){
+    std::string arg = get_subarg(n);
+    if(arg == "-lvl"){
+      if(!has_enough_subargs(n+2)){
+        std::cerr << "-lvl needs two sub arguments.\n";
+        return PARSING_ERROR;
+      }
+      gc->search_depth = from_str<int>(get_subarg(n+1));
+      gc->perfect_depth = from_str<int>(get_subarg(n+2));
+      n+=3;
+      continue;
+    }
+    auto it = bot_registration::bots().find(arg);
+    if(it == bot_registration::bots().end()){
+      std::cerr << "No bot named \"" << arg << "\"\n";
+      return PARSING_ERROR;
+    }
+    gc->tournament->add_entrant(arg,gc->search_depth,gc->perfect_depth);
+    ++n;
   }
+  
+  
+  
+  
+  
+  
   return PARSING_IGNORE_OTHER_ARGS;
 }

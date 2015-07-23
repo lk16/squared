@@ -12,13 +12,12 @@ void tournament_t::run()
   while(true){
     std::random_shuffle(pairs.begin(),pairs.end());
     for(unsigned p=0;p<pairs.size()-1;p+=2){
+      int b = pairs[p];
+      int w = pairs[p+1];
       game_result res;
-      res = play_othello_game(entrants[p].bot,entrants[p+1].bot);
-      entrant_update_rating(&entrants[p],&entrants[p+1],res);
-      
-      std::sort(entrants.rbegin(),entrants.rend());
+      res = play_othello_game(entrants[b].bot,entrants[w].bot);
+      update_entrants(&entrants[b],&entrants[w],res);
       show_stats();
-      
     }
   }
 }
@@ -55,7 +54,7 @@ tournament_t::game_result tournament_t::play_othello_game(bot_base* black, bot_b
   return DRAW;
 }
 
-void tournament_t::entrant_update_rating(tournament_t::entrant* black, tournament_t::entrant* white, tournament_t::game_result res)
+void tournament_t::update_entrants(tournament_t::entrant* black, tournament_t::entrant* white, tournament_t::game_result res)
 {
   entrant* p[2] = {black,white};
   float score[2],expected[2];
@@ -71,19 +70,32 @@ void tournament_t::entrant_update_rating(tournament_t::entrant* black, tournamen
   int diff = (int)(K_FACTOR*(score[0]-expected[0]));
   p[0]->rating += diff;
   p[1]->rating -= diff;
+  
+  ++p[0]->game_results[2-res];
+  ++p[1]->game_results[res];
 }
 
 
-void tournament_t::show_stats() const
+void tournament_t::show_stats()
 {
-  std::cout << "--------------------------\n";
-  for(auto e: entrants){
-    std::cout << e.rating << '\t' << e.nick << '\n';
+  std::sort(entrants.rbegin(),entrants.rend());
+  std::cout << "------------------------------------------------------\n";
+  std::cout << "Rating\tNick\t\t\tWin\tDraw\tLose\n";
+  std::cout << "------------------------------------------------------\n";
+  for(const auto& e: entrants){
+    std::cout << e.rating;
+    std::cout.fill(' ');
+    std::cout.width(24);
+    std::cout << e.nick(); 
+    for(int i=0;i<3;++i){
+      std::cout << '\t' << e.game_results[i];
+    }
+    std::cout << '\n';
   }
 }
 
 
-void tournament_t::add_entrant(const std::string& bot_name,const std::string& nick, int depth, int perfect_depth)
+void tournament_t::add_entrant(const std::string& bot_name,int depth, int perfect_depth)
 {
   entrant e;
   e.bot = bot_registration::bots()[bot_name]();
@@ -91,7 +103,7 @@ void tournament_t::add_entrant(const std::string& bot_name,const std::string& ni
   e.bot->disable_book();
   e.bot->disable_shell_output();
   e.rating = TOURNAMENT_INIT_RATING;
-  e.nick = nick;
+  e.game_results[0] = e.game_results[1] = e.game_results[2] = 0;
   entrants.push_back(e);
   
 }
@@ -102,4 +114,18 @@ tournament_t::~tournament_t()
   for(auto e: entrants){
     delete e.bot;
   }
+}
+
+std::string tournament_t::entrant::nick() const{
+  if(!bot){
+    return "Human";
+  }
+  std::string str = "bot_" + bot->get_name() + " (";
+  str += to_str<int>(bot->get_search_depth()) + ",";
+  str += to_str<int>(bot->get_perfect_depth()) + ")";
+  return str;
+}
+
+bool tournament_t::entrant::operator<(const entrant& rhs) const{
+  return rating < rhs.rating;
 }

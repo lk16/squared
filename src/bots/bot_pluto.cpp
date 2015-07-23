@@ -11,17 +11,21 @@ bot_pluto::bot_pluto()
 
 int bot_pluto::heuristic()
 {
-  int my_moves = inspected.count_valid_moves();
-  int opp_moves = inspected.count_opponent_moves();
-  int disc_diff = inspected.get_disc_diff();
-  if(my_moves==0 && opp_moves==0){
-    return EXACT_SCORE_FACTOR * disc_diff;
+  int my_moves = inspected.get_valid_moves();
+  board copy = inspected;
+  copy.switch_turn();
+  int opp_moves = copy.get_valid_moves();
+
+  if(my_moves==0ull && opp_moves==0ull){
+    return EXACT_SCORE_FACTOR * inspected.get_disc_diff();
   }
   
-  int res = 0;
+  int res = inspected.get_mobility(my_moves) - copy.get_mobility(opp_moves);
   
-  res += my_moves - opp_moves;
-  res -= disc_diff;
+  res += 3 *(
+    bits64_count(inspected.me & board::location[board::X_SQUARES]) 
+    - bits64_count(inspected.opp & board::location[board::X_SQUARES])
+  );
   
   return res;
 }

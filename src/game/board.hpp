@@ -198,6 +198,8 @@ struct board{
   // returns -1 if no matches are found
   int get_rotation(const board* b) const;
 
+  // count sum of flippable discs for all moves
+  int get_mobility(bits64 moves) const;
   
 };
 

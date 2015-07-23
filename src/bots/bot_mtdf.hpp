@@ -17,7 +17,7 @@ class bot_mtdf:
   static const int PERFECT_MOVE_SORT_DEPTH = 11;
   
   struct ht_data{
-    int lower_bound,upper_bound,best_move;
+    int lower_bound,upper_bound,best_move,uses;
   };
  
   typedef std::unordered_map<board,ht_data,board_hash> hash_table_t;
