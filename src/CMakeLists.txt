@@ -11,21 +11,30 @@ pkg_check_modules(GDK_PIXBUF gdk-pixbuf-2.0)
 pkg_check_modules(GIOMM giomm-2.4)
 pkg_check_modules(GDKMM gdkmm-2.4)
 
+set(COMMON_FLAGS
+  "-I .. -std=c++0x -pthread -Wall -Wextra -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+)
+
+set(OPTIMISE_FLAGS
+  "-pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops"
+)
+
+
 set(DEBUG_FLAGS
-  "-I .. -std=c++0x -pthread -Wall -Wextra -g -Wfloat-equal -Wno-unused-result -Wshadow -Wstrict-aliasing"
+  "${COMMON_FLAGS} -g"
 )
 
-set(OPTIMIZED_DEBUG_FLAGS
-  "-I .. -std=c++0x -pthread -Wall -Wextra -g -O2 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
+set(OPTIMISED_DEBUG_FLAGS
+  "${COMMON_FLAGS} ${OPTIMISE_FLAGS} -g -O2" 
 )
 
-set(OPTIMIZING_FLAGS
-  "-I .. -std=c++0x -pthread -Wall -Wextra -DNDEBUG -O3 -pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops" 
+set(OPTIMISING_FLAGS
+  "${COMMON_FLAGS} ${OPTIMISE_FLAGS} -DNDEBUG -O3" 
 )
 
 set(CMAKE_CXX_FLAGS 
-  ${OPTIMIZING_FLAGS}
-  #{OPTIMIZED_DEBUG_FLAGS}
+  ${OPTIMISING_FLAGS}
+  #${OPTIMISED_DEBUG_FLAGS}
   #${DEBUG_FLAGS}
 ) 
 

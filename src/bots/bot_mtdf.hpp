@@ -6,16 +6,18 @@ class bot_mtdf:
   public bot_base
 {
   int search_max_sort_depth;
+  
   int moves_left;
   
-  static const int NORMAL_MOVE_SORT_DEPTH = 4;
-  static const int PERFECT_MOVE_SORT_DEPTH = 13;
+  int discs_on_searched_board;
   
-  static const int HASH_TABLE_MIN_DEPTH = 3;
-  static const int HASH_TABLE_MAX_DEPTH = 7;
+  bool last_search_exact;
+  
+  static const int NORMAL_MOVE_SORT_DEPTH = 4;
+  static const int PERFECT_MOVE_SORT_DEPTH = 11;
   
   struct ht_data{
-    int lower_bound,upper_bound,best_move;
+    int lower_bound,upper_bound,best_move,uses;
   };
  
   typedef std::unordered_map<board,ht_data,board_hash> hash_table_t;
@@ -34,7 +36,7 @@ public:
   virtual void do_move(const board* b,board* res);
     
   // does something when a new game starts
-  virtual void on_new_game() = 0;
+  virtual void on_new_game();
   
   // calculates the heuristic for this->inspected
   virtual int heuristic() = 0;
@@ -61,5 +63,14 @@ private:
   
   // performs null window search
   template<bool sort,bool exact>
-  int null_window(int alpha,int beta);
+  int null_window(int alpha);
+  
+  // returns res
+  template<bool exact>
+  int update_hash_table(int alpha,int res,int move);
+  
+  
+  template<bool exact>
+  bool suitable_hashtable_entry();
+
 };

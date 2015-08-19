@@ -23,6 +23,9 @@ struct board{
   static const bits64 location[10];    
   
   static const bits64 ordered_locations[10];
+ 
+  static const bits64 dir_mask[64][8];
+  
   
   // 0,1,2,3,3,2,1,0,
   // 1,4,5,6,6,5,4,1,
@@ -120,11 +123,14 @@ struct board{
   // returns the number of valid moves
   int count_valid_moves() const;
   
+  // returns whether the opponent has moves
+  bool opponent_has_moves() const;
+  
   // returns the number of opponent moves  
   int count_opponent_moves() const;
   
   // counts frontier discs
-  void count_frontier_discs(int* me,int* opp) const;
+  void get_frontier_discs(int* me,int* opp) const;
   
   // returns a bitset of empty fields
   bits64 get_empty_fields() const;
@@ -192,6 +198,8 @@ struct board{
   // returns -1 if no matches are found
   int get_rotation(const board* b) const;
 
+  // count sum of flippable discs for all moves
+  int get_mobility(bits64 moves) const;
   
 };
 
@@ -281,6 +289,13 @@ inline bool board::has_valid_moves() const
   return get_valid_moves() != 0ull;
 }
 
+inline bool board::opponent_has_moves() const
+{
+  return count_opponent_moves() != 0;
+}
+
+
+
 inline int board::count_valid_moves() const
 {
   return bits64_count(get_valid_moves());  
@@ -297,32 +312,6 @@ inline void board::undo_move(bits64 move_bit,bits64 undo_data)
   me = opp & ~(undo_data | move_bit);
   opp = tmp | undo_data;
 }
-
-#if 0
-inline bits64 board::get_some_moves(const bits64 opp_mask, const int dir) const
-{
-  // this funtion is a modified version of code from Edax
-  
-  // 1-stage Parallel Prefix (intermediate between kogge stone & sequential) 
-  // 6 << + 6 >> + 7 | + 10 &
-  bits64 flip_l, flip_r,mask_l, mask_r;
-  const bits64 dir2 = dir + dir;
-
-  flip_l  = opp_mask & (me << dir);
-  flip_l |= opp_mask & (flip_l << dir);
-  mask_l  = opp_mask & (opp_mask << dir);
-  flip_l |= mask_l & (flip_l << dir2);
-  flip_l |= mask_l & (flip_l << dir2);
- 
-  flip_r  = opp_mask & (me >> dir);
-  flip_r |= opp_mask & (flip_r >> dir);
-  mask_r  = opp_mask & (opp_mask >> dir);
-  flip_r |= mask_r & (flip_r >> dir2);
-  flip_r |= mask_r & (flip_r >> dir2);
-
-  return (flip_l << dir) | (flip_r >> dir);
-}
-#endif
 
 inline bits64 board::get_valid_moves() const
 {
@@ -413,113 +402,34 @@ inline int board::count_opponent_moves() const
 template<int field_id>
 inline bits64 board::do_move_internal()
 {
+
   bits64 line,flipped = 0ull;
   int end;
   
-  bits64 left_border_mask,right_border_mask;
+  const bits64* mask = dir_mask[field_id];
   
-  switch(field_id%8){
-    case 0: right_border_mask = 0xFEFEFEFEFEFEFEFE; break;
-    case 1: right_border_mask = 0xFCFCFCFCFCFCFCFC; break;
-    case 2: right_border_mask = 0xF8F8F8F8F8F8F8F8; break;
-    case 3: right_border_mask = 0xF0F0F0F0F0F0F0F0; break;
-    case 4: right_border_mask = 0xE0E0E0E0E0E0E0E0; break;
-    case 5: right_border_mask = 0xC0C0C0C0C0C0C0C0; break;
-    default: right_border_mask = 0x0; break;
-  }
-  
-  switch(field_id%8){
-    case 2: left_border_mask = 0x0303030303030303; break;
-    case 3: left_border_mask = 0x0707070707070707; break;
-    case 4: left_border_mask = 0x0F0F0F0F0F0F0F0F; break;
-    case 5: left_border_mask = 0x1F1F1F1F1F1F1F1F; break;
-    case 6: left_border_mask = 0x3F3F3F3F3F3F3F3F; break;
-    case 7: left_border_mask = 0x7F7F7F7F7F7F7F7F; break;
-    default: left_border_mask = 0x0; break;
-  }
-  
-  /* down */
-  if(field_id/8 < 6){
-    line = 0x0101010101010100l << field_id;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* up */
-  if(field_id/8 > 1){
-    line = 0x0080808080808080l >> (63-field_id);
+  for(int d=0;d<4;++d){
+    line = mask[d];
     end = bits64_find_last(line & me);
     line &= bits64_after[end];
-    if((opp & line) == line){
+    flipped |= bits64_is_subset_of_mask(opp,line) & line;
+    /*if((opp & line) == line){
       flipped |= line;
-    }
+    }*/
   }
   
-  /* left */
-  if(field_id%8 > 1){
-    line = (0x7F00000000000000l >> (63-field_id)) & left_border_mask;
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* right */
-  if(field_id%8 < 6){
-    line = (0x00000000000000FEl << field_id) & right_border_mask;
+  for(int d=4;d<8;++d){
+    line = mask[d];
     end = bits64_find_first(line & me);
     line &= bits64_before[end];
-    if((opp & line) == line){
+    flipped |= bits64_is_subset_of_mask(opp,line) & line;
+    /*if((opp & line) == line){
       flipped |= line;
-    }
-  }
-  
-  /* right down */
-  if((field_id%8 < 6) && (field_id/8 < 6)){
-    line = (0x8040201008040200 << field_id) & right_border_mask;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* left up */
-  if((field_id%8 > 1) && (field_id/8 > 1)){
-    line = (0x0040201008040201 >> (63-field_id)) & left_border_mask;
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* right up */
-  if((field_id%8 < 6) && (field_id/8 > 1)){
-    line = right_shift<56-field_id>(0x0002040810204080) & right_border_mask;
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-     if((opp & line) == line){
-      flipped |= line;
-    }
-  }
-  
-  /* left down */
-  if((field_id%8 > 1) && (field_id/8 < 6)){
-    line = left_shift<field_id-7>(0x0102040810204000) & left_border_mask;
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    if((opp & line) == line){
-      flipped |= line;
-    }
+    }*/
   }
   
   me |= bits64_set[field_id] | flipped;
   opp &= ~me;
-  switch_turn();  
-  return flipped; 
+  switch_turn(); 
+  return flipped;
 }

@@ -2,27 +2,38 @@
 
 void bits64_show(bits64 b)
 {
+  std::cout << bits64_to_ascii(b);
+}
+
+std::string bits64_to_ascii(bits64 b)
+{
   int x,y;
+  std::stringstream ss;
   
-  std::cout << "+-----------------+\n";
+  ss << "+-----------------+\n";
   
   /* middle */
   for(y=0;y<8;y++){
-    std::cout << "| ";
+    ss << "| ";
     for(x=0;x<8;x++){
       if(b & bits64_set[y*8+x]){
-          std::cout << "@ ";
+          ss << "@ ";
       }
       else{
-        std::cout << "  ";
+        ss << "- ";
       }
     }
-    std::cout << "|\n";
+    ss << "|\n";
   }
   
   /* bottom line */
-  std::cout << "+-----------------+\n";
+  ss  << "+-----------------+\n";
+  
+  return ss.str();
 }
+
+
+
 
 const bits64 bits64_set[65] = {
   (1ull << 0),

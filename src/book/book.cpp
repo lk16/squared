@@ -65,7 +65,7 @@ bool book_t::is_correct_entry(const entry& e) const
     error = 8;
   }
   if(error != 0){
-    std::cout << "Incorrect board data: error " << error << std::endl;
+    std::cout << "Incorrect board data: error " << error << '\n';
   }
   return error == 0;
 }
@@ -101,11 +101,11 @@ void book_t::print_stats() const
   }
   
   
-  std::cout << "Total boards in book: " << container.size() << std::endl;
+  std::cout << "Total boards in book: " << container.size() << '\n';
   for(auto it: book_stats){
     std::cout << "Boards found at depth " << (it.first < 10 ? " " : "");
     std::cout << it.first << ": ";
-    std::cout << it.second << std::endl;
+    std::cout << it.second << '\n';
   }
   
 }
@@ -123,7 +123,7 @@ void book_t::learn(const std::string& bot_name,unsigned threads)
     pq.push(learn_job(b,depth));
   }
   
-  std::cout << "done adding all threads to thread pool, spinning forever" << std::endl; 
+  std::cout << "done adding all threads to thread pool, spinning forever" << '\n'; 
   
   std::vector<std::thread*> thread_vec;
   for(unsigned i=0;i<threads;++i){
@@ -183,7 +183,7 @@ void book_t::learn_execute_job(bot_base* bot,learn_job* job){
 
 
 bool book_t::add(const board* b,const book_t::value* bv)
-{
+{  
   rw_lock_write_guard guard(container_lock);  
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
@@ -193,12 +193,12 @@ bool book_t::add(const board* b,const book_t::value* bv)
   board after_normalized = after.rotate(rot);
   int move = before_normalized.get_move_index(&after_normalized);
   std::string str = b->to_database_string();
-  citer it = container.find(str);
+  iter it = container.find(str);
   
   book_t::value fixed_bv = *bv;
   fixed_bv.best_move = move;
   
-  if(it==container.end() || !is_suitable_entry(*it)){
+  if(!is_suitable_entry(*it)){
     return false;  
   }
   
@@ -226,9 +226,10 @@ void book_t::value::add_to_line(csv::line_t* l) const
 
 void book_t::clean() const
 {
+ 
   /* test if file exists, return if not */
   if(access(get_filename().c_str(), F_OK) == -1){
-    std::cout << "file \"" << get_filename() << "\" not found." << std::endl;
+    std::cout << "file \"" << get_filename() << "\" not found." << '\n';
     return;    
   }
     
@@ -250,7 +251,7 @@ void book_t::clean() const
   /* remove backup file */
   std::remove((get_filename() + ".bak").c_str());
   
-  std::cout << "Successfully cleaned \"" << get_filename() << "\"" << std::endl;
+  std::cout << "Successfully cleaned \"" << get_filename() << "\"" << '\n';
   
 }
 

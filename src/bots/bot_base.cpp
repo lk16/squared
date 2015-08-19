@@ -56,6 +56,12 @@ void bot_base::stat_t::stop_timer()
   gettimeofday(&stop_time,NULL);
 }
 
+void bot_base::stat_t::reset()
+{
+  nodes = 0ull;
+}
+
+
 double bot_base::stat_t::get_seconds() const
 {
   return (stop_time.tv_sec + (stop_time.tv_usec / 1000000.0)) - 

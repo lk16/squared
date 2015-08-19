@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 
 typedef unsigned long long bits64;
 
@@ -33,7 +34,6 @@ inline int bits64_find_first(bits64 b){
 
    return index64[((b & -b) * 0x03f79d71b4cb0a89) >> 58];
 #endif
-  
 }
 
 // returns 64 if b==0ull, returns most significant bit otherwise
@@ -88,9 +88,19 @@ inline bits64 rotate_left(bits64 x){
   return mirror_vertical_line(x);
 }
 
+// return least significant bit
 inline bits64 bits64_first(bits64 x)
+{  
+  return x & -x;
+}
+
+// return most significant bit
+inline bits64 bits64_last(bits64 x)
 {
-  return x ^ (x & (x-1));
+  if(x==0ull){
+    return x;
+  }
+  return 1ull << (63 - __builtin_clzl(x));
 }
 
 inline bits64 bits64_rotate(bits64 x,int n)
@@ -106,7 +116,31 @@ inline bits64 bits64_rotate(bits64 x,int n)
   return x;
 }
 
+inline bits64 bits64_is_subset_of_mask(bits64 set,bits64 subset){
+  return ((bits64)(bool)(~set & subset))-1;
+}
+
+// returns index of bitset where at most 1 bit is set
+// 64 is returned if b == 0ull
+inline int bits64_only_bit_index(bits64 b){
+  static const int table[83] = {
+    64, 0, 1,-1, 2,27,-1, 8,
+     3,62,28,24,-1,-1, 9,17,
+     4,56,63,47,29,-1,25,60,
+    -1,54,-1,52,10,12,18,38,
+     5,14,57,35,-1,20,48,-1,
+    30,40,-1,-1,26, 7,61,23,
+    -1,16,55,46,-1,59,53,51,
+    11,37,13,34,19,-1,39,-1,
+     6,22,15,45,58,50,36,33,
+    -1,-1,21,44,49,32,-1,43,
+    31,42,41
+  };
+  
+  assert(bits64_count(b) <= 1);
+  return table[b%83];
+}
+
 void bits64_show(bits64 b);
 
-
-
+std::string bits64_to_ascii(bits64 b);

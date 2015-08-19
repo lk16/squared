@@ -43,13 +43,17 @@ int bot_pvs::pvs(int alpha, int beta)
   
   bits64 moves = inspected.get_valid_moves();
   if(moves == 0ull){
+    int heur;
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
-      int diff = inspected.get_disc_diff();
+      heur = -inspected.get_disc_diff();
       inspected.switch_turn();
-      return -EXACT_SCORE_FACTOR * diff;  
+      if(!exact){
+        heur *= EXACT_SCORE_FACTOR; 
+      }
+      return heur;  
     }
-    int heur = -pvs<sort,exact>(-beta,-alpha);
+    heur = -pvs<sort,exact>(-beta,-alpha);
     inspected.switch_turn();
     return heur;
   }
@@ -69,12 +73,7 @@ int bot_pvs::pvs(int alpha, int beta)
       score = -pvs<sort,exact>(-beta,-alpha);
     }
     else{
-      //if(exact){
-      //  score = -pvs_exact_null_window(-alpha-1);
-      //}
-      //else{
-        score = -pvs_null_window<exact>(-alpha-1);
-      //}
+      score = -pvs_null_window<exact>(-alpha-1);
       if((alpha < score) && (score < beta)){
         score = -pvs<sort,exact>(-beta,-score);
       } 
@@ -109,7 +108,10 @@ int bot_pvs::pvs_null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves() == 0ull){
-      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
+      heur = -inspected.get_disc_diff();
+      if(!exact){
+        heur *= EXACT_SCORE_FACTOR;
+      }
     }
     else{
       heur = -pvs_null_window<exact>(-alpha-1);
@@ -121,17 +123,18 @@ int bot_pvs::pvs_null_window(int alpha)
   for(int i=0;i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
     while(location_moves != 0ull){
-      int move = bits64_find_first(location_moves);
+      bits64 bit = bits64_first(location_moves);
+      int move = bits64_only_bit_index(bit);
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
       int score = -pvs_null_window<exact>(-alpha-1);
       moves_left++;
-      inspected.undo_move(bits64_set[move],undo_data);
+      inspected.undo_move(bit,undo_data);
       
       if(score > alpha){
         return alpha+1;
       }
-      location_moves &= bits64_reset[move];
+      location_moves ^= bit;
     }
   }
   return alpha;
@@ -202,26 +205,19 @@ void bot_pvs::do_move_search(const board* b, board* res)
   
   int best_heur,best_id=0;
   
-  best_heur = MIN_HEURISTIC;
+  best_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs<true,exact>(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,exact>(exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << ": ";
-    if(exact){
-      output() << best_heur/1000;
-    }
-    else{
-      output() << best_heur;
-    }
-    output() << std::endl;
-    
+    output() << " (" << board::index_to_position(b->get_move_index(children+id)) << ')';
+    output() << ": " << best_heur << '\n';
   }
   
   set_last_move_heur(best_heur);
