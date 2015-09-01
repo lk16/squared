@@ -138,8 +138,8 @@ std::string pgn::analyse(bot_base* bot, bool analyse_white, bool analyse_black)
   }
   
   int count[2];
-  count[0] = bits64_count(b.opp);
-  count[1] = bits64_count(b.me);
+  count[0] = b.opp.count();
+  count[1] = b.me.count();
   
   ss << '\n';
   

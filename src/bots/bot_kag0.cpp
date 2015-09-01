@@ -54,34 +54,34 @@ int bot_kag0::get_frontier() const
   bits64 opp_frontier = 0ull;
   bits64 non_empty = inspected.get_non_empty_fields();
   
-  opp_frontier |= ((inspected.opp << 9) & (non_empty << 18) & 0xFEFEFEFEFEFEFEFE);
-  opp_frontier |= ((inspected.opp << 8) & (non_empty << 16) & 0xFEFEFEFEFEFEFEFE);
-  opp_frontier |= ((inspected.opp << 7) & (non_empty << 14) & 0xFEFEFEFEFEFEFEFE);
-  opp_frontier |= ((inspected.opp << 1) & (non_empty << 1) & 0xFEFEFEFEFEFEFEFE);
+  opp_frontier |= ((inspected.opp << 9) & (non_empty << 18) & bits64(0xFEFEFEFEFEFEFEFE));
+  opp_frontier |= ((inspected.opp << 8) & (non_empty << 16) & bits64(0xFEFEFEFEFEFEFEFE));
+  opp_frontier |= ((inspected.opp << 7) & (non_empty << 14) & bits64(0xFEFEFEFEFEFEFEFE));
+  opp_frontier |= ((inspected.opp << 1) & (non_empty << 1) & bits64(0xFEFEFEFEFEFEFEFE));
   
-  opp_frontier |= ((inspected.opp >> 9) & (non_empty >> 18) & 0x7F7F7F7F7F7F7F7F);
-  opp_frontier |= ((inspected.opp >> 8) & (non_empty >> 16) & 0x7F7F7F7F7F7F7F7F);
-  opp_frontier |= ((inspected.opp >> 7) & (non_empty >> 14) & 0x7F7F7F7F7F7F7F7F);
-  opp_frontier |= ((inspected.opp >> 1) & (non_empty >> 1) & 0x7F7F7F7F7F7F7F7F);
+  opp_frontier |= ((inspected.opp >> 9) & (non_empty >> 18) & bits64(0x7F7F7F7F7F7F7F7F));
+  opp_frontier |= ((inspected.opp >> 8) & (non_empty >> 16) & bits64(0x7F7F7F7F7F7F7F7F));
+  opp_frontier |= ((inspected.opp >> 7) & (non_empty >> 14) & bits64(0x7F7F7F7F7F7F7F7F));
+  opp_frontier |= ((inspected.opp >> 1) & (non_empty >> 1) & bits64(0x7F7F7F7F7F7F7F7F));
   
   opp_frontier &= ~non_empty;
   
   bits64 me_frontier = 0ull;
   
-  me_frontier |= ((inspected.me << 9) & (non_empty << 18) & 0xFEFEFEFEFEFEFEFE);
-  me_frontier |= ((inspected.me << 8) & (non_empty << 16) & 0xFEFEFEFEFEFEFEFE);
-  me_frontier |= ((inspected.me << 7) & (non_empty << 14) & 0xFEFEFEFEFEFEFEFE);
-  me_frontier |= ((inspected.me << 1) & (non_empty << 1) & 0xFEFEFEFEFEFEFEFE);
+  me_frontier |= ((inspected.me << 9) & (non_empty << 18) & bits64(0xFEFEFEFEFEFEFEFE));
+  me_frontier |= ((inspected.me << 8) & (non_empty << 16) & bits64(0xFEFEFEFEFEFEFEFE));
+  me_frontier |= ((inspected.me << 7) & (non_empty << 14) & bits64(0xFEFEFEFEFEFEFEFE));
+  me_frontier |= ((inspected.me << 1) & (non_empty << 1) & bits64(0xFEFEFEFEFEFEFEFE));
   
-  me_frontier |= ((inspected.me >> 9) & (non_empty >> 18) & 0x7F7F7F7F7F7F7F7F);
-  me_frontier |= ((inspected.me >> 8) & (non_empty >> 16) & 0x7F7F7F7F7F7F7F7F);
-  me_frontier |= ((inspected.me >> 7) & (non_empty >> 14) & 0x7F7F7F7F7F7F7F7F);
-  me_frontier |= ((inspected.me >> 1) & (non_empty >> 1) & 0x7F7F7F7F7F7F7F7F);
+  me_frontier |= ((inspected.me >> 9) & (non_empty >> 18) & bits64(0x7F7F7F7F7F7F7F7F));
+  me_frontier |= ((inspected.me >> 8) & (non_empty >> 16) & bits64(0x7F7F7F7F7F7F7F7F));
+  me_frontier |= ((inspected.me >> 7) & (non_empty >> 14) & bits64(0x7F7F7F7F7F7F7F7F));
+  me_frontier |= ((inspected.me >> 1) & (non_empty >> 1) & bits64(0x7F7F7F7F7F7F7F7F));
     
   me_frontier &= ~non_empty;
   
   
-  return bits64_count(me_frontier) - bits64_count(opp_frontier);
+  return me_frontier.count() - opp_frontier.count();
 }
 
 

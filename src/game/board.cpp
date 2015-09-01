@@ -1,70 +1,70 @@
 #include "board.hpp"
 
 bits64 (board::* const move_funcs[64])() = {
-  &board::do_move_internal<board::A1>,
-  &board::do_move_internal<board::A2>,
-  &board::do_move_internal<board::A3>,
-  &board::do_move_internal<board::A4>,
-  &board::do_move_internal<board::A5>,
-  &board::do_move_internal<board::A6>,
-  &board::do_move_internal<board::A7>,
-  &board::do_move_internal<board::A8>,
-  &board::do_move_internal<board::B1>,
-  &board::do_move_internal<board::B2>,
-  &board::do_move_internal<board::B3>,
-  &board::do_move_internal<board::B4>,
-  &board::do_move_internal<board::B5>,
-  &board::do_move_internal<board::B6>,
-  &board::do_move_internal<board::B7>,
-  &board::do_move_internal<board::B8>,
-  &board::do_move_internal<board::C1>,
-  &board::do_move_internal<board::C2>,
-  &board::do_move_internal<board::C3>,
-  &board::do_move_internal<board::C4>,
-  &board::do_move_internal<board::C5>,
-  &board::do_move_internal<board::C6>,
-  &board::do_move_internal<board::C7>,
-  &board::do_move_internal<board::C8>,
-  &board::do_move_internal<board::D1>,
-  &board::do_move_internal<board::D2>,
-  &board::do_move_internal<board::D3>,
-  &board::do_move_internal<board::D4>,
-  &board::do_move_internal<board::D5>,
-  &board::do_move_internal<board::D6>,
-  &board::do_move_internal<board::D7>,
-  &board::do_move_internal<board::D8>,
-  &board::do_move_internal<board::E1>,
-  &board::do_move_internal<board::E2>,
-  &board::do_move_internal<board::E3>,
-  &board::do_move_internal<board::E4>,
-  &board::do_move_internal<board::E5>,
-  &board::do_move_internal<board::E6>,
-  &board::do_move_internal<board::E7>,
-  &board::do_move_internal<board::E8>,
-  &board::do_move_internal<board::F1>,
-  &board::do_move_internal<board::F2>,
-  &board::do_move_internal<board::F3>,
-  &board::do_move_internal<board::F4>,
-  &board::do_move_internal<board::F5>,
-  &board::do_move_internal<board::F6>,
-  &board::do_move_internal<board::F7>,
-  &board::do_move_internal<board::F8>,
-  &board::do_move_internal<board::G1>,
-  &board::do_move_internal<board::G2>,
-  &board::do_move_internal<board::G3>,
-  &board::do_move_internal<board::G4>,
-  &board::do_move_internal<board::G5>,
-  &board::do_move_internal<board::G6>,
-  &board::do_move_internal<board::G7>,
-  &board::do_move_internal<board::G8>,
-  &board::do_move_internal<board::H1>,
-  &board::do_move_internal<board::H2>,
-  &board::do_move_internal<board::H3>,
-  &board::do_move_internal<board::H4>,
-  &board::do_move_internal<board::H5>,
-  &board::do_move_internal<board::H6>,
-  &board::do_move_internal<board::H7>,
-  &board::do_move_internal<board::H8>
+  &board::do_move_internally<board::A1>,
+  &board::do_move_internally<board::A2>,
+  &board::do_move_internally<board::A3>,
+  &board::do_move_internally<board::A4>,
+  &board::do_move_internally<board::A5>,
+  &board::do_move_internally<board::A6>,
+  &board::do_move_internally<board::A7>,
+  &board::do_move_internally<board::A8>,
+  &board::do_move_internally<board::B1>,
+  &board::do_move_internally<board::B2>,
+  &board::do_move_internally<board::B3>,
+  &board::do_move_internally<board::B4>,
+  &board::do_move_internally<board::B5>,
+  &board::do_move_internally<board::B6>,
+  &board::do_move_internally<board::B7>,
+  &board::do_move_internally<board::B8>,
+  &board::do_move_internally<board::C1>,
+  &board::do_move_internally<board::C2>,
+  &board::do_move_internally<board::C3>,
+  &board::do_move_internally<board::C4>,
+  &board::do_move_internally<board::C5>,
+  &board::do_move_internally<board::C6>,
+  &board::do_move_internally<board::C7>,
+  &board::do_move_internally<board::C8>,
+  &board::do_move_internally<board::D1>,
+  &board::do_move_internally<board::D2>,
+  &board::do_move_internally<board::D3>,
+  &board::do_move_internally<board::D4>,
+  &board::do_move_internally<board::D5>,
+  &board::do_move_internally<board::D6>,
+  &board::do_move_internally<board::D7>,
+  &board::do_move_internally<board::D8>,
+  &board::do_move_internally<board::E1>,
+  &board::do_move_internally<board::E2>,
+  &board::do_move_internally<board::E3>,
+  &board::do_move_internally<board::E4>,
+  &board::do_move_internally<board::E5>,
+  &board::do_move_internally<board::E6>,
+  &board::do_move_internally<board::E7>,
+  &board::do_move_internally<board::E8>,
+  &board::do_move_internally<board::F1>,
+  &board::do_move_internally<board::F2>,
+  &board::do_move_internally<board::F3>,
+  &board::do_move_internally<board::F4>,
+  &board::do_move_internally<board::F5>,
+  &board::do_move_internally<board::F6>,
+  &board::do_move_internally<board::F7>,
+  &board::do_move_internally<board::F8>,
+  &board::do_move_internally<board::G1>,
+  &board::do_move_internally<board::G2>,
+  &board::do_move_internally<board::G3>,
+  &board::do_move_internally<board::G4>,
+  &board::do_move_internally<board::G5>,
+  &board::do_move_internally<board::G6>,
+  &board::do_move_internally<board::G7>,
+  &board::do_move_internally<board::G8>,
+  &board::do_move_internally<board::H1>,
+  &board::do_move_internally<board::H2>,
+  &board::do_move_internally<board::H3>,
+  &board::do_move_internally<board::H4>,
+  &board::do_move_internally<board::H5>,
+  &board::do_move_internally<board::H6>,
+  &board::do_move_internally<board::H7>,
+  &board::do_move_internally<board::H8>
 };
 
 
@@ -78,16 +78,22 @@ bits64 (board::* const move_funcs[64])() = {
 // 0,1,2,3,3,2,1,0
 
 const bits64 board::location[10] = {
-  /* 0 */ bits64_set[0] | bits64_set[7] | bits64_set[56] | bits64_set[63],
-  /* 1 */ bits64_set[1] | bits64_set[6] | bits64_set[8] | bits64_set[15] | bits64_set[48] | bits64_set[55] | bits64_set[57] | bits64_set[62],
-  /* 2 */ bits64_set[2] | bits64_set[5] | bits64_set[16] | bits64_set[23] | bits64_set[40] | bits64_set[47] | bits64_set[58] | bits64_set[61],
-  /* 3 */ bits64_set[3] | bits64_set[4] | bits64_set[24] | bits64_set[31] | bits64_set[32] | bits64_set[39] | bits64_set[59] | bits64_set[60],
-  /* 4 */ bits64_set[9] | bits64_set[14] | bits64_set[49] | bits64_set[54],
-  /* 5 */ bits64_set[10] | bits64_set[13] | bits64_set[17] | bits64_set[22] | bits64_set[41] | bits64_set[46] | bits64_set[50] | bits64_set[53],
-  /* 6 */ bits64_set[11] | bits64_set[12] | bits64_set[25] | bits64_set[30] | bits64_set[33] | bits64_set[38] | bits64_set[51] | bits64_set[52],
-  /* 7 */ bits64_set[18] | bits64_set[21] | bits64_set[42] | bits64_set[45],
-  /* 8 */ bits64_set[19] | bits64_set[20] | bits64_set[26] | bits64_set[29] | bits64_set[34] | bits64_set[37] | bits64_set[43] | bits64_set[44],
-  /* 9 */ bits64_set[27] | bits64_set[28] | bits64_set[35] | bits64_set[36]
+  /* 0 */ bits64::mask_set[0] | bits64::mask_set[7] | bits64::mask_set[56] | bits64::mask_set[63],
+  /* 1 */ bits64::mask_set[1] | bits64::mask_set[6] | bits64::mask_set[8] | bits64::mask_set[15] | 
+	  bits64::mask_set[48] | bits64::mask_set[55] | bits64::mask_set[57] | bits64::mask_set[62],
+  /* 2 */ bits64::mask_set[2] | bits64::mask_set[5] | bits64::mask_set[16] | bits64::mask_set[23] | 
+	  bits64::mask_set[40] | bits64::mask_set[47] | bits64::mask_set[58] | bits64::mask_set[61],
+  /* 3 */ bits64::mask_set[3] | bits64::mask_set[4] | bits64::mask_set[24] | bits64::mask_set[31] | 
+	  bits64::mask_set[32] | bits64::mask_set[39] | bits64::mask_set[59] | bits64::mask_set[60],
+  /* 4 */ bits64::mask_set[9] | bits64::mask_set[14] | bits64::mask_set[49] | bits64::mask_set[54],
+  /* 5 */ bits64::mask_set[10] | bits64::mask_set[13] | bits64::mask_set[17] | bits64::mask_set[22] | 
+	  bits64::mask_set[41] | bits64::mask_set[46] | bits64::mask_set[50] | bits64::mask_set[53],
+  /* 6 */ bits64::mask_set[11] | bits64::mask_set[12] | bits64::mask_set[25] | bits64::mask_set[30] | 
+	  bits64::mask_set[33] | bits64::mask_set[38] | bits64::mask_set[51] | bits64::mask_set[52],
+  /* 7 */ bits64::mask_set[18] | bits64::mask_set[21] | bits64::mask_set[42] | bits64::mask_set[45],
+  /* 8 */ bits64::mask_set[19] | bits64::mask_set[20] | bits64::mask_set[26] | bits64::mask_set[29] | 
+	  bits64::mask_set[34] | bits64::mask_set[37] | bits64::mask_set[43] | bits64::mask_set[44],
+  /* 9 */ bits64::mask_set[27] | bits64::mask_set[28] | bits64::mask_set[35] | bits64::mask_set[36]
 };
 
 // 0,1,2,3,3,2,1,0,
@@ -131,9 +137,9 @@ board* board::get_children(board* out_begin) const
 
 board* board::get_children(board* out, bits64 moves) const
 {  
-  while(moves != 0ull){
-    bits64 bit = bits64_first(moves);
-    int index = bits64_only_bit_index(bit);
+  while(moves.any()){
+    bits64 bit = moves.first_bit();
+    int index = bit.only_bit_index();
     *out = *this;
     out->do_move(index);
     out++;
@@ -146,11 +152,11 @@ int board::get_mobility(bits64 moves) const
 {
   board copy;
   int total = 0;
-  while(moves != 0ull){
+  while(moves.any()){
     copy = *this;
-    bits64 bit = bits64_first(moves);
-    int index = bits64_only_bit_index(bit);
-    total += bits64_count(copy.do_move(index));
+    bits64 bit = moves.first_bit();
+    int index = bit.only_bit_index();
+    total += copy.do_move(index).count();
     moves ^= bit;
   }
   return total;
@@ -172,8 +178,8 @@ bool board::only_similar_siblings(const board* siblings, int n)
 int board::get_disc_diff() const
 {
   
-  int me_count = bits64_count(me);
-  int opp_count = bits64_count(opp);
+  int me_count = me.count();
+  int opp_count = opp.count();
   
   int diff = me_count - opp_count;
   int empties = 64 - me_count - opp_count;
@@ -211,7 +217,7 @@ std::string board::to_html_table(int turn) const
       ss << "<tr><td width='15' align='center'>" << (char)('1'+(f/8)) << "</td>";
     }
     
-    bits64 thisbit = bits64_set[f];
+    bits64 thisbit = bits64::mask_set[f];
     ss << "<td><img src='" << IMAGE_PATH << "small/";
     
     if(me & thisbit){
@@ -272,7 +278,7 @@ std::string board::to_ascii_art(int turn) const
       ss << (f/8)+1 << ' ';
     }
     
-    bits64 thisbit = bits64_set[f];
+    bits64 thisbit = bits64::mask_set[f];
     
     if(x & thisbit){
       ss << "\033[31;1m\u2B24\033[0m ";
@@ -335,8 +341,8 @@ std::string board::to_string() const {
   
   
   for(int i=0;i<16;i++){
-    res[i] = hex[(me >> (4*i)) & 0xF];
-    res[16+i] = hex[(opp >> (4*i)) & 0xF];
+    res[i] = hex[(me >> (4*i)) & bits64(0xF)];
+    res[16+i] = hex[(opp >> (4*i)) & bits64(0xF)];
   }
   
   res[32] = '\0';
@@ -406,8 +412,8 @@ board board::rotate(int n) const
 {
   board b(*this);
   
-  b.me = bits64_rotate(b.me,n);
-  b.opp = bits64_rotate(b.opp,n);
+  b.me = b.me.rotate(n);
+  b.opp = b.opp.rotate(n);
   
   return b;
 }
@@ -441,14 +447,14 @@ void board::get_frontier_discs(int* _me,int* _opp) const
   bits64 both = get_non_empty_fields();
   bits64 mask = both;
   
-  mask &= ((both << 9) & 0xFEFEFEFEFEFEFEFE);
+  mask &= ((both << 9) & bits64(0xFEFEFEFEFEFEFEFE));
   mask &= ((both << 8));
-  mask &= ((both << 7) & 0x7F7F7F7F7F7F7F7F);
-  mask &= ((both << 1) & 0xFEFEFEFEFEFEFEFE);
-  mask &= ((both >> 1) & 0x7F7F7F7F7F7F7F7F);
-  mask &= ((both >> 7) & 0xFEFEFEFEFEFEFEFE);
+  mask &= ((both << 7) & bits64(0x7F7F7F7F7F7F7F7F));
+  mask &= ((both << 1) & bits64(0xFEFEFEFEFEFEFEFE));
+  mask &= ((both >> 1) & bits64(0x7F7F7F7F7F7F7F7F));
+  mask &= ((both >> 7) & bits64(0xFEFEFEFEFEFEFEFE));
   mask &= ((both >> 8));
-  mask &= ((both >> 9) & 0x7F7F7F7F7F7F7F7F);
+  mask &= ((both >> 9) & bits64(0x7F7F7F7F7F7F7F7F));
   
   *_me = mask & this->me;
   *_opp = mask & this->opp;

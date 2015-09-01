@@ -23,8 +23,8 @@ int bot_pluto::heuristic()
   int res = inspected.get_mobility(my_moves) - copy.get_mobility(opp_moves);
   
   res += 3 *(
-    bits64_count(inspected.me & board::location[board::X_SQUARES]) 
-    - bits64_count(inspected.opp & board::location[board::X_SQUARES])
+    (inspected.me & board::location[board::X_SQUARES]).count()
+    - (inspected.opp & board::location[board::X_SQUARES]).count()
   );
   
   return res;

@@ -43,8 +43,8 @@ tournament_t::game_result tournament_t::play_othello_game(bot_base* black, bot_b
     turn = 1-turn;
   }
   int me,opp;
-  me = bits64_count(b.me);
-  opp = bits64_count(b.opp);
+  me = b.me.count();
+  opp = b.opp.count();
   if(me>opp){
     return turn ? WHITE_WINS : BLACK_WINS;
   }

@@ -169,7 +169,7 @@ struct board{
   static std::string index_to_position(int index);
   
   template<int field_id>
-  bits64 do_move_internal();
+  bits64 do_move_internally();
   
   // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(bits64 move_bit,bits64 undo_data); 
@@ -219,7 +219,7 @@ inline bits64 board::do_move(int move_id)
 
 inline int board::get_move_index(const board* after) const
 {
-  return bits64_find_first(get_non_empty_fields() ^ after->get_non_empty_fields());
+  return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_bit();
 }
 
 
@@ -236,8 +236,8 @@ inline board::board()
 }
 
 inline void board::reset(){
-  me = bits64_set[28] | bits64_set[35];
-  opp = bits64_set[27] | bits64_set[36];
+  me = (1ull << 28) | (1ull << 35);
+  opp = (1ull << 27) | (1ull << 36);
 }
 
 inline board::board(const board& b)
@@ -286,24 +286,22 @@ inline bits64 board::get_non_empty_fields() const
 
 inline bool board::has_valid_moves() const
 {
-  return get_valid_moves() != 0ull;
+  return get_valid_moves().any();
 }
 
 inline bool board::opponent_has_moves() const
 {
-  return count_opponent_moves() != 0;
+  return board(*this).switch_turn()->get_valid_moves().any();
 }
-
-
 
 inline int board::count_valid_moves() const
 {
-  return bits64_count(get_valid_moves());  
+  return get_valid_moves().count();  
 }
 
 inline bool board::is_valid_move(int field_id) const
 { 
-  return (get_valid_moves() & bits64_set[field_id]) != 0ull;
+  return get_valid_moves().test(field_id);
 }
 
 inline void board::undo_move(bits64 move_bit,bits64 undo_data)
@@ -320,7 +318,7 @@ bits64 flip_l, flip_r,mask_l, mask_r;
 bits64 res = 0ull;
   
   // this funtion is a modified version of code from Edax
-  const bits64 mask = opp & 0x7E7E7E7E7E7E7E7Eull;
+  const bits64 mask = opp & bits64(0x7E7E7E7E7E7E7E7Eull);
 
   flip_l = mask & (me << 1);
   flip_l |= mask & (flip_l << 1);
@@ -386,12 +384,12 @@ inline int board::get_rotation(const board* b) const
 
 inline int board::count_discs() const
 {
-  return bits64_count(get_non_empty_fields());
+  return get_non_empty_fields().count();
 }
 
 inline int board::count_empty_fields() const
 {
-  return bits64_count(get_empty_fields());
+  return get_empty_fields().count();
 }
 
 inline int board::count_opponent_moves() const
@@ -400,7 +398,7 @@ inline int board::count_opponent_moves() const
 }
 
 template<int field_id>
-inline bits64 board::do_move_internal()
+inline bits64 board::do_move_internally()
 {
 
   bits64 line,flipped = 0ull;
@@ -410,25 +408,19 @@ inline bits64 board::do_move_internal()
   
   for(int d=0;d<4;++d){
     line = mask[d];
-    end = bits64_find_last(line & me);
-    line &= bits64_after[end];
-    flipped |= bits64_is_subset_of_mask(opp,line) & line;
-    /*if((opp & line) == line){
-      flipped |= line;
-    }*/
+    end = (line & me).last_bit();
+    line &= bits64::mask_after[end];
+    flipped |= opp.is_subset_of_mask(line) & line;
   }
   
   for(int d=4;d<8;++d){
     line = mask[d];
-    end = bits64_find_first(line & me);
-    line &= bits64_before[end];
-    flipped |= bits64_is_subset_of_mask(opp,line) & line;
-    /*if((opp & line) == line){
-      flipped |= line;
-    }*/
+    end = (line & me).first_bit();
+    line &= bits64::mask_before[end];
+    flipped |= opp.is_subset_of_mask(line) & line;
   }
   
-  me |= bits64_set[field_id] | flipped;
+  me |= bits64::mask_set[field_id] | flipped;
   opp &= ~me;
   switch_turn(); 
   return flipped;

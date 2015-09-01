@@ -41,6 +41,10 @@ public:
   
   operator bool() const;
   
+  bool operator==(const bits64& that) const;
+  bool operator!=(const bits64& that) const;
+  
+  
   // returns 64 if b==0ul, returns least significant bit otherwise
   int first_index() const;
   
@@ -48,13 +52,23 @@ public:
   int last_index() const;
   
   // returns the least significant bit
-  int first_bit() const;
+  bits64 first_bit() const;
   
   // returns the most significant bit
-  int last_bit() const;
+  bits64 last_bit() const;
   
   // returns number of set bits
   int count() const;
+  
+  // returns whether *this has no set bits
+  bool none() const;
+  
+  // returns whether *this has at least one set bit
+  bool any() const;
+  
+  // returns whether all bits in *this are set
+  bool all() const;
+  
   
   // test if bit i is set
   bool test(int i) const;
@@ -73,7 +87,7 @@ public:
 
   // returns index of bitset where at most 1 bit is set
   // 64 is returned if bitset == 0ull
-  int bits64_only_bit_index() const;
+  int only_bit_index() const;
   
   // converts *this to a string representation
   std::string to_ascii() const;
@@ -90,7 +104,7 @@ inline bits64::bits64(long long unsigned int x)
   word = x;
 }
 
-int bits64::first_index() const
+inline int bits64::first_index() const
 {
   if(word == 0){
     return 64;
@@ -112,7 +126,7 @@ int bits64::first_index() const
 #endif
 }
 
-int bits64::last_index() const
+inline int bits64::last_index() const
 {
   if(word == 0ul){
     return 64;  // __builtin_clz(0ull) is undefined
@@ -121,7 +135,7 @@ int bits64::last_index() const
 }
 
 
-int bits64::count() const
+inline int bits64::count() const
 {
 #if 0
   return __builtin_popcountll(word);
@@ -133,7 +147,7 @@ int bits64::count() const
 #endif
 }
 
-bits64 bits64::mirror_vertical_line() const
+inline bits64 bits64::mirror_vertical_line() const
 {
   // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
   bits64 x = word;
@@ -148,7 +162,7 @@ bits64 bits64::mirror_vertical_line() const
   return word; 
 }
 
-bits64 bits64::rotate_left() const
+inline bits64 bits64::rotate_left() const
 {
   bits64 x = word;
   
@@ -165,12 +179,12 @@ bits64 bits64::rotate_left() const
 
 
 
-int bits64::first_bit() const
+inline bits64 bits64::first_bit() const
 {
   return word & -word;
 }
 
-int bits64::last_bit() const
+inline bits64 bits64::last_bit() const
 {
   if(word == 0ull){
     return word;
@@ -178,7 +192,7 @@ int bits64::last_bit() const
   return 1ull << (63 - __builtin_clzl(word));
 }
 
-bits64 bits64::rotate(int n)
+inline bits64 bits64::rotate(int n)
 {
   bits64 x;
   
@@ -194,12 +208,12 @@ bits64 bits64::rotate(int n)
 }
 
 
-bits64 bits64::is_subset_of_mask(const bits64& subset) const
+inline bits64 bits64::is_subset_of_mask(const bits64& subset) const
 {
   return bits64(((uint64_t)(bool)(~word & subset))-1);
 }
 
-int bits64::only_bit_index() const
+inline int bits64::only_bit_index() const
 {
   static const int table[83] = {
     64, 0, 1,-1, 2,27,-1, 8,
@@ -221,86 +235,86 @@ int bits64::only_bit_index() const
   return res;
 }
 
-bool bits64::test(int i) const
+inline bool bits64::test(int i) const
 {
   assert(i>=0 && i<=63);
   return word & mask_set[i];
 }
 
-bits64 bits64::operator&(const bits64& that) const
+inline bits64 bits64::operator&(const bits64& that) const
 {
   return this->word & that.word;
 }
 
-bits64 bits64::operator|(const bits64& that) const
+inline bits64 bits64::operator|(const bits64& that) const
 {
   return this->word | that.word;
 }
 
-bits64 bits64::operator^(const bits64& that) const
+inline bits64 bits64::operator^(const bits64& that) const
 {
   return this->word ^ that.word;
 }
 
-bits64& bits64::operator=(const bits64& that)
+inline bits64& bits64::operator=(const bits64& that)
 {
   this->word = that.word;
   return *this;
 }
 
-bits64 bits64::operator~() const
+inline bits64 bits64::operator~() const
 {
   return ~word;
 }
 
-bits64::operator bool() const
+inline bits64::operator bool() const
 {
   return (bool)word;
 }
 
-bits64 bits64::operator<<(int n) const
+inline bits64 bits64::operator<<(int n) const
 {
   assert(n>=0 && n<=63);
   return word << n;
 }
 
-bits64 bits64::operator>>(int n) const
+inline bits64 bits64::operator>>(int n) const
 {
   assert(n>=0 && n<=63);
   return word >> n;
 }
 
-bits64& bits64::operator<<=(int n)
+inline bits64& bits64::operator<<=(int n)
 {
   *this = *this << n;
   return *this;
 }
 
-bits64& bits64::operator>>=(int n)
+inline bits64& bits64::operator>>=(int n)
 {
   *this = *this >> n;
   return *this;
 }
 
-bits64& bits64::operator|=(const bits64& that)
+inline bits64& bits64::operator|=(const bits64& that)
 {
   *this = *this | that;
   return *this;
 }
 
-bits64& bits64::operator&=(const bits64& that)
+inline bits64& bits64::operator&=(const bits64& that)
 {
   *this = *this & that;
   return *this;
 }
 
-bits64& bits64::operator^=(const bits64& that)
+inline bits64& bits64::operator^=(const bits64& that)
 {
   *this = *this ^ that;
   return *this;
 }
 
-std::string bits64::to_ascii() const
+inline std::string bits64::to_ascii() const
 {
   int x,y;
   std::stringstream ss;
@@ -327,19 +341,30 @@ std::string bits64::to_ascii() const
   return ss.str();
 }
 
+inline bool bits64::operator!=(const bits64& that) const
+{
+  return !(*this == that);
+}
 
+inline bool bits64::operator==(const bits64& that) const
+{
+  return this->word != that.word;
+}
 
+inline bool bits64::all() const
+{
+  return word == 0xFFFFFFFFFFFFFFFF;
+}
 
+inline bool bits64::any() const
+{
+  return !none();
+}
 
-
-
-
-
-
-
-
-
-
+inline bool bits64::none() const
+{
+  return word == 0x0;
+}
 
 
 
