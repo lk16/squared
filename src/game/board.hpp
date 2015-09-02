@@ -236,8 +236,8 @@ inline board::board()
 }
 
 inline void board::reset(){
-  me = (1ull << 28) | (1ull << 35);
-  opp = (1ull << 27) | (1ull << 36);
+  me = bits64().set(28).set(35);
+  opp = bits64().set(27).set(36);
 }
 
 inline board::board(const board& b)
@@ -408,19 +408,19 @@ inline bits64 board::do_move_internally()
   
   for(int d=0;d<4;++d){
     line = mask[d];
-    end = (line & me).last_bit();
-    line &= bits64::mask_after[end];
+    end = (line & me).last_index();
+    line.reset_after(end);
     flipped |= opp.is_subset_of_mask(line) & line;
   }
   
   for(int d=4;d<8;++d){
     line = mask[d];
-    end = (line & me).first_bit();
-    line &= bits64::mask_before[end];
+    end = (line & me).first_index();
+    line.reset_after(end);
     flipped |= opp.is_subset_of_mask(line) & line;
   }
   
-  me |= bits64::mask_set[field_id] | flipped;
+  me.set(field_id) |= flipped;
   opp &= ~me;
   switch_turn(); 
   return flipped;

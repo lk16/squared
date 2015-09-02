@@ -263,7 +263,7 @@ book_t::value book_t::lookup(const board* b,int min_depth)
   citer it = container.find(key);
   if((it!=container.end()) && (it->second.depth >= min_depth)){
     res = it->second;
-    bits64 move_bit = bits64::mask_set[res.best_move];
+    bits64 move_bit = bits64().set(res.best_move);
     int rot = b->to_database_board().get_rotation(b);
     res.best_move = move_bit.rotate(rot).only_bit_index();
   }

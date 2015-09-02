@@ -8,14 +8,13 @@ class bits64{
   uint64_t word;
   
   static const char counts[65536];
-  
+  static const uint64_t mask_before[65];
+  static const uint64_t mask_after[65];  
+
 public:
   
   static const uint64_t mask_set[65];
   static const uint64_t mask_reset[65];
-  static const uint64_t mask_before[65];
-  static const uint64_t mask_after[65];
-  
   
   
   bits64();
@@ -41,9 +40,29 @@ public:
   
   operator bool() const;
   
+  // tests equality
   bool operator==(const bits64& that) const;
+  
+  // tests inequality
   bool operator!=(const bits64& that) const;
   
+  // resets all bits
+  void reset_all();
+  
+  // resets all bits after bit i, 64 resets everything
+  void reset_after(int i);
+  
+  // resets all bits before bit i, 64 resets everything
+  void reset_before(int i);
+  
+  // resets bit i
+  bits64& reset(int i);
+  
+  // sets all bits
+  void set_all();
+  
+  // sets bit i
+  bits64& set(int i);
   
   // returns 64 if b==0ul, returns least significant bit otherwise
   int first_index() const;
@@ -54,7 +73,7 @@ public:
   // returns the least significant bit
   bits64 first_bit() const;
   
-  // returns the most significant bit
+  // returnss the most significant bit
   bits64 last_bit() const;
   
   // returns number of set bits
@@ -82,8 +101,8 @@ public:
   // rotates *this: n shall be between 0 and 7, both inclusive
   bits64 rotate(int n);
   
-  // returns ~0ull if subset a subset of *this or 0ull otherwise
-  bits64 is_subset_of_mask(const bits64& subset) const;
+  // returns ~0ull if that a subset of *this or 0ull otherwise
+  bits64 is_subset_of_mask(const bits64& that) const;
 
   // returns index of bitset where at most 1 bit is set
   // 64 is returned if bitset == 0ull
@@ -208,9 +227,9 @@ inline bits64 bits64::rotate(int n)
 }
 
 
-inline bits64 bits64::is_subset_of_mask(const bits64& subset) const
+inline bits64 bits64::is_subset_of_mask(const bits64& that) const
 {
-  return bits64(((uint64_t)(bool)(~word & subset))-1);
+  return bits64(((uint64_t)(bool)(~word & that))-1);
 }
 
 inline int bits64::only_bit_index() const
@@ -286,12 +305,14 @@ inline bits64 bits64::operator>>(int n) const
 
 inline bits64& bits64::operator<<=(int n)
 {
+  assert(n>=0 && n<=63);
   *this = *this << n;
   return *this;
 }
 
 inline bits64& bits64::operator>>=(int n)
 {
+  assert(n>=0 && n<=63);
   *this = *this >> n;
   return *this;
 }
@@ -366,5 +387,40 @@ inline bool bits64::none() const
   return word == 0x0;
 }
 
+inline void bits64::reset_all()
+{
+  word = 0x0;
+}
+
+inline bits64& bits64::reset(int i)
+{
+  assert(i>=0 && i<=63);
+  word &= bits64::mask_reset[i];
+  return *this;
+}
+
+inline void bits64::reset_after(int i)
+{
+  assert(i>=0 && i<=64);
+  word &= bits64::mask_after[i];
+}
+
+inline void bits64::reset_before(int i)
+{
+  assert(i>=0 && i<=64);
+  word &= bits64::mask_before[i];
+}
+
+inline bits64& bits64::set(int i)
+{
+  assert(i>=0 && i<=63);
+  word |= bits64::mask_set[i];
+  return *this;
+}
+
+inline void bits64::set_all()
+{
+  word = 0xFFFFFFFFFFFFFFFF;
+}
 
 

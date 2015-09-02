@@ -77,24 +77,25 @@ bits64 (board::* const move_funcs[64])() = {
 // 1,4,5,6,6,5,4,1,
 // 0,1,2,3,3,2,1,0
 
+
+#define set4bits(a,b,c,d) set(a).set(b).set(c).set(d)
+#define set8bits(a,b,c,d,e,f,g,h) set(a).set(b).set(c).set(d).set(e).set(f).set(g).set(h)
+
 const bits64 board::location[10] = {
-  /* 0 */ bits64::mask_set[0] | bits64::mask_set[7] | bits64::mask_set[56] | bits64::mask_set[63],
-  /* 1 */ bits64::mask_set[1] | bits64::mask_set[6] | bits64::mask_set[8] | bits64::mask_set[15] | 
-	  bits64::mask_set[48] | bits64::mask_set[55] | bits64::mask_set[57] | bits64::mask_set[62],
-  /* 2 */ bits64::mask_set[2] | bits64::mask_set[5] | bits64::mask_set[16] | bits64::mask_set[23] | 
-	  bits64::mask_set[40] | bits64::mask_set[47] | bits64::mask_set[58] | bits64::mask_set[61],
-  /* 3 */ bits64::mask_set[3] | bits64::mask_set[4] | bits64::mask_set[24] | bits64::mask_set[31] | 
-	  bits64::mask_set[32] | bits64::mask_set[39] | bits64::mask_set[59] | bits64::mask_set[60],
-  /* 4 */ bits64::mask_set[9] | bits64::mask_set[14] | bits64::mask_set[49] | bits64::mask_set[54],
-  /* 5 */ bits64::mask_set[10] | bits64::mask_set[13] | bits64::mask_set[17] | bits64::mask_set[22] | 
-	  bits64::mask_set[41] | bits64::mask_set[46] | bits64::mask_set[50] | bits64::mask_set[53],
-  /* 6 */ bits64::mask_set[11] | bits64::mask_set[12] | bits64::mask_set[25] | bits64::mask_set[30] | 
-	  bits64::mask_set[33] | bits64::mask_set[38] | bits64::mask_set[51] | bits64::mask_set[52],
-  /* 7 */ bits64::mask_set[18] | bits64::mask_set[21] | bits64::mask_set[42] | bits64::mask_set[45],
-  /* 8 */ bits64::mask_set[19] | bits64::mask_set[20] | bits64::mask_set[26] | bits64::mask_set[29] | 
-	  bits64::mask_set[34] | bits64::mask_set[37] | bits64::mask_set[43] | bits64::mask_set[44],
-  /* 9 */ bits64::mask_set[27] | bits64::mask_set[28] | bits64::mask_set[35] | bits64::mask_set[36]
+  bits64().set4bits(0,7,56,63),
+  bits64().set8bits(1,6,8,15,48,55,57,62),
+  bits64().set8bits(2,5,16,24,40,47,58,61),
+  bits64().set8bits(3,4,24,31,32,39,59,60),
+  bits64().set4bits(9,14,49,54),
+  bits64().set8bits(10,13,17,22,41,46,50,53),
+  bits64().set8bits(11,12,25,30,33,38,51,52),
+  bits64().set4bits(18,21,42,45),
+  bits64().set8bits(19,20,26,29,34,37,43,44),
+  bits64().set4bits(27,28,35,36)
 };
+
+#undef set4bits
+#undef set8bits
 
 // 0,1,2,3,3,2,1,0,
 // 1,4,5,6,6,5,4,1,
@@ -217,7 +218,7 @@ std::string board::to_html_table(int turn) const
       ss << "<tr><td width='15' align='center'>" << (char)('1'+(f/8)) << "</td>";
     }
     
-    bits64 thisbit = bits64::mask_set[f];
+    bits64 thisbit = bits64().set(f);
     ss << "<td><img src='" << IMAGE_PATH << "small/";
     
     if(me & thisbit){
@@ -278,7 +279,7 @@ std::string board::to_ascii_art(int turn) const
       ss << (f/8)+1 << ' ';
     }
     
-    bits64 thisbit = bits64::mask_set[f];
+    bits64 thisbit = bits64().set(f);
     
     if(x & thisbit){
       ss << "\033[31;1m\u2B24\033[0m ";
