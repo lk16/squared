@@ -108,9 +108,11 @@ public:
   // 64 is returned if bitset == 0ull
   int only_bit_index() const;
   
-  // converts *this to a string representation
+  // converts *this to ascii art
   std::string to_ascii() const;
   
+  // equivalent to std::cout << this->to_ascii()
+  void show() const;
 };
 
 inline bits64::bits64()
@@ -229,7 +231,8 @@ inline bits64 bits64::rotate(int n)
 
 inline bits64 bits64::is_subset_of_mask(const bits64& that) const
 {
-  return bits64(((uint64_t)(bool)(~word & that))-1);
+  return bits64(((uint64_t)(bool)(~that & *this))-1);
+  //return ((*this & that) == *this) ? ~0ull : 0ull;
 }
 
 inline int bits64::only_bit_index() const
@@ -423,4 +426,8 @@ inline void bits64::set_all()
   word = 0xFFFFFFFFFFFFFFFF;
 }
 
+inline void bits64::show() const
+{
+  std::cout << to_ascii();
+}
 

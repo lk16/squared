@@ -411,7 +411,7 @@ inline bits64 board::do_move_internally()
     end = (line & me).last_index();
     line.reset_after(end);
     flipped |= line.is_subset_of_mask(opp) & line;
- 
+    
     line = mask[d+4];
     end = (line & me).first_index();
     line.reset_before(end);
