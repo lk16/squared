@@ -410,14 +410,12 @@ inline bits64 board::do_move_internally()
     line = mask[d];
     end = (line & me).last_index();
     line.reset_after(end);
-    flipped |= opp.is_subset_of_mask(line) & line;
-  }
-  
-  for(int d=4;d<8;++d){
-    line = mask[d];
+    flipped |= line.is_subset_of_mask(opp) & line;
+ 
+    line = mask[d+4];
     end = (line & me).first_index();
-    line.reset_after(end);
-    flipped |= opp.is_subset_of_mask(line) & line;
+    line.reset_before(end);
+    flipped |= line.is_subset_of_mask(opp) & line;
   }
   
   me.set(field_id) |= flipped;
