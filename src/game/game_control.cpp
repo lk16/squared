@@ -271,11 +271,6 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
-  if(!current_state->b.has_valid_moves()){
-    if(!current_state->b.count_opponent_moves() != 0){
-      return true;
-    }
-  }
   if(bot[current_state->turn]){
     on_bot_do_move();  
   }
