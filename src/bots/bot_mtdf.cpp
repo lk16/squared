@@ -228,7 +228,7 @@ int bot_mtdf::null_window(int alpha)
         if(!exact){
           moves_left++;
         }
-        inspected.undo_move(bits64_set[move],undo_data);
+        inspected.undo_move(bits64::mask_set[move],undo_data);
         if(score > alpha){
           move = ht_iter->second.best_move;
           return update_hash_table<exact>(alpha,alpha+1,move);
@@ -241,8 +241,8 @@ int bot_mtdf::null_window(int alpha)
 
   
   if(move != -1){
-    valid_moves &= bits64_reset[move];
-    if(valid_moves == 0ull){
+    valid_moves &= bits64::mask_reset[move];
+    if(valid_moves.none()){
       return update_hash_table<exact>(alpha,alpha,move);
     }
   }
@@ -250,10 +250,10 @@ int bot_mtdf::null_window(int alpha)
   
   
   
-  if(valid_moves == 0ull){
+  if(valid_moves.none()){
     int heur;
     inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
+    if(inspected.get_valid_moves().none()){
       inspected.switch_turn();
       heur = inspected.get_disc_diff();
       if(!exact){
@@ -298,9 +298,9 @@ int bot_mtdf::null_window(int alpha)
   else{
     for(int i=0;i<9;i++){
       bits64 location_moves = valid_moves & board::ordered_locations[i];
-      while(location_moves != 0ull){
-        bits64 bit = bits64_first(location_moves);
-        move = bits64_only_bit_index(bit);
+      while(location_moves.any()){
+        bits64 bit = location_moves.first_bit();
+        move = bit.only_bit_index();
         bits64 undo_data = inspected.do_move(move);
         if(!exact){
           moves_left--;

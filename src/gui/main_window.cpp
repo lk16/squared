@@ -137,10 +137,10 @@ void main_window::update_fields()
   
   
   for(int i=0;i<64;i++){
-    if(white & bits64_set[i]){
+    if(white.test(i)){
       imagefile = "white.png";
     }
-    else if(black & bits64_set[i]){
+    else if(black.test(i)){
       imagefile = "black.png";
     }
     else if(state->b.is_valid_move(i)){

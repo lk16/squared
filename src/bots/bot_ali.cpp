@@ -15,7 +15,7 @@ int bot_ali::heuristic()
   int heur = 0;
   for(int i=0;i<10;++i){
     heur += bot_ali::location_values[i] * ( 
-      bits64_count(inspected.me & board::location[i]) - bits64_count(inspected.opp & board::location[i]) 
+      (inspected.me & board::location[i]).count() - (inspected.opp & board::location[i]).count()
     );
   }
   return heur;

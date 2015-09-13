@@ -42,7 +42,7 @@ int bot_pvs::pvs(int alpha, int beta)
   }
   
   bits64 moves = inspected.get_valid_moves();
-  if(moves == 0ull){
+  if(moves.none()){
     int heur;
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
@@ -104,10 +104,10 @@ int bot_pvs::pvs_null_window(int alpha)
   
   bits64 valid_moves = inspected.get_valid_moves();
 
-  if(valid_moves == 0ull){
+  if(valid_moves.none()){
     int heur;
     inspected.switch_turn();
-    if(inspected.get_valid_moves() == 0ull){
+    if(inspected.get_valid_moves().none()){
       heur = -inspected.get_disc_diff();
       if(!exact){
         heur *= EXACT_SCORE_FACTOR;
@@ -122,15 +122,14 @@ int bot_pvs::pvs_null_window(int alpha)
   
   for(int i=0;i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(location_moves != 0ull){
-      bits64 bit = bits64_first(location_moves);
-      int move = bits64_only_bit_index(bit);
+    while(location_moves.any()){
+      bits64 bit = location_moves.first_bit();
+      int move = bit.only_bit_index();
       bits64 undo_data = inspected.do_move(move);
       moves_left--;
       int score = -pvs_null_window<exact>(-alpha-1);
       moves_left++;
       inspected.undo_move(bit,undo_data);
-      
       if(score > alpha){
         return alpha+1;
       }

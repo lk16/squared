@@ -52,10 +52,10 @@ bool book_t::is_correct_entry(const entry& e) const
   if(e.second.depth < MIN_ACCEPT_DEPTH){ 
     error = 4;
   }
-  if((b.me & b.opp) != 0ull){ 
+  if((b.me & b.opp).any()){ 
     error = 5;
   }
-  if(((b.me | b.opp) & 0x0000001818000000) != 0x0000001818000000){ 
+  if(((b.me | b.opp) & bits64(0x0000001818000000)) != bits64(0x0000001818000000)){ 
     error = 6;
   }
   if(!b.is_valid_move(e.second.best_move)){ 
@@ -263,9 +263,9 @@ book_t::value book_t::lookup(const board* b,int min_depth)
   citer it = container.find(key);
   if((it!=container.end()) && (it->second.depth >= min_depth)){
     res = it->second;
-    bits64 move_bit = bits64_set[res.best_move];
+    bits64 move_bit = bits64().set(res.best_move);
     int rot = b->to_database_board().get_rotation(b);
-    res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
+    res.best_move = move_bit.rotate(rot).only_bit_index();
   }
   return res;
 }

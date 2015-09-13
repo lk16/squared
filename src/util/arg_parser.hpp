@@ -39,7 +39,7 @@ private:
   };
   
   // maps arguments to a function that modifies the argument state
-  // that function should return how many arguments it has used
+  // that function should return how many command line arguments it has used
   // or IGNORE_OTHER_ARGS or ERROR when appropriate
   std::map<std::string,modifier> func_map;
   
