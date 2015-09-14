@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stack>
-
 #include <glibmm/main.h>
 
 #include "game/board.hpp"

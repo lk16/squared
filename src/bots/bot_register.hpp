@@ -1,7 +1,7 @@
 #pragma once
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #define REGISTER_BOT(t) bot_registration REGISTER_##t(\
   #t,\

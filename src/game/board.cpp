@@ -1,4 +1,4 @@
-#include "board.hpp"
+#include "game/board.hpp"
 
 bits64 (board::* const move_funcs[64])() = {
   &board::do_move_internally<board::A1>,

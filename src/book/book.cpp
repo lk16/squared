@@ -17,7 +17,7 @@ std::string book_t::get_filename() const
   return csv_file.get_name();
 }
 
-void book_t::set_csv_file(const std::string& filename)
+  void book_t::set_csv_file(const std::string& filename)
 {
   csv_file.set_file(filename);
 }

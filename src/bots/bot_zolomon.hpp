@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include "bots/bot_pvs.hpp"
 #include "util/bitset.hpp"
 #include "util/string.hpp"
-#include "bots/bot_pvs.hpp"
 
 struct bot_zolomon:
   public bot_pvs
