@@ -56,7 +56,7 @@ void game_control::run()
     mw = &window;
     window.control = this;
     window.update_fields();
-    connect_timeout_signal();
+    Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     on_new_game();
     Gtk::Main::run(window);
   }
@@ -122,13 +122,6 @@ bool game_control::do_special_tasks()
   }
   
   return false;
-}
-
-
-
-void game_control::connect_timeout_signal()
-{
-  Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
 }
 
 

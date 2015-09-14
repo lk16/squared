@@ -340,10 +340,11 @@ std::string board::to_string() const {
   char res[33];  
   const char* hex = "0123456789abcdef";
   
-  
   for(int i=0;i<16;i++){
-    res[i] = hex[(me >> (4*i)) & bits64(0xF)];
-    res[16+i] = hex[(opp >> (4*i)) & bits64(0xF)];
+    int j = (me >> (4*i)) & bits64(0xF);
+    res[i] = hex[j];
+    j = (opp >> (4*i)) & bits64(0xF);
+    res[16+i] = hex[j];
   }
   
   res[32] = '\0';
