@@ -43,7 +43,7 @@ public:
       b(_b),depth(_depth){}
     
     bool operator<(const learn_job& rhs) const {
-      return priority() < rhs.priority();  
+      return this->priority() < rhs.priority();  
     }
 
     int priority() const{

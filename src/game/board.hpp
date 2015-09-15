@@ -101,10 +101,7 @@ struct board{
     
   // returns a bitset of valid moves
   bits64 get_valid_moves() const;
-  
-  // helper function of get_valid_moves()
-  bits64 get_some_moves(const bits64 opp_mask, const int dir) const;
-  
+    
   // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
   
@@ -401,20 +398,20 @@ template<int field_id>
 inline bits64 board::do_move_internally()
 {
 
-  bits64 line,flipped = 0ull;
-  int end;
+  bits64 flipped = 0ull;
   
   const bits64* mask = dir_mask[field_id];
   
-  for(int d=0;d<4;++d){
-    line = mask[d];
-    end = (line & me).last_index();
-    line.reset_after(end);
-    flipped |= line.is_subset_of_mask(opp) & line;
-    
-    line = mask[d+4];
-    end = (line & me).first_index();
-    line.reset_before(end);
+  for(int d=0;d<8;++d){
+    bits64 line = mask[d];
+    if(d<4){
+      int end = (line & me).last_index();
+      line.reset_after(end);
+    }
+    else{
+      int end = (line & me).first_index();
+      line.reset_before(end);
+    }
     flipped |= line.is_subset_of_mask(opp) & line;
   }
   

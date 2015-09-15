@@ -1,12 +1,4 @@
-#include "testing.hpp"
-#include "bots/bot_ali.hpp"
-#include "util/csv.hpp"
-#include "util/math.hpp"
-
-#include <future>
-#include <vector>
-#include <set>
-#include <unistd.h>
+#include "main/testing.hpp"
 
 void print_time_diff(timeval start,timeval end,int runs,const std::string& name){
   

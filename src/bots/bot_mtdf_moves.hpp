@@ -1,8 +1,8 @@
 #pragma once
 
+#include "bots/bot_mtdf.hpp"
 #include "util/bitset.hpp"
 #include "util/string.hpp"
-#include "bots/bot_mtdf.hpp"
 
 struct bot_mtdf_moves:
   public bot_mtdf

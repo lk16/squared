@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stack>
-
 #include <glibmm/main.h>
 
 #include "game/board.hpp"
@@ -72,15 +70,19 @@ struct game_control{
   void on_undo();
   void on_redo();
   
+  // called when a human does move with id field_id
   void on_human_do_move(int field_id);
+  
+  // called when a bot is supposed to move
   void on_bot_do_move();
+  
+  // called at the end of on_human_do_move and on_any_move
   void on_any_move();
   
-  
+  // lets bot start thinking if any is to move
   bool timeout_handler();
   
-  void connect_timeout_signal();
-  
+  // main method: run special tasks and/or windowed game
   void run();
   
   // does special tasks, if any 
