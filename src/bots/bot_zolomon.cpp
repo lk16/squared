@@ -27,17 +27,17 @@ int bot_zolomon::heuristic()
   int res = 0;
   
   res += 15 * (
-    bits64_count(inspected.me & board::location[board::X_SQUARES]) 
-    - bits64_count(inspected.opp & board::location[board::X_SQUARES])
+    (inspected.me & board::location[board::X_SQUARES]).count() 
+    - (inspected.opp & board::location[board::X_SQUARES]).count()
   );
   
   res += 12 * (
-    bits64_count(inspected.me & 0x7e8181818181817e)
-    - bits64_count(inspected.opp & 0x7e8181818181817e)
+    (inspected.me & bits64(0x7e8181818181817e)).count()
+    - (inspected.opp & bits64(0x7e8181818181817e)).count()
   );
   
-  int me = bits64_count(inspected.me);
-  int opp = bits64_count(inspected.opp);
+  int me = inspected.me.count();
+  int opp = inspected.opp.count();
   
   int x = (me > opp) ? 1 : ((me == opp) ? 0 : -1);
   

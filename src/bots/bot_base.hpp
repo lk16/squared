@@ -14,6 +14,16 @@
 
 class bot_base{
 
+
+  
+  std::string name;
+  int search_depth;
+  int perfect_depth;
+  std::ostream* output_stream;
+  int last_move_heur;
+  
+public: 
+  
   class stat_t{
     timeval start_time,stop_time;
     unsigned long long nodes;
@@ -26,15 +36,9 @@ class bot_base{
     unsigned long long get_nodes_per_second() const;
     unsigned long long get_nodes() const;
     void inc_nodes();
+    void reset();
   };
   
-  std::string name;
-  int search_depth;
-  int perfect_depth;
-  std::ostream* output_stream;
-  int last_move_heur;
-  
-public: 
   
   static const int NO_HEUR_AVAILABLE = 1000000;
   

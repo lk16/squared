@@ -1,14 +1,14 @@
 #pragma once
 
-#include "bots/bot_mtdf.hpp"
 #include "util/bitset.hpp"
 #include "util/string.hpp"
+#include "bots/bot_pvs.hpp"
 
-struct bot_mtdf_moves:
-  public bot_mtdf
+struct bot_frontier:
+  public bot_pvs
 {
-  bot_mtdf_moves();  
-  ~bot_mtdf_moves() = default;
+  bot_frontier();  
+  virtual ~bot_frontier();
   
   virtual void on_new_game();
   virtual int heuristic();

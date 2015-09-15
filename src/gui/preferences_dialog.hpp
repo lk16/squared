@@ -17,9 +17,11 @@ class preferences_dialog:
   Gtk::Button ok_button;
 
 public:
+  
   // use -1 for human
   preferences_dialog(Gtk::Window& parent,int black_level,int white_level);
   
+  // collect data from dialog
   void collect_data(int* black_level,int* white_level);
   
   

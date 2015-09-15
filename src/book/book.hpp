@@ -43,7 +43,7 @@ public:
       b(_b),depth(_depth){}
     
     bool operator<(const learn_job& rhs) const {
-      return priority() < rhs.priority();  
+      return this->priority() < rhs.priority();  
     }
 
     int priority() const{
@@ -75,7 +75,7 @@ public:
   typedef container_t::iterator iter;
   typedef container_t::value_type entry;
 
-  // lowest depth for a move to be stored in the book_stddev
+  // lowest depth for a move to be stored 
   static const int MIN_ACCEPT_DEPTH = 8;
   
   // lowest depth for a move to be learned

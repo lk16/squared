@@ -1,30 +1,7 @@
 #include "util/bitset.hpp"
 
-void bits64_show(bits64 b)
-{
-  int x,y;
-  
-  std::cout << "+-----------------+\n";
-  
-  /* middle */
-  for(y=0;y<8;y++){
-    std::cout << "| ";
-    for(x=0;x<8;x++){
-      if(b & bits64_set[y*8+x]){
-          std::cout << "@ ";
-      }
-      else{
-        std::cout << "  ";
-      }
-    }
-    std::cout << "|\n";
-  }
-  
-  /* bottom line */
-  std::cout << "+-----------------+\n";
-}
 
-const bits64 bits64_set[65] = {
+const uint64_t bits64::mask_set[65] = {
   (1ull << 0),
   (1ull << 1),
   (1ull << 2),
@@ -92,75 +69,75 @@ const bits64 bits64_set[65] = {
   0x0 // hack which works with find_first_set_64 and find_last_set_64
 };
 
-const bits64 bits64_reset[65] = {
-  ~bits64_set[0],
-  ~bits64_set[1],
-  ~bits64_set[2],
-  ~bits64_set[3],
-  ~bits64_set[4],
-  ~bits64_set[5],
-  ~bits64_set[6],
-  ~bits64_set[7],
-  ~bits64_set[8],
-  ~bits64_set[9],
-  ~bits64_set[10],
-  ~bits64_set[11],
-  ~bits64_set[12],
-  ~bits64_set[13],
-  ~bits64_set[14],
-  ~bits64_set[15],
-  ~bits64_set[16],
-  ~bits64_set[17],
-  ~bits64_set[18],
-  ~bits64_set[19],
-  ~bits64_set[20],
-  ~bits64_set[21],
-  ~bits64_set[22],
-  ~bits64_set[23],
-  ~bits64_set[24],
-  ~bits64_set[25],
-  ~bits64_set[26],
-  ~bits64_set[27],
-  ~bits64_set[28],
-  ~bits64_set[29],
-  ~bits64_set[30],
-  ~bits64_set[31],
-  ~bits64_set[32],
-  ~bits64_set[33],
-  ~bits64_set[34],
-  ~bits64_set[35],
-  ~bits64_set[36],
-  ~bits64_set[37],
-  ~bits64_set[38],
-  ~bits64_set[39],
-  ~bits64_set[40],
-  ~bits64_set[41],
-  ~bits64_set[42],
-  ~bits64_set[43],
-  ~bits64_set[44],
-  ~bits64_set[45],
-  ~bits64_set[46],
-  ~bits64_set[47],
-  ~bits64_set[48],
-  ~bits64_set[49],
-  ~bits64_set[50],
-  ~bits64_set[51],
-  ~bits64_set[52],
-  ~bits64_set[53],
-  ~bits64_set[54],
-  ~bits64_set[55],
-  ~bits64_set[56],
-  ~bits64_set[57],
-  ~bits64_set[58],
-  ~bits64_set[59],
-  ~bits64_set[60],
-  ~bits64_set[61],
-  ~bits64_set[62],
-  ~bits64_set[63],
+const uint64_t bits64::mask_reset[65] = {
+  ~bits64::mask_set[0],
+  ~bits64::mask_set[1],
+  ~bits64::mask_set[2],
+  ~bits64::mask_set[3],
+  ~bits64::mask_set[4],
+  ~bits64::mask_set[5],
+  ~bits64::mask_set[6],
+  ~bits64::mask_set[7],
+  ~bits64::mask_set[8],
+  ~bits64::mask_set[9],
+  ~bits64::mask_set[10],
+  ~bits64::mask_set[11],
+  ~bits64::mask_set[12],
+  ~bits64::mask_set[13],
+  ~bits64::mask_set[14],
+  ~bits64::mask_set[15],
+  ~bits64::mask_set[16],
+  ~bits64::mask_set[17],
+  ~bits64::mask_set[18],
+  ~bits64::mask_set[19],
+  ~bits64::mask_set[20],
+  ~bits64::mask_set[21],
+  ~bits64::mask_set[22],
+  ~bits64::mask_set[23],
+  ~bits64::mask_set[24],
+  ~bits64::mask_set[25],
+  ~bits64::mask_set[26],
+  ~bits64::mask_set[27],
+  ~bits64::mask_set[28],
+  ~bits64::mask_set[29],
+  ~bits64::mask_set[30],
+  ~bits64::mask_set[31],
+  ~bits64::mask_set[32],
+  ~bits64::mask_set[33],
+  ~bits64::mask_set[34],
+  ~bits64::mask_set[35],
+  ~bits64::mask_set[36],
+  ~bits64::mask_set[37],
+  ~bits64::mask_set[38],
+  ~bits64::mask_set[39],
+  ~bits64::mask_set[40],
+  ~bits64::mask_set[41],
+  ~bits64::mask_set[42],
+  ~bits64::mask_set[43],
+  ~bits64::mask_set[44],
+  ~bits64::mask_set[45],
+  ~bits64::mask_set[46],
+  ~bits64::mask_set[47],
+  ~bits64::mask_set[48],
+  ~bits64::mask_set[49],
+  ~bits64::mask_set[50],
+  ~bits64::mask_set[51],
+  ~bits64::mask_set[52],
+  ~bits64::mask_set[53],
+  ~bits64::mask_set[54],
+  ~bits64::mask_set[55],
+  ~bits64::mask_set[56],
+  ~bits64::mask_set[57],
+  ~bits64::mask_set[58],
+  ~bits64::mask_set[59],
+  ~bits64::mask_set[60],
+  ~bits64::mask_set[61],
+  ~bits64::mask_set[62],
+  ~bits64::mask_set[63],
   0xFFFFFFFFFFFFFFFF // hack which works with find_first_set_64 and find_last_set_64
 };
 
-const bits64 bits64_before[65] = {
+const uint64_t bits64::mask_before[65] = {
   0x0, // used to prevent warnings
   (0xFFFFFFFFFFFFFFFF >> 63),
   (0xFFFFFFFFFFFFFFFF >> 62),
@@ -228,7 +205,7 @@ const bits64 bits64_before[65] = {
   0x0 // hack which works with find_first_set_64 and find_last_set_64
 };
 
-const bits64 bits64_after[65] = {
+const uint64_t bits64::mask_after[65] = {
   (0xFFFFFFFFFFFFFFFF << 1),
   (0xFFFFFFFFFFFFFFFF << 2),
   (0xFFFFFFFFFFFFFFFF << 3),
@@ -297,7 +274,7 @@ const bits64 bits64_after[65] = {
 };
 
 
-const char bits_counts[65536] = {
+const char bits64::counts[65536] = {
   0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
   1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
   1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,

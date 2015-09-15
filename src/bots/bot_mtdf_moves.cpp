@@ -6,10 +6,6 @@ bot_mtdf_moves::bot_mtdf_moves(){
   set_name("mtdf_moves");
 }
 
-
-bot_mtdf_moves::~bot_mtdf_moves(){  
-}
-
 int bot_mtdf_moves::heuristic()
 {
   int res = inspected.count_valid_moves();
@@ -20,8 +16,8 @@ int bot_mtdf_moves::heuristic()
   res -= opp_move_count;
   
   res += 3 *(
-      bits64_count(inspected.me & board::location[board::X_SQUARES]) 
-      - bits64_count(inspected.opp & board::location[board::X_SQUARES])
+      (inspected.me & board::location[board::X_SQUARES]).count()
+      - (inspected.opp & board::location[board::X_SQUARES]).count()
   );
   
   return res;

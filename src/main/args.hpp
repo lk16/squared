@@ -4,6 +4,7 @@
 #include "main/testing.hpp"
 #include "util/arg_parser.hpp"
 #include "util/pgn.hpp"
+#include "util/tournament.hpp"
 
 struct squared_args:
   public arg_parser_base<squared_args>
@@ -12,14 +13,10 @@ struct squared_args:
   squared_args(int argc,const char **argv);
   
   
-  game_control gc;
-  bool show_flag;
-  bool start_windowed_game;
-  bool use_book;
+  game_control* gc;
   
 
-  int set_valuation(int color);
-  int set_level(int color);
+  
   
   // modifiers
   int show_help();
@@ -28,10 +25,11 @@ struct squared_args:
   int learn();
   int set_board();
   int randomize_board();
-  int set_white_level();
-  int set_black_level();
+  int set_level();
+  int add_black_bot();
+  int add_white_bot();
   int compress_book();
-  int minus_q_flag();
+  int quit_if_game_over();
   int no_book();
   int set_white_valuation();
   int set_black_valuation();
@@ -41,4 +39,5 @@ struct squared_args:
   int speed_test();
   int process_pgn();
   int use_xot();
+  int tournament_flag();
 };

@@ -105,14 +105,18 @@ void main_window::on_menu_settings_preferences()
     }
     else{
       int x = output_level[BLACK];
-      control->add_bot(BLACK,x,max(2*x,16));
+      control->search_depth = x;
+      control->perfect_depth = max(2*x,16);
+      control->add_bot(BLACK);
     }
     if(output_level[WHITE]==-1){
       control->remove_bot(WHITE);
     }
     else{
       int x = output_level[WHITE];
-      control->add_bot(WHITE,x,max(2*x,16));
+      control->search_depth = x;
+      control->perfect_depth = max(2*x,16);
+      control->add_bot(WHITE);
     }
   
   }
@@ -121,22 +125,26 @@ void main_window::on_menu_settings_preferences()
 void main_window::update_fields()
 {
   std::string imagefile;
-  const board *b = &control->board_state.b;
+  const game_control::board_state_t* state = control->current_state;
+
+  bits64 white = state->b.me;
+  bits64 black = state->b.opp;
   
-  bits64 black = (control->board_state.turn == WHITE ? b->opp : b->me);
-  bits64 white = (control->board_state.turn == WHITE ? b->me : b->opp);
+  if(state->turn == BLACK){
+    std::swap(white,black);
+  }
   
   
   
   for(int i=0;i<64;i++){
-    if(white & bits64_set[i]){
+    if(white.test(i)){
       imagefile = "white.png";
     }
-    else if(black & bits64_set[i]){
+    else if(black.test(i)){
       imagefile = "black.png";
     }
-    else if(b->is_valid_move(i)){
-      if(control->board_state.turn == WHITE){
+    else if(state->b.is_valid_move(i)){
+      if(state->turn == WHITE){
         imagefile = "move_white.png";
       }
       else{

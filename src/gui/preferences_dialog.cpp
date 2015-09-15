@@ -1,4 +1,4 @@
-#include "preferences_dialog.hpp"
+#include "gui/preferences_dialog.hpp"
 
 preferences_dialog::preferences_dialog(Gtk::Window& parent,int black_level,int white_level):
   Gtk::Dialog("Preferences",parent),

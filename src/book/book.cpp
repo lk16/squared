@@ -17,7 +17,7 @@ std::string book_t::get_filename() const
   return csv_file.get_name();
 }
 
-void book_t::set_csv_file(const std::string& filename)
+  void book_t::set_csv_file(const std::string& filename)
 {
   csv_file.set_file(filename);
 }
@@ -52,10 +52,10 @@ bool book_t::is_correct_entry(const entry& e) const
   if(e.second.depth < MIN_ACCEPT_DEPTH){ 
     error = 4;
   }
-  if((b.me & b.opp) != 0ull){ 
+  if((b.me & b.opp).any()){ 
     error = 5;
   }
-  if(((b.me | b.opp) & 0x0000001818000000) != 0x0000001818000000){ 
+  if(((b.me | b.opp) & bits64(0x0000001818000000)) != bits64(0x0000001818000000)){ 
     error = 6;
   }
   if(!b.is_valid_move(e.second.best_move)){ 
@@ -65,7 +65,7 @@ bool book_t::is_correct_entry(const entry& e) const
     error = 8;
   }
   if(error != 0){
-    std::cout << "Incorrect board data: error " << error << std::endl;
+    std::cout << "Incorrect board data: error " << error << '\n';
   }
   return error == 0;
 }
@@ -101,11 +101,11 @@ void book_t::print_stats() const
   }
   
   
-  std::cout << "Total boards in book: " << container.size() << std::endl;
+  std::cout << "Total boards in book: " << container.size() << '\n';
   for(auto it: book_stats){
     std::cout << "Boards found at depth " << (it.first < 10 ? " " : "");
     std::cout << it.first << ": ";
-    std::cout << it.second << std::endl;
+    std::cout << it.second << '\n';
   }
   
 }
@@ -123,7 +123,7 @@ void book_t::learn(const std::string& bot_name,unsigned threads)
     pq.push(learn_job(b,depth));
   }
   
-  std::cout << "done adding all threads to thread pool, spinning forever" << std::endl; 
+  std::cout << "done adding all threads to thread pool, spinning forever" << '\n'; 
   
   std::vector<std::thread*> thread_vec;
   for(unsigned i=0;i<threads;++i){
@@ -183,7 +183,7 @@ void book_t::learn_execute_job(bot_base* bot,learn_job* job){
 
 
 bool book_t::add(const board* b,const book_t::value* bv)
-{
+{  
   rw_lock_write_guard guard(container_lock);  
   // TODO heavily modify this
   board before_normalized = b->to_database_board();
@@ -193,12 +193,12 @@ bool book_t::add(const board* b,const book_t::value* bv)
   board after_normalized = after.rotate(rot);
   int move = before_normalized.get_move_index(&after_normalized);
   std::string str = b->to_database_string();
-  citer it = container.find(str);
+  iter it = container.find(str);
   
   book_t::value fixed_bv = *bv;
   fixed_bv.best_move = move;
   
-  if(it==container.end() || !is_suitable_entry(*it)){
+  if(!is_suitable_entry(*it)){
     return false;  
   }
   
@@ -226,9 +226,10 @@ void book_t::value::add_to_line(csv::line_t* l) const
 
 void book_t::clean() const
 {
+ 
   /* test if file exists, return if not */
   if(access(get_filename().c_str(), F_OK) == -1){
-    std::cout << "file \"" << get_filename() << "\" not found." << std::endl;
+    std::cout << "file \"" << get_filename() << "\" not found." << '\n';
     return;    
   }
     
@@ -250,7 +251,7 @@ void book_t::clean() const
   /* remove backup file */
   std::remove((get_filename() + ".bak").c_str());
   
-  std::cout << "Successfully cleaned \"" << get_filename() << "\"" << std::endl;
+  std::cout << "Successfully cleaned \"" << get_filename() << "\"" << '\n';
   
 }
 
@@ -262,9 +263,9 @@ book_t::value book_t::lookup(const board* b,int min_depth)
   citer it = container.find(key);
   if((it!=container.end()) && (it->second.depth >= min_depth)){
     res = it->second;
-    bits64 move_bit = bits64_set[res.best_move];
+    bits64 move_bit = bits64().set(res.best_move);
     int rot = b->to_database_board().get_rotation(b);
-    res.best_move = bits64_find_first(bits64_rotate(move_bit,rot));
+    res.best_move = move_bit.rotate(rot).only_bit_index();
   }
   return res;
 }
