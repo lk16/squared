@@ -124,10 +124,11 @@ const bits64 board::ordered_locations[10] = {
 
 void board::xot()
 {
-  int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
-  int index = rand() % xot_boards_size;
-  me = xot_boards[index][0];
-  opp = xot_boards[index][1];
+//   int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
+//   int index = rand() % xot_boards_size;
+//   me = xot_boards[index][0];
+//   opp = xot_boards[index][1];
+  std::cout << "Warning: xot() currently does nothing.\n";
 }
 
 
