@@ -57,6 +57,52 @@ int bot_hill::heuristic(const board* b){
   return res;
 }
 
+int bot_hill::minimax(const board* b, int d,bool max)
+{
+  if(d==0){
+    return (max ? 1 : -1) * heuristic(b);
+  }
+  bits64 valid_moves = b->get_valid_moves();
+  if(valid_moves.none()){
+    board copy = *b;
+    copy.switch_turn();
+    if(copy.get_valid_moves().any()){
+      return minimax(&copy,d,!max);
+    }
+    else{
+      return (max ? 1 : -1) * b->get_disc_diff();
+    }
+  }
+  int best_heur = MIN_HEURISTIC;
+  if(max){
+    while(valid_moves.any()){
+      bits64 move = valid_moves.first_bit();
+      int move_index = move.only_bit_index();
+      board copy = *b;
+      int current_heur = minimax(&copy,d-1,!max);
+      if(current_heur > best_heur){
+        best_heur = current_heur;
+      }
+      valid_moves.reset(move_index);
+    }
+  }
+  else{
+    while(valid_moves.any()){
+      bits64 move = valid_moves.first_bit();
+      int move_index = move.only_bit_index();
+      board copy = *b;
+      int current_heur = minimax(&copy,d-1,!max);
+      if(current_heur < best_heur){
+        best_heur = current_heur;
+      }
+      valid_moves.reset(move_index);
+    }
+  }
+  return best_heur;
+}
+
+
+
 int bot_hill::alphabeta(const board* b,int d,int alpha,int beta){
   if(d==0){
     return -heuristic(b);
@@ -107,7 +153,8 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
       bits64 move_bit = valid_moves.first_bit();
       int move_index = move_bit.only_bit_index();
       board copy = *b;
-      int heur = -alphabeta(&copy,d,MIN_HEURISTIC,-best_heur);
+      //int heur = -alphabeta(&copy,d,MIN_HEURISTIC,-best_heur);
+      int heur = minimax(&copy,d,true);
       if(heur > best_heur){
         best_heur = heur;
         best_move = move_index;
@@ -116,11 +163,11 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     }
     b->do_move(best_move);
   }
-  return -alphabeta(b,pd,MIN_HEURISTIC,MAX_HEURISTIC);
+  return minimax(b,pd,true);
 }
 
 void bot_hill::on_new_game(){
-  
+  return;
 }
 
 int bot_hill::heuristic(){
