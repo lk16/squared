@@ -29,6 +29,8 @@ private:
   // minimax because I am a lame programmer
   int minimax(const board* b,int d,bool max);
   
+  int alphabeta(const board* b,int d,int alpha,int beta);
+  
   
   // perform hill climbing algorithm
   int hill_climbing(board* b,int d,int pd);

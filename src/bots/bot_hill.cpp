@@ -18,14 +18,14 @@ void bot_hill::do_move(const board* b, board* res)
   }
   int best_heur = MIN_HEURISTIC;
   board best_child;
-  int child_count = valid_moves.count();
   int id = 0;
+  int child_count = valid_moves.count(); 
   while(valid_moves.any()){
     bits64 move = valid_moves.first_bit();
     int move_index = move.only_bit_index();
     board child = *b;
     child.do_move(move_index);
-    int current_heur = hill_climbing(&child,get_search_depth(),get_perfect_depth());
+    int current_heur = -hill_climbing(&child,get_search_depth(),get_perfect_depth());
     if(current_heur > best_heur){
       best_heur = current_heur;
       best_child = *b;
@@ -107,7 +107,6 @@ int bot_hill::minimax(const board* b, int d,bool max)
 int bot_hill::hill_climbing(board* b,int d,int pd){
   int turn = 0;
   while(64 - b->count_discs() > pd){
-    //std::cout << b->to_ascii_art(turn) << '\n'; 
     bits64 valid_moves = b->get_valid_moves();
     if(valid_moves.none()){
       b->switch_turn();
@@ -126,6 +125,11 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     for(const board* child = children;child != child_end;++child){
       board copy = *child;
       int heur = minimax(&copy,d,true);
+      int ab = alphabeta(&copy,d,MIN_HEURISTIC,MAX_HEURISTIC);
+      if(heur != ab){
+        std::cout << "heur = " << heur << "\nab = " << ab << '\n';
+        exit(1);
+      }
       if(heur > best_heur){
         best_heur = heur;
         best_child = *child;
@@ -134,8 +138,44 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     *b = best_child;
     turn = 1 - turn;
   }
-  return minimax(b,pd,true);
+  int heur = minimax(b,pd,true);
+  int ab = alphabeta(b,pd,MIN_HEURISTIC,MAX_HEURISTIC);
+  if(heur != ab){
+    std::cout << "heur = " << heur << "\nab = " << ab << '\n';
+    exit(1);
+  }
+  return heur;  
 }
+
+int bot_hill::alphabeta(const board* b, int d, int alpha, int beta)
+{
+  if(d==0){
+    return heuristic(b);
+  }
+  if(!b->has_valid_moves()){
+    board copy = *b;
+    copy.switch_turn();
+    if(!copy.has_valid_moves()){
+      return EXACT_SCORE_FACTOR * b->get_disc_diff();
+    }
+    else{
+      return -alphabeta(&copy,d,-beta,-alpha);
+    }
+  }
+  board children[32];
+  board* child_end = b->get_children(children);
+  for(const board* child=children; child!= child_end; ++child){
+    int heur = -alphabeta(child,d-1,-beta,-alpha);
+    if(heur > alpha){
+      alpha = heur;
+    }
+//     if(alpha >= beta){
+//       break;
+//     }
+  }
+  return alpha;
+}
+
 
 void bot_hill::on_new_game(){
   return;
