@@ -18,18 +18,18 @@ void bot_hill::do_move(const board* b, board* res)
   }
   int best_heur = MIN_HEURISTIC;
   board best_child;
-  int id = 0;
   int child_count = valid_moves.count();
+  int id = 0;
   while(valid_moves.any()){
     bits64 move = valid_moves.first_bit();
     int move_index = move.only_bit_index();
-    board copy = *b;
-    copy.do_move(move_index);
-    board copy2 = copy;
-    int current_heur = hill_climbing(&copy,get_search_depth(),get_perfect_depth());
+    board child = *b;
+    child.do_move(move_index);
+    int current_heur = hill_climbing(&child,get_search_depth(),get_perfect_depth());
     if(current_heur > best_heur){
       best_heur = current_heur;
-      best_child = copy2;
+      best_child = *b;
+      best_child.do_move(move_index);
     }
     output() << "move " << (id+1) << "/" << (child_count);
     output() << " (" << board::index_to_position(move_index) << ')';
@@ -39,7 +39,6 @@ void bot_hill::do_move(const board* b, board* res)
   }
   *res = best_child;
 }
-
 
 int bot_hill::heuristic(const board* b){
   int res = b->count_valid_moves();
@@ -70,32 +69,34 @@ int bot_hill::minimax(const board* b, int d,bool max)
       return minimax(&copy,d,!max);
     }
     else{
-      return (max ? 1 : -1) * b->get_disc_diff();
+      return (max ? 1 : -1) * EXACT_SCORE_FACTOR * b->get_disc_diff();
     }
   }
-  int best_heur = MIN_HEURISTIC;
+  int best_heur;
   if(max){
+    best_heur = MIN_HEURISTIC;
     while(valid_moves.any()){
-      bits64 move = valid_moves.first_bit();
-      int move_index = move.only_bit_index();
+      bits64 move_bit = valid_moves.first_bit();
       board copy = *b;
+      copy.do_move(move_bit.only_bit_index());
       int current_heur = minimax(&copy,d-1,!max);
       if(current_heur > best_heur){
         best_heur = current_heur;
       }
-      valid_moves.reset(move_index);
+      valid_moves ^= move_bit;
     }
   }
   else{
+    best_heur = MAX_HEURISTIC;
     while(valid_moves.any()){
-      bits64 move = valid_moves.first_bit();
-      int move_index = move.only_bit_index();
+      bits64 move_bit = valid_moves.first_bit();
       board copy = *b;
+      copy.do_move(move_bit.only_bit_index());
       int current_heur = minimax(&copy,d-1,!max);
       if(current_heur < best_heur){
         best_heur = current_heur;
       }
-      valid_moves.reset(move_index);
+      valid_moves ^= move_bit;
     }
   }
   return best_heur;
@@ -103,65 +104,35 @@ int bot_hill::minimax(const board* b, int d,bool max)
 
 
 
-int bot_hill::alphabeta(const board* b,int d,int alpha,int beta){
-  if(d==0){
-    return -heuristic(b);
-  }
-  bits64 valid_moves = b->get_valid_moves();
-  if(valid_moves.none()){
-    board copy = *b;
-    copy.switch_turn();
-    if(copy.get_valid_moves().any()){
-      return -alphabeta(&copy,d,-beta,-alpha);
-    }
-    else{
-      return b->get_disc_diff();
-    }
-  }
-  
-  while(valid_moves.any()){
-    bits64 move = valid_moves.first_bit();
-    int move_index = move.only_bit_index();
-    board copy = *b;
-    int current_heur = -alphabeta(&copy,d-1,-beta,-alpha);
-    if(current_heur > alpha){
-      alpha = current_heur;
-    }
-    if(alpha >= beta){
-      return beta;
-    }
-    valid_moves.reset(move_index);
-  }
-  return alpha;
-}
-
 int bot_hill::hill_climbing(board* b,int d,int pd){
+  int turn = 0;
   while(64 - b->count_discs() > pd){
+    //std::cout << b->to_ascii_art(turn) << '\n'; 
     bits64 valid_moves = b->get_valid_moves();
     if(valid_moves.none()){
       b->switch_turn();
       if(b->get_valid_moves().any()){
+        turn = 1 - turn;
         continue;
       }
       else{
         return b->get_disc_diff();
       }
     }
-    int best_move = -1;
+    board best_child;
     int best_heur = MIN_HEURISTIC;
-    while(valid_moves.any()){
-      bits64 move_bit = valid_moves.first_bit();
-      int move_index = move_bit.only_bit_index();
-      board copy = *b;
-      //int heur = -alphabeta(&copy,d,MIN_HEURISTIC,-best_heur);
+    board children[32];
+    board* child_end = b->get_children(children);
+    for(const board* child = children;child != child_end;++child){
+      board copy = *child;
       int heur = minimax(&copy,d,true);
       if(heur > best_heur){
         best_heur = heur;
-        best_move = move_index;
+        best_child = *child;
       }
-      valid_moves ^= move_bit;
     }
-    b->do_move(best_move);
+    *b = best_child;
+    turn = 1 - turn;
   }
   return minimax(b,pd,true);
 }

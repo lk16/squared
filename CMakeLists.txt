@@ -16,7 +16,7 @@ set(COMMON_FLAGS
 )
 
 set(OPTIMISE_FLAGS
-  "-pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops"
+    "-pipe -msse2 -fforce-addr -ftree-vectorize -funroll-loops"
 )
 
 
@@ -33,9 +33,9 @@ set(OPTIMISING_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS 
-  #${OPTIMISING_FLAGS}
+  ${OPTIMISING_FLAGS}
   #${OPTIMISED_DEBUG_FLAGS}
-  ${DEBUG_FLAGS}
+  #${DEBUG_FLAGS}
 ) 
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
