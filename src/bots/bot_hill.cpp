@@ -10,34 +10,22 @@ bot_hill::bot_hill()
 
 void bot_hill::do_move(const board* b, board* res)
 {
-  bits64 valid_moves = b->get_valid_moves();
-  if(valid_moves.count() == 1){
-    *res = *b;
-    res->do_move(valid_moves.only_bit_index());
-    return;
-  }
   int best_heur = MIN_HEURISTIC;
-  board best_child;
   int id = 0;
-  int child_count = valid_moves.count(); 
-  while(valid_moves.any()){
-    bits64 move = valid_moves.first_bit();
-    int move_index = move.only_bit_index();
-    board child = *b;
-    child.do_move(move_index);
-    int current_heur = -hill_climbing(&child,get_search_depth(),get_perfect_depth());
+  board children[32];
+  board* child_end = b->get_children(children);
+  for(const board* child=children; child != child_end; ++child){
+    board copy = *child;
+    int current_heur = hill_climbing(&copy,get_search_depth(),get_perfect_depth()); 
     if(current_heur > best_heur){
       best_heur = current_heur;
-      best_child = *b;
-      best_child.do_move(move_index);
+      *res = *child;
     }
-    output() << "move " << (id+1) << "/" << (child_count);
-    output() << " (" << board::index_to_position(move_index) << ')';
+    output() << "move " << (id+1) << "/" << "TODO";
+    output() << " (" << "TODO" << ')';
     output() << ": " << best_heur << '\n';
-    valid_moves.reset(move_index);
     ++id;
   }
-  *res = best_child;
 }
 
 int bot_hill::heuristic(const board* b){
@@ -107,17 +95,6 @@ int bot_hill::minimax(const board* b, int d,bool max)
 int bot_hill::hill_climbing(board* b,int d,int pd){
   int turn = 0;
   while(64 - b->count_discs() > pd){
-    bits64 valid_moves = b->get_valid_moves();
-    if(valid_moves.none()){
-      b->switch_turn();
-      if(b->get_valid_moves().any()){
-        turn = 1 - turn;
-        continue;
-      }
-      else{
-        return b->get_disc_diff();
-      }
-    }
     board best_child;
     int best_heur = MIN_HEURISTIC;
     board children[32];
