@@ -36,13 +36,11 @@ struct game_control{
   bool quit_if_game_over;
   bool loop_game;
   bool show_board_flag;
-  bool use_book;
   bool use_xot;
   std::string board_string;
   
   // behaviour modifiers
   bool run_speed_test;
-  bool compress_book;
   bool run_windowed_game;
   pgn_task_t* pgn_task;
   int random_moves;

@@ -6,11 +6,9 @@ game_control::game_control()
   quit_if_game_over = false;
   loop_game = false;
   show_board_flag = false;
-  use_book = false;
   use_xot = false;
   
   run_speed_test = false;
-  compress_book = false;
   pgn_task = NULL;
   random_moves = 0;
   learn_threads = 0;
