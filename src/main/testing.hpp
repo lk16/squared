@@ -4,7 +4,6 @@
 
 #include "bots/bot_ali.hpp"
 #include "game/board.hpp"
-#include "util/csv.hpp"
 #include "util/math.hpp"
 
 
