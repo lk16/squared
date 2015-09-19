@@ -42,9 +42,6 @@ private:
   // search for the best move
   template<bool exact>
   void do_move_search(const board* b,board* res);
-  
-  // performs best move if found in book, returns whether successful
-  bool do_move_book(const board* b,board* res);
 
   // performs principle variation search, unsorted
   template<bool sort,bool exact>

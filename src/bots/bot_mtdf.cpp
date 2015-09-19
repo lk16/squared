@@ -27,21 +27,6 @@ void bot_mtdf::do_move_one_possibility(const board* b, board* res)
   output() << "only one valid move found, evaluation skipped.\n";
 }
 
-bool bot_mtdf::do_move_book(const board* b, board* res)
-{
-  if(get_use_book()){
-    book_t::value lookup = book->lookup(b,get_search_depth());
-    if(lookup.best_move != book_t::NOT_FOUND){
-      *res = *b;
-      res->do_move(lookup.best_move);
-      output() << "bot_" << get_name() << " found best move (" << lookup.best_move;
-      output() << ") in book at depth " << lookup.depth << '\n';
-      return true;
-    }
-  }
-  return false;
-}
-
 template<bool exact>
 void bot_mtdf::do_move_search(const board* b, board* res)
 {
@@ -106,16 +91,6 @@ void bot_mtdf::do_move_search(const board* b, board* res)
   
   set_last_move_heur(best_heur);
   
-  if((!exact) && get_use_book()){
-    int move = b->get_move_index(res);
-    book_t::value v(move,get_search_depth(),best_heur);
-    
-    if(book->add(b,&v)){
-      output() << "board was added to book\n";
-    }
-  }
-  
-  
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -133,11 +108,7 @@ void bot_mtdf::do_move(const board* b,board* res)
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
     return;
-  }
-  if(do_move_book(b,res)){
-    return;
   }  
-  
   if(b->count_empty_fields() > get_perfect_depth()){
     hash_table.clear();
     do_move_search<false>(b,res);

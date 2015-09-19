@@ -5,7 +5,6 @@ REGISTER_BOT(zolomon);
 bot_zolomon::bot_zolomon()
 {
   set_name("zolomon");  
-  book = new book_t(BOOK_PATH + get_name() + "_book.csv");
 }
 
 
@@ -38,10 +37,8 @@ int bot_zolomon::heuristic()
   
   int me = inspected.me.count();
   int opp = inspected.opp.count();
-  
-  int x = (me > opp) ? 1 : ((me == opp) ? 0 : -1);
-  
-  res += 20 * x;
+    
+  res += (me > opp) ? 20 : ((me == opp) ? 0 : -20);
   
   return res;
 }

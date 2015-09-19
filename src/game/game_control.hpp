@@ -4,7 +4,6 @@
 
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
-#include "util/csv.hpp"
 #include "util/pgn.hpp"
 #include "util/tournament.hpp"
 

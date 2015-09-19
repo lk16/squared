@@ -89,7 +89,6 @@ bool game_control::do_special_tasks()
     
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
-    speedrun_bot->disable_book();
     std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
     std::cout << current_state->b.to_ascii_art(current_state->turn);
     std::cout << "Interrupt whenever you like.\n";
@@ -104,18 +103,6 @@ bool game_control::do_special_tasks()
     }
     return true;
   }
-  
-  if(learn_threads != 0){
-    std::cout << "learn book: " << BOOK_PATH + bot_type + "_book.csv" << '\n';
-    book_t(BOOK_PATH + bot_type + "_book.csv").learn(bot_type,learn_threads);
-    return true;
-  }
-  
-  if(compress_book){
-    book_t(BOOK_PATH + bot_type + "_book.csv").clean();
-    return true;
-  }
-  
   if(tournament){
     tournament->run();
     return true;

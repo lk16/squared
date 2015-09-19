@@ -3,8 +3,7 @@
 
 bot_base::bot_base():
   name("base"),
-  output_stream(&std::cout),
-  book(nullptr)
+  output_stream(&std::cout)
 {
 }
 
@@ -91,14 +90,6 @@ void bot_base::stat_t::inc_nodes()
   nodes++;
 }
 
-void bot_base::disable_book()
-{
-  if(book){
-    delete book;
-    book = nullptr;
-  }
-}
-
 void bot_base::disable_shell_output()
 {
   output_stream = new dummystream;
@@ -119,14 +110,8 @@ std::ostream& bot_base::output()
   return *output_stream;
 }
 
-bool bot_base::get_use_book() const
-{
-  return book!=nullptr;
-}
 
 void bot_base::on_new_game()
 {
-  if(get_use_book()){
-    book->reload();
-  }
+  return;
 }

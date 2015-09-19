@@ -6,11 +6,11 @@
 #include <sys/time.h>
 
 #include "bots/bot_register.hpp"
-#include "book/book.hpp"
 #include "game/board.hpp"
 #include "util/const.hpp"
 #include "util/math.hpp"
 #include "util/dummystream.hpp"
+#include "util/string.hpp"
 
 class bot_base{
 
@@ -43,7 +43,6 @@ public:
   static const int NO_HEUR_AVAILABLE = 1000000;
   
   stat_t stats;
-  book_t* book;
   
   // ctor
   bot_base();
@@ -69,8 +68,6 @@ public:
   
   int get_perfect_depth() const;
   
-  bool get_use_book() const;
-  
   std::string get_name() const;
   
   int get_last_move_heur() const;
@@ -80,9 +77,7 @@ public:
   void set_search_depth(int _search_depth,int _perfect_depth);
   
   void set_name(const std::string& _name);
-  
-  void disable_book();
-  
+    
   void disable_shell_output();
   
 };

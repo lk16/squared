@@ -100,7 +100,6 @@ void tournament_t::add_entrant(const std::string& bot_name,int depth, int perfec
   entrant e;
   e.bot = bot_registration::bots()[bot_name]();
   e.bot->set_search_depth(depth,perfect_depth);
-  e.bot->disable_book();
   e.bot->disable_shell_output();
   e.rating = TOURNAMENT_INIT_RATING;
   e.game_results[0] = e.game_results[1] = e.game_results[2] = 0;

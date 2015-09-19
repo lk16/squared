@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-
+#include "util/string.hpp"
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 

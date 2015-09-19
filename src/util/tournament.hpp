@@ -4,7 +4,7 @@
 
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
-
+#include "util/string.hpp"
 
 
 class tournament_t{
