@@ -150,14 +150,6 @@ void bot_pvs::do_move_search(const board* b, board* res)
   board children[32];
   int child_count = b->get_children(children) - children;
   
-  if(board::only_similar_siblings(children,child_count)){
-    output() << "bot_" << get_name() << " sees that all moves are similar.\n";
-    set_last_move_heur(0);
-    *res = children[0];
-    return;
-  }
-  
-  
   output() << "bot_" << get_name() << " searching ";
   if(exact){
     output() << "perfectly at depth " << b->count_empty_fields() << '\n';

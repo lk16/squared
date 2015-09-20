@@ -170,10 +170,7 @@ struct board{
   
   // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(bits64 move_bit,bits64 undo_data); 
-  
-  // returns whether all children are the same modulo rotation/mirroring
-  static bool only_similar_siblings(const board* siblings,int n);
-  
+
   // returns string representation of *this
   std::string to_string() const;
   

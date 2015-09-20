@@ -165,18 +165,6 @@ int board::get_mobility(bits64 moves) const
 }
 
 
-bool board::only_similar_siblings(const board* siblings, int n)
-{
-  const board x = siblings[0].to_database_board();
-  
-  for(int i=1;i<n;i++){
-    if(siblings[i].to_database_board() != x){
-      return false;
-    }
-  }
-  return true;  
-}
-
 int board::get_disc_diff() const
 {
   
