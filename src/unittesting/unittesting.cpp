@@ -10,13 +10,9 @@ void check_board(const board* b){
 void run_bits64_tests(const bits64* x,const bits64* y){
   bits64 t,s;
   
+  // operator==
   t = *x;
   assert(t == *x);
-  
-  t = *x;
-  t ^= 0x1;
-  assert(t != *x);
-  
   assert(t == t);
   assert(*x == *x);
   assert(*y == *y);
@@ -27,23 +23,30 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   t = bits64(5ull);
   assert(t == bits64(5ull));
   
+  // operator!=
+  t = *x;
+  t ^= 0x1;
+  assert(t != *x);
+   
+  // operator|=
   t = *x;
   s = (t |= *y);
   assert(t == s);
   assert(t == (*x | *y));
   
-  
+  // operator&=
   t = *x;
   s = (t &= *y);
   assert(t == s);
   assert(t == (*x & *y));
   
+  // operator^=
   t = *x;
   s = (t ^= *y);
   assert(t == s);
   assert(t == (*x ^ *y));
   
-  
+  // operator<<= operator>>=
   for(int n=0;n<63;++n){
     t = *x;
     t >>= n;
@@ -54,25 +57,43 @@ void run_bits64_tests(const bits64* x,const bits64* y){
     assert(t == (*x << n));
   }
   
+  // operator~
   t = ~*x;
   assert(bits64(t & *x) == bits64(0ull));
 
   assert(bits64(*x & ~*x) == bits64(0ull));
   
+  // operator|
   t = *x | *y;
   assert(bits64(t & bits64(*x | *y)) == t);
   
   assert(bits64(*x | *x) == *x);
   
+  // operator&
   t = *x & *y;
   assert(bits64(t & *x & *y) == t);
   
   assert(bits64(*x & *x) == *x);
   
+  // operator^
   t = *x ^ *y;
   assert(bits64(bits64(*x | *y) & ~bits64(*x & *y)) == t);
   
   assert(bits64(*x ^ *x) == bits64(0ull));
+  
+  // operator bool
+  t = bits64(1ull);
+  assert(t); 
+  
+  t = bits64(0ull);
+  assert(!t); 
+  
+  // reset_all  
+  t = bits64(2347238ull);
+  t.reset_all();
+  assert(t == bits64(0ull));
+  
+  
 }
 
 
