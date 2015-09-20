@@ -405,13 +405,13 @@ inline bits64& bits64::reset(int i)
 inline void bits64::reset_after(int i)
 {
   assert(i>=0 && i<=64);
-  word &= bits64::mask_after[i];
+  word &= bits64::mask_before[i];
 }
 
 inline void bits64::reset_before(int i)
 {
   assert(i>=0 && i<=64);
-  word &= bits64::mask_before[i];
+  word &= bits64::mask_after[i];
 }
 
 inline bits64& bits64::set(int i)

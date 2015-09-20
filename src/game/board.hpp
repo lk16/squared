@@ -406,11 +406,11 @@ inline bits64 board::do_move_internally()
     bits64 line = mask[d];
     if(d<4){
       int end = (line & me).last_index();
-      line.reset_after(end);
+      line.reset_before(end);
     }
     else{
       int end = (line & me).first_index();
-      line.reset_before(end);
+      line.reset_after(end);
     }
     flipped |= line.is_subset_of_mask(opp) & line;
   }

@@ -89,11 +89,35 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   assert(!t); 
   
   // reset_all  
-  t = bits64(2347238ull);
+  t = *x;
   t.reset_all();
   assert(t == bits64(0ull));
   
+  // reset_before
+  s = *x;
+  for(int i=0; i<64; ++i){
+    t = *x;
+    t.reset_before(i);
+    s &= ~(1ull << i);
+    assert(t == s);
+  }
   
+  t = *x;
+  t.reset_before(64);
+  assert(t == bits64(0ull));
+  
+  // reset_after
+  s = *x;
+  for(int i=63; i>=0; --i){
+    t = *x;
+    t.reset_after(i);
+    s &= ~(1ull << i);
+    assert(t == s);
+  }
+  
+  t = *x;
+  t.reset_after(64);
+  assert(t == bits64(0ull));
 }
 
 
