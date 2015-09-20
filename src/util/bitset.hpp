@@ -372,7 +372,7 @@ inline bool bits64::operator!=(const bits64& that) const
 
 inline bool bits64::operator==(const bits64& that) const
 {
-  return this->word != that.word;
+  return this->word == that.word;
 }
 
 inline bool bits64::all() const

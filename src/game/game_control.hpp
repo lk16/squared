@@ -5,6 +5,7 @@
 #include "game/board.hpp"
 #include "bots/bot_base.hpp"
 #include "util/pgn.hpp"
+#include "unittesting/unittesting.hpp"
 #include "util/tournament.hpp"
 
 class main_window;
@@ -40,6 +41,7 @@ struct game_control{
   std::string board_string;
   
   // behaviour modifiers
+  bool run_unit_test;
   bool run_speed_test;
   bool run_windowed_game;
   pgn_task_t* pgn_task;

@@ -9,6 +9,7 @@ game_control::game_control()
   use_xot = false;
   
   run_speed_test = false;
+  run_unit_test = false;
   pgn_task = NULL;
   random_moves = 0;
   learn_threads = 0;
@@ -78,7 +79,10 @@ bool game_control::do_special_tasks()
     delete pgn_bot;
     return true;
   }
-  
+  if(run_unit_test){
+    squared_unittesting();
+    return true;
+  }
   if(run_speed_test){
     if(random_moves == 0){
       random_moves = 1;
