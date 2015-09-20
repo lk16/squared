@@ -118,6 +118,46 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   t = *x;
   t.reset_after(64);
   assert(t == bits64(0ull));
+  
+  // reset
+  for(int i=0; i<64; ++i){
+    t = *x;
+    s = *x & bits64(~(1ul << i));
+    assert(t.reset(i) == s);
+    assert(t == s);
+  }
+  
+  // set_all
+  t = *x;
+  t.set_all();
+  assert(t == bits64(~0ull));
+  
+  // set
+  for(int i=0; i<63; ++i){
+    t = *x;
+    t.set(i);
+    assert(t == (*x | bits64(1ull << i)));
+  }
+  
+  // first_index last_index
+  t = *x;
+  {
+    int index = 0;
+    while(!t.test(index) && index!=64){
+      ++index;
+    }
+    assert(t.first_index() == index);
+    
+    
+    index = 63;
+    while(!t.test(index) && index!=-1){
+      --index;
+    }
+    if(index == -1){
+      index = 64;
+    }
+    assert(t.last_index() == index);
+  }
 }
 
 
@@ -140,6 +180,7 @@ void squared_unittesting()
     run_bits64_tests(&y,&x);
   }
   
+    
   
   std::cout << "OK\n";
 }
