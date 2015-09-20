@@ -213,6 +213,9 @@ void squared_unittesting()
   
   { // bits64
   
+    // ctor
+    assert(bits64() == bits64(0ull));
+      
     for(unsigned i=0;i<64;++i){
       assert(bits64::mask_set[i] == 1ull << i);
       assert(bits64::mask_reset[i] == ~(1ull << i));
@@ -248,6 +251,12 @@ void squared_unittesting()
       assert(bits64(1ull << i).only_bit_index() == i);
     }
     assert(bits64(0ull).only_bit_index() == 64);
+    
+    // TODO to_ascii
+    
+    
+    
+    
     
   }
     
