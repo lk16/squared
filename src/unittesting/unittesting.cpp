@@ -139,47 +139,117 @@ void run_bits64_tests(const bits64* x,const bits64* y){
     assert(t == (*x | bits64(1ull << i)));
   }
   
-  // first_index last_index
+  // first_index last_index first_bit last_bit
   t = *x;
   {
     int index = 0;
-    while(!t.test(index) && index!=64){
+    while(index<64 && !t.test(index)){
       ++index;
     }
     assert(t.first_index() == index);
+    assert(t.first_bit() == bits64(index==64 ? 0ull : (1ull << index)));
     
     
     index = 63;
-    while(!t.test(index) && index!=-1){
+    while(index>=0 && !t.test(index)){
       --index;
     }
     if(index == -1){
       index = 64;
     }
     assert(t.last_index() == index);
+    assert(t.last_bit() == bits64(index==64 ? 0ull : (1ull << index)));
+  }
+  
+  // count any none all test
+  {
+    int count = 0;
+    t = *x;
+    
+    for(int i=0;i<64;++i){
+      bits64 mask(1ull << i);
+      if(t.test(i)){
+        ++count;
+      }
+      assert(t.test(i) == ((t & mask) == mask));
+    }
+    assert(t.none() == (count==0));
+    assert(t.any() == (count!=0));
+    assert(t.all() == (count==64));
+    
+  }
+  
+  // mirror_veritcal_line
+  t = x->mirror_vertical_line();
+  for(int ty=0;ty<8;++ty){
+    for(int tx=0;tx<8;++tx){
+      assert(x->test(8*ty+tx) == t.test(8*ty+(7-tx)));
+    }
+  }
+  
+  
+  // rotate_left
+  t = x->rotate_left();
+  for(int ty=0;ty<8;++ty){
+    for(int tx=0;tx<8;++tx){
+      assert(x->test(8*ty+tx) == t.test(8*(7-tx)+ty));
+    }
+  }
+  
+  // TODO rotate
+  
+  // is_subset_of_mask
+  if((*x & *y) == *x){
+    assert(x->is_subset_of_mask(*y) == bits64(~0ull));
+  }
+  else{
+    assert(x->is_subset_of_mask(*y) == bits64(0ull));
   }
 }
-
-
+  
 void squared_unittesting()
 {   
   const int n_tests = 10000;
   
-  for(unsigned i=0;i<64;++i){
-    assert(bits64::mask_set[i] == 1ull << i);
-    assert(bits64::mask_reset[i] == ~(1ull << i));
+  { // bits64
+  
+    for(unsigned i=0;i<64;++i){
+      assert(bits64::mask_set[i] == 1ull << i);
+      assert(bits64::mask_reset[i] == ~(1ull << i));
+    }
+    assert(bits64::mask_set[64] == 0ull);
+    assert(bits64::mask_reset[64] == ~0ull);
+    
+    
+    for(int i=0; i<n_tests; ++i){
+      bits64 x(rand_64());
+      bits64 y(rand_64());
+      run_bits64_tests(&x,&y);
+      run_bits64_tests(&y,&x);
+    }
+    
+    std::vector<bits64> v;
+    v.push_back(bits64(0ull));
+    v.push_back(bits64(~0ull));
+    v.push_back(bits64(1ull));
+    v.push_back(bits64(1ull << 63));
+    v.push_back(bits64(0x3333333333333333));
+    v.push_back(bits64(0xcccccccccccccccc));
+
+    const bits64 *pi,*pj;
+    for(pi=v.data();pi!=v.data()+v.size();++pi){
+      for(pj=v.data();pj!=v.data()+v.size();++pj){
+        run_bits64_tests(pi,pj);
+      }
+    }
+    
+    // only_bit_index
+    for(int i=0;i<64;++i){
+      assert(bits64(1ull << i).only_bit_index() == i);
+    }
+    assert(bits64(0ull).only_bit_index() == 64);
+    
   }
-  assert(bits64::mask_set[64] == 0ull);
-  assert(bits64::mask_reset[64] == ~0ull);
-  
-  
-  for(int i=0; i<n_tests; ++i){
-    bits64 x(rand_64());
-    bits64 y(rand_64());
-    run_bits64_tests(&x,&y);
-    run_bits64_tests(&y,&x);
-  }
-  
     
   
   std::cout << "OK\n";

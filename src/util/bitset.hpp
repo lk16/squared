@@ -88,7 +88,6 @@ public:
   // returns whether all bits in *this are set
   bool all() const;
   
-  
   // test if bit i is set
   bool test(int i) const;
   
@@ -180,7 +179,7 @@ inline bits64 bits64::mirror_vertical_line() const
 
 
   
-  return word; 
+  return x; 
 }
 
 inline bits64 bits64::rotate_left() const
