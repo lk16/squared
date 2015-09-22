@@ -277,6 +277,37 @@ void board_test(const board* x,const board* y){
     assert(b.is_valid_move(i) == b.get_valid_moves().test(i));
   }
   
+  // TODO get_valid_moves
+  {
+    b = *x;
+    bits64 found_moves = 0ull;
+    for(int py=0;py<8;++py){
+      for(int px=0;px<8;++px){
+        int p = 8*py + px;
+        if(b.get_non_empty_fields().test(p)){
+          continue;
+        }
+        for(int dx=-1;dx<=1;++dx){
+          for(int dy=-1;dy<=1;++dy){
+            if(dx==0 && dy==0){
+              continue;
+            }
+            int dist = 1;
+            // TODO code here
+            
+          }
+        }
+      }
+    }
+    assert(b.get_valid_moves() == found_moves);
+  }
+  // do_random_moves
+  {
+    b = *x;
+    bits64 non_empty = b.get_non_empty_fields();
+    b.do_random_moves(rand() % 15);
+    assert((b.get_non_empty_fields() & non_empty) == non_empty);
+  }
 }
 
 void squared_unittesting()
