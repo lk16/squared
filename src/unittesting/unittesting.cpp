@@ -1,6 +1,6 @@
 #include "unittesting.hpp"
 
-void check_board(const board* b){
+void board_check(const board* b){
   assert((b->me & b->opp) == bits64(0x0));
   bits64 center = (1ull << 27) | (1ull << 28) | (1ull << 35) | (1ull << 36);
   bits64 non_empty = b->me | b->opp;
@@ -206,14 +206,38 @@ void run_bits64_tests(const bits64* x,const bits64* y){
     assert(x->is_subset_of_mask(*y) == bits64(0ull));
   }
 }
+
+void board_test(const board* x,const board* y){
+  board_check(x);
+  board_check(y);
   
+  // copy ctor
+  board b(*x);
+  assert(b == *x);
+  
+  //TODO ctor from string
+  
+  // operator=
+  assert(b == (b = *y));
+  assert(b == *y);
+  // operator==
+  assert(b == b);
+  assert(*x == *x);
+  assert(*y == *y);
+  assert((*y == *x) == (y->me==x->me && y->opp==x->opp));
+  
+  // operator!=
+  assert((*x == *y) == !(*x != *y));
+  
+}
+
 void squared_unittesting()
 {   
   const int n_tests = 10000;
   
   { // bits64
   
-    // ctor
+    // ctor 
     assert(bits64() == bits64(0ull));
       
     for(unsigned i=0;i<64;++i){
@@ -254,9 +278,27 @@ void squared_unittesting()
     
     // TODO to_ascii
     
+  }
+  
+  { // board
+    std::vector<board> board_vec;
+    for(int i=0;i<10;++i){
+      board_vec.push_back(board());
+      board_vec.back().reset();
+      board_vec.back().do_random_moves(i);
+    }
     
+
     
-    
+    const board *i,*j;
+    const board *start = board_vec.data();
+    const board *end = start + board_vec.size();
+    for(i=start;i!=end;++i){
+      for(j=start;j!=end;++j){
+        board_test(i,j);
+        board_test(j,i);
+      }
+    }
     
   }
     

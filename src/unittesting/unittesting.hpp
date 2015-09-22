@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "game/board.hpp"
+#include "util/math.hpp"
 
 
 

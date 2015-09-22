@@ -75,7 +75,7 @@ bool game_control::do_special_tasks()
     pgn_bot->set_search_depth(task->search_depth,task->perfect_depth);
     pgn_bot->disable_shell_output();
     pgn pgn_file(task->filename);
-    std::cout << pgn_file.analyse(pgn_bot,true,true);
+    std::cout << "pgn_file.analyse() is no longer implemented\n";
     delete pgn_bot;
     return true;
   }

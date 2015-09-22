@@ -145,10 +145,6 @@ struct board{
   // adjusts colors for the right turn
   std::string to_ascii_art(int turn) const;
   
-  // returns html code displaying *this
-  // adjusts colors for the right turn
-  std::string to_html_table(int turn) const;
-  
   // returns disc count difference 
   // positive means me has more than opp
   int get_disc_diff() const;

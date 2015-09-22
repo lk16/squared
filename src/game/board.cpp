@@ -194,62 +194,6 @@ int board::get_disc_diff() const
   return diff;
 }
 
-std::string board::to_html_table(int turn) const
-{
-  std::stringstream ss;
-    
-  std::string colors[2] = {"black","white"};
-  
-  
-  bits64 moves = get_valid_moves();
-  
-  // top line 
-  ss << "<table border='0' cellspacing='0' cellpadding='0'><tr>\n";
-  ss << "<td></td>\n";
-  for(int i=0;i<8;i++){
-    ss << "<td align='center'>" << (char)('a'+i) << "</td>\n";
-  }
-  ss << "</tr>";
-  
-  
-  for(int f=0;f<64;f++){
-    
-    // left line
-    if(f%8 == 0){
-      ss << "<tr><td width='15' align='center'>" << (char)('1'+(f/8)) << "</td>";
-    }
-    
-    bits64 thisbit = bits64().set(f);
-    ss << "<td><img src='" << IMAGE_PATH << "small/";
-    
-    if(me & thisbit){
-      ss << colors[turn] << ".png'>";
-    }
-    else if(opp & thisbit){
-      ss << colors[1-turn] << ".png'>";
-    }
-    else if(moves & thisbit){
-      
-      ss << "move_" << colors[turn] << ".png'>";
-    }  
-    else{
-      ss << "empty.png'>";
-    }
-    
-    ss << "</td>";
-    
-    // right line
-    if(f%8 == 7){
-      ss << "</tr>";
-    }
-  }
-  
-  // bottom line
-  ss << "</table>\n";
-  
-  return ss.str();
-}
-
 
 
 
@@ -313,7 +257,12 @@ int board::position_to_index(const std::string& str)
   if(str == "--"){
     return -1;
   }
-  if(str.length()==2 && in_bounds(str[0],'a','h') && in_bounds(str[1],'1','8')){
+  if(str.length()==2 
+    && str[0]>='a'
+    && str[0]<='h'
+    && str[1]>='1'
+    && str[1]<='8'
+  ){
     return 8*(str[1] - '1') + str[0] - 'a';
   }
   return -2;
@@ -321,7 +270,7 @@ int board::position_to_index(const std::string& str)
 
 std::string board::index_to_position(int index)
 {
-  if(out_bounds(index,0,63)){
+  if(index>=0 && index<=63){
     return "??";
   }
   char s[3];
@@ -361,7 +310,7 @@ board::board(const std::string& in){
     error = true;
   }
   for(unsigned i=0;i<in.length();++i){
-    if(out_bounds(in[i],'0','9') && out_bounds(in[i],'a','f')){
+    if((in[i]>='0' && in[i]<='9') || (in[i]>='a' && in[i]<='f')){
       error = true;
     }
   }

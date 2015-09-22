@@ -29,16 +29,6 @@ inline unsigned long long rand_64(){
 }
 
 template<class T>
-inline bool in_bounds(T x,T min,T max){
-  return x>=min && x<=max;
-}
-
-template<class T>
-inline bool out_bounds(T x,T min,T max){
-  return x<min || x>max;        
-}
-
-template<class T>
 inline void ugly_sort(T *t,int* heurs, int count)
 {
   bool loop;
