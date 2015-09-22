@@ -1,6 +1,6 @@
 #include "unittesting.hpp"
 
-void board_check(const board* b){
+void squared_unittest::check_board(const board* b){
   assert((b->me & b->opp) == bits64(0x0));
   bits64 center = (1ull << 27) | (1ull << 28) | (1ull << 35) | (1ull << 36);
   bits64 non_empty = b->me | b->opp;
@@ -18,11 +18,10 @@ void squared_unittest::announce_step()
   std::cout << '.';
   std::cout.flush();
 }
-
-void run_bits64_tests(const bits64* x,const bits64* y){
-  bits64 t,s;
   
-  // operator==
+void squared_unittest::test_bits64_operator_equals(const bits64* x,const bits64* y){
+  bits64 t,s;
+
   t = *x;
   assert(t == *x);
   assert(t == t);
@@ -34,31 +33,42 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   
   t = bits64(5ull);
   assert(t == bits64(5ull));
-  
-  // operator!=
-  t = *x;
+}
+
+void squared_unittest::test_bits64_operator_unequals(const bits64* x,const bits64* y){
+  bits64 t = *x;
   t ^= 0x1;
   assert(t != *x);
-   
-  // operator|=
+  assert (((*x != *y) == !(*x == *y)));
+}
+
+void squared_unittest::test_bits64_compound_assign_or(const bits64* x,const bits64* y){
+  bits64 t,s;
   t = *x;
   s = (t |= *y);
   assert(t == s);
   assert(t == (*x | *y));
-  
-  // operator&=
+}
+
+void squared_unittest::test_bits64_compound_assign_and(const bits64* x,const bits64* y){
+  bits64 t,s;
   t = *x;
   s = (t &= *y);
   assert(t == s);
   assert(t == (*x & *y));
-  
-  // operator^=
+}
+
+void squared_unittest::test_bits64_compound_assign_xor(const bits64* x,const bits64* y){
+  bits64 t,s;
   t = *x;
   s = (t ^= *y);
   assert(t == s);
   assert(t == (*x ^ *y));
-  
-  // operator<<= operator>>=
+}  
+ 
+void squared_unittest::test_bits64_compound_assign_shift(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t;
   for(int n=0;n<63;++n){
     t = *x;
     t >>= n;
@@ -68,44 +78,48 @@ void run_bits64_tests(const bits64* x,const bits64* y){
     t <<= n;
     assert(t == (*x << n));
   }
-  
-  // operator~
-  t = ~*x;
-  assert(bits64(t & *x) == bits64(0ull));
+}
 
+void squared_unittest::test_bits64_operator_tilde(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t = ~*x;
+  assert(bits64(t & *x) == bits64(0ull));
   assert(bits64(*x & ~*x) == bits64(0ull));
-  
-  // operator|
-  t = *x | *y;
+}
+
+void squared_unittest::test_bits64_operator_or(const bits64* x,const bits64* y){
+  bits64 t = *x | *y;
   assert(bits64(t & bits64(*x | *y)) == t);
-  
   assert(bits64(*x | *x) == *x);
+}
   
-  // operator&
-  t = *x & *y;
+void squared_unittest::test_bits64_operator_and(const bits64* x,const bits64* y){
+  bits64 t = *x & *y;
   assert(bits64(t & *x & *y) == t);
-  
   assert(bits64(*x & *x) == *x);
-  
-  // operator^
-  t = *x ^ *y;
+}
+
+void squared_unittest::test_bits64_operator_xor(const bits64* x,const bits64* y){
+  bits64 t = *x ^ *y;
   assert(bits64(bits64(*x | *y) & ~bits64(*x & *y)) == t);
-  
   assert(bits64(*x ^ *x) == bits64(0ull));
-  
-  // operator bool
-  t = bits64(1ull);
-  assert(t); 
-  
-  t = bits64(0ull);
-  assert(!t); 
-  
-  // reset_all  
-  t = *x;
+}
+
+void squared_unittest::test_bits64_operator_bool(const bits64* x,const bits64* y){  
+  (void)y;
+  assert(((bool)(*x)) == (*x != bits64(0ull)));
+}
+
+void squared_unittest::test_bits64_reset_all(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t = *x;
   t.reset_all();
   assert(t == bits64(0ull));
-  
-  // reset_before
+}
+
+void squared_unittest::test_bits64_reset_before(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t,s;
   s = *x;
   for(int i=0; i<64; ++i){
     t = *x;
@@ -117,8 +131,11 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   t = *x;
   t.reset_before(64);
   assert(t == bits64(0ull));
-  
-  // reset_after
+}
+
+void squared_unittest::test_bits64_reset_after(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 s,t;
   s = *x;
   for(int i=63; i>=0; --i){
     t = *x;
@@ -130,29 +147,34 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   t = *x;
   t.reset_after(64);
   assert(t == bits64(0ull));
-  
-  // reset
+}  
+
+void squared_unittest::test_bits64_reset(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t,s;
   for(int i=0; i<64; ++i){
     t = *x;
     s = *x & bits64(~(1ul << i));
     assert(t.reset(i) == s);
     assert(t == s);
   }
+}
+
   
-  // set_all
-  t = *x;
-  t.set_all();
-  assert(t == bits64(~0ull));
-  
-  // set
+void squared_unittest::test_bits64_set(const bits64* x,const bits64* y){
+  (void)y;
+  bits64 t; 
   for(int i=0; i<63; ++i){
     t = *x;
     t.set(i);
     assert(t == (*x | bits64(1ull << i)));
   }
-  
+}
+
+void squared_unittest::test_bits64_index_bit(const bits64* x,const bits64* y){
+  (void)y;
   // first_index last_index first_bit last_bit
-  t = *x;
+  bits64 t = *x;
   {
     int index = 0;
     while(index<64 && !t.test(index)){
@@ -172,27 +194,31 @@ void run_bits64_tests(const bits64* x,const bits64* y){
     assert(t.last_index() == index);
     assert(t.last_bit() == bits64(index==64 ? 0ull : (1ull << index)));
   }
-  
+}
+
+void squared_unittest::test_bits64_counting(const bits64* x,const bits64* y){
+  (void)y;
   // count any none all test
-  {
-    int count = 0;
-    t = *x;
-    
-    for(int i=0;i<64;++i){
-      bits64 mask(1ull << i);
-      if(t.test(i)){
-        ++count;
-      }
-      assert(t.test(i) == ((t & mask) == mask));
-    }
-    assert(t.none() == (count==0));
-    assert(t.any() == (count!=0));
-    assert(t.all() == (count==64));
-    
-  }
+  int count = 0;
+  bits64 t = *x;
   
+  for(int i=0;i<64;++i){
+    bits64 mask(1ull << i);
+    if(t.test(i)){
+      ++count;
+    }
+    assert(t.test(i) == ((t & mask) == mask));
+  }
+  assert(t.none() == (count==0));
+  assert(t.any() == (count!=0));
+  assert(t.all() == (count==64));
+  
+}
+  
+void squared_unittest::test_bits64_vertical_line(const bits64* x,const bits64* y){
+  (void)y;
   // mirror_veritcal_line
-  t = x->mirror_vertical_line();
+  bits64 t = x->mirror_vertical_line();
   for(int ty=0;ty<8;++ty){
     for(int tx=0;tx<8;++tx){
       assert(x->test(8*ty+tx) == t.test(8*ty+(7-tx)));
@@ -207,10 +233,15 @@ void run_bits64_tests(const bits64* x,const bits64* y){
       assert(x->test(8*ty+tx) == t.test(8*(7-tx)+ty));
     }
   }
+}
+
+void squared_unittest::test_bits64_rotate(const bits64* x,const bits64* y){
+  (void)y;
+  (void)x;
+  std::cout << "TODO!\n";
+}
   
-  // TODO rotate
-  
-  // is_subset_of_mask
+void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits64* y){
   if((*x & *y) == *x){
     assert(x->is_subset_of_mask(*y) == bits64(~0ull));
   }
@@ -219,9 +250,17 @@ void run_bits64_tests(const bits64* x,const bits64* y){
   }
 }
 
+void squared_unittest::test_bits64_to_ascii(const bits64* x,const bits64* y){
+  (void)y;
+  (void)x;
+  std::cout << "TODO!\n";
+}
+
+
+#if 0
 void board_test(const board* x,const board* y){
-  board_check(x);
-  board_check(y);
+  check_board(x);
+  check_board(y);
   
   // copy ctor
   board b(*x);
@@ -279,12 +318,11 @@ void board_test(const board* x,const board* y){
   
   // TODO get_valid_moves
   {
-    b = *x;
     bits64 found_moves = 0ull;
     for(int py=0;py<8;++py){
       for(int px=0;px<8;++px){
         int p = 8*py + px;
-        if(b.get_non_empty_fields().test(p)){
+        if(x->get_non_empty_fields().test(p)){
           continue;
         }
         for(int dx=-1;dx<=1;++dx){
@@ -293,13 +331,37 @@ void board_test(const board* x,const board* y){
               continue;
             }
             int dist = 1;
-            // TODO code here
+            while(true){
+              int qy = py + (dist*dy);
+              int qx = px + (dist*dx);
+              int q = 8*qy + qx;
+              if(qy<0 || qy>=8 || qx<0 || qx>=8){
+                break;
+              }
+              if(x->me.test(q)){
+                if(dist >= 2){
+                  found_moves.set(p);
+                }
+                break;
+              }
+              else if(x->opp.test(q)){
+                ++dist;
+              }
+              else{
+                break;
+              }
+            }
             
           }
         }
       }
     }
-    assert(b.get_valid_moves() == found_moves);
+    if(x->get_valid_moves() != found_moves){
+      x->get_valid_moves().show();
+      found_moves.show();
+      std::cout << x->to_ascii_art(0) << '\n';
+      exit(0);
+    }
   }
   // do_random_moves
   {
@@ -309,6 +371,7 @@ void board_test(const board* x,const board* y){
     assert((b.get_non_empty_fields() & non_empty) == non_empty);
   }
 }
+#endif
 
 void squared_unittesting()
 {
@@ -318,14 +381,15 @@ void squared_unittesting()
 
 void squared_unittest::run()
 {
-  const int n_tests = 10;
+  const int N = 10;
+  const int CAP = 40;
   
   { // bits64
   
     announce("bits64 default ctor");
     assert(bits64() == bits64(0ull));
     
-    announce("bits64 static const members");
+    announce("bits64 public static const members");
     for(unsigned i=0;i<64;++i){
       assert(bits64::mask_set[i] == 1ull << i);
       assert(bits64::mask_reset[i] == ~(1ull << i));
@@ -333,41 +397,51 @@ void squared_unittest::run()
     assert(bits64::mask_set[64] == 0ull);
     assert(bits64::mask_reset[64] == ~0ull);
     
-    announce("bits64 with random data");
-    for(int i=0; i<n_tests; ++i){
-      bits64 x(rand_64());
-      bits64 y(rand_64());
-      run_bits64_tests(&x,&y);
-      announce_step();
-      run_bits64_tests(&y,&x);
-      announce_step();
+    announce("bits64::test_all()");
+    {
+      bits64 t;
+      t.set_all();
+      assert(t == bits64(~0ull));
     }
     
-    announce("bits64 special cases");
-    std::vector<bits64> v;
-    v.push_back(bits64(0ull));
-    v.push_back(bits64(~0ull));
-    v.push_back(bits64(1ull));
-    v.push_back(bits64(1ull << 63));
-    v.push_back(bits64(0x3333333333333333));
-    v.push_back(bits64(0xcccccccccccccccc));
 
-    const bits64 *pi,*pj;
-    for(pi=v.data();pi!=v.data()+v.size();++pi){
-      for(pj=v.data();pj!=v.data()+v.size();++pj){
-        run_bits64_tests(pi,pj);
-        announce_step();
-      }
-    }
-    
-    announce("bits64 only bit index");
+    announce("bits64::only_bit_index()");
     // only_bit_index
     for(int i=0;i<64;++i){
       assert(bits64(1ull << i).only_bit_index() == i);
     }
     assert(bits64(0ull).only_bit_index() == 64);
     
-    // TODO to_ascii
+    
+    
+    std::vector<bits64> test_input;
+    const bits64 *test_input_start,*test_input_end;
+    test_input_start = test_input.data();
+    test_input_end = test_input_start + test_input.size();
+    test_input.push_back(bits64(0ull));
+    test_input.push_back(bits64(~0ull));
+    test_input.push_back(bits64(1ull));
+    test_input.push_back(bits64(1ull << 63));
+    test_input.push_back(bits64(0x3333333333333333));
+    test_input.push_back(bits64(0xcccccccccccccccc));
+    while(test_input.size() < N){
+      test_input.push_back(bits64(rand_64()));
+    }
+
+    
+    std::vector<std::pair<void(squared_unittest::*)(const bits64*,const bits64*),std::string>> test_funcs;
+    test_funcs.push_back(std::make_pair(squared_unittest::test_bits64_operator_equals,"test_bits64_operator_equals"));
+    
+    for(auto f: test_funcs){
+      std::cout << "Running " << f.second << '\n';
+      for(const bits64* i=test_input_start;i!=test_input_end;++i){
+        for(const bits64* j=test_input_start;j!=test_input_end;++j){
+          this->*(f.first)(i,j);
+          std::cout << ".";
+        }
+      }
+    }
+    
     
   }
   
