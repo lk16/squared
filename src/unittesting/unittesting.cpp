@@ -7,6 +7,18 @@ void board_check(const board* b){
   assert((non_empty & center) == center);
 }
 
+void squared_unittest::announce(const std::string& name)
+{
+  std::cout << "\nTesting " << name << " ";
+  std::cout.flush();
+}
+
+void squared_unittest::announce_step()
+{
+  std::cout << '.';
+  std::cout.flush();
+}
+
 void run_bits64_tests(const bits64* x,const bits64* y){
   bits64 t,s;
   
@@ -229,17 +241,47 @@ void board_test(const board* x,const board* y){
   // operator!=
   assert((*x == *y) == !(*x != *y));
   
+  // operator<
+  {
+    const int pn = 5;
+    board p[pn];
+    for(int i=0;i<pn;++i){
+      p[i].reset();
+      p[i].do_random_moves(9);
+    }
+    p[pn-2] = *x;
+    p[pn-1] = *y;
+    for(int i=0;i<pn;++i){
+      assert(!(p[i] < p[i]));
+      for(int j=0;j<pn;++j){
+        assert(!(p[i]<p[j] && p[j]<p[i]));
+        assert(p[i]<p[j] || p[i]==p[j] || p[j]<p[i]);
+        for(int k=0;k<pn;++k){
+          if(p[i] < p[j] && p[j] < p[k]){
+            assert(p[i] < p[k]);
+          }
+        }
+      }
+    }
+  }
 }
 
 void squared_unittesting()
-{   
-  const int n_tests = 10000;
+{
+  squared_unittest().run();
+}
+
+
+void squared_unittest::run()
+{
+  const int n_tests = 10;
   
   { // bits64
   
-    // ctor 
+    announce("bits64 default ctor");
     assert(bits64() == bits64(0ull));
-      
+    
+    announce("bits64 static const members");
     for(unsigned i=0;i<64;++i){
       assert(bits64::mask_set[i] == 1ull << i);
       assert(bits64::mask_reset[i] == ~(1ull << i));
@@ -247,14 +289,17 @@ void squared_unittesting()
     assert(bits64::mask_set[64] == 0ull);
     assert(bits64::mask_reset[64] == ~0ull);
     
-    
+    announce("bits64 with random data");
     for(int i=0; i<n_tests; ++i){
       bits64 x(rand_64());
       bits64 y(rand_64());
       run_bits64_tests(&x,&y);
+      announce_step();
       run_bits64_tests(&y,&x);
+      announce_step();
     }
     
+    announce("bits64 special cases");
     std::vector<bits64> v;
     v.push_back(bits64(0ull));
     v.push_back(bits64(~0ull));
@@ -267,9 +312,11 @@ void squared_unittesting()
     for(pi=v.data();pi!=v.data()+v.size();++pi){
       for(pj=v.data();pj!=v.data()+v.size();++pj){
         run_bits64_tests(pi,pj);
+        announce_step();
       }
     }
     
+    announce("bits64 only bit index");
     // only_bit_index
     for(int i=0;i<64;++i){
       assert(bits64(1ull << i).only_bit_index() == i);
@@ -293,15 +340,18 @@ void squared_unittesting()
     const board *i,*j;
     const board *start = board_vec.data();
     const board *end = start + board_vec.size();
+    announce("board random moves");
     for(i=start;i!=end;++i){
       for(j=start;j!=end;++j){
         board_test(i,j);
+        announce_step();
         board_test(j,i);
+        announce_step();
       }
     }
     
   }
     
   
-  std::cout << "OK\n";
+  std::cout << "\nOK\n";
 }
