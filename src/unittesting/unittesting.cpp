@@ -264,6 +264,19 @@ void board_test(const board* x,const board* y){
       }
     }
   }
+  
+  // switch
+  b = *x;
+  b.switch_turn();
+  assert(b.me == x->opp);
+  assert(b.opp == x->me);
+  
+  // is_valid_move
+  b = *x;
+  for(int i=0;i<64;++i){
+    assert(b.is_valid_move(i) == b.get_valid_moves().test(i));
+  }
+  
 }
 
 void squared_unittesting()
@@ -329,7 +342,7 @@ void squared_unittest::run()
   
   { // board
     std::vector<board> board_vec;
-    for(int i=0;i<10;++i){
+    for(int i=0;i<6;++i){
       board_vec.push_back(board());
       board_vec.back().reset();
       board_vec.back().do_random_moves(i);
@@ -350,8 +363,16 @@ void squared_unittest::run()
       }
     }
     
+    {
+      announce("board reset");
+      board b;
+      b.reset();
+      assert(b.me == bits64((1ull << 28) | (1ull << 35)));
+      assert(b.opp == bits64((1ull << 27) | (1ull << 36)));
+    }
+
+    // TODO xot
   }
-    
   
   std::cout << "\nOK\n";
 }
