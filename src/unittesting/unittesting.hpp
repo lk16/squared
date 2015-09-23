@@ -50,7 +50,6 @@ class squared_unittest{
   static void test_bits64_static_const_members();
   static void test_bits64_test_all();
   static void test_bits64_only_bit_index();
-  static void test_bits64_all();
   
   static void test_board_copy_ctor(const board* x);
   static void test_board_ctor_string(const board* x);
@@ -63,6 +62,28 @@ class squared_unittest{
   static void test_board_get_valid_moves(const board* x);
   static void test_board_do_random_moves(const board* x);
   static void test_board_reset();
+  static void test_board_xot();
+  static void test_board_get_children(const board* x);
+  static void test_board_get_children_with_moves(const board* x);
+  static void test_board_has_valid_moves(const board* x);
+  static void test_board_count_valid_moves(const board* x);
+  static void test_board_opponent_has_moves(const board* x);
+  static void test_board_count_opponent_moves(const board* x);
+  static void test_board_get_frontier_discs(const board* x);
+  static void test_board_get_empty_fields(const board* x);
+  static void test_board_get_non_empty_fields(const board* x);
+  static void test_board_count_discs(const board* x);
+  static void test_board_count_empty_fields(const board* x);
+  static void test_board_to_ascii_art(const board* x);
+  static void test_board_get_disc_diff(const board* x);
+  static void test_board_do_move(const board* x);
+  static void test_board_position_to_index(const board* x);
+  static void test_board_do_move_internally(const board* x);
+  static void test_board_undo_move(const board* x);
+  static void test_board_only_similar_siblings(const board* x);
+  // TODO static void test_board(const board* x);
+  
+  static void test_bits64_all();
   static void test_board_all();
   
   void check_board(const board* b);
