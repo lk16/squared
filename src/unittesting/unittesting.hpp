@@ -52,6 +52,18 @@ class squared_unittest{
   static void test_bits64_only_bit_index();
   static void test_bits64_all();
   
+  static void test_board_copy_ctor(const board* x);
+  static void test_board_ctor_string(const board* x);
+  static void test_board_operator_assign(const board* x);
+  static void test_board_operator_equals(const board* x,const board* y);
+  static void test_board_operator_unequals(const board* x,const board* y);
+  static void test_board_operator_assign(const board* x,const board* y);
+  static void test_board_switch_turn(const board* x);
+  static void test_board_is_valid_move(const board* x);
+  static void test_board_get_valid_moves(const board* x);
+  static void test_board_do_random_moves(const board* x);
+  static void test_board_reset();
+  static void test_board_all();
   
   void check_board(const board* b);
   
