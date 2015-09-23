@@ -78,15 +78,25 @@ class squared_unittest{
   static void test_board_get_disc_diff(const board* x);
   static void test_board_do_move(const board* x);
   static void test_board_position_to_index(const board* x);
-  static void test_board_do_move_internally(const board* x);
   static void test_board_undo_move(const board* x);
   static void test_board_only_similar_siblings(const board* x);
-  // TODO static void test_board(const board* x);
+  static void test_board_to_string(const board* x);
+  static void test_board_to_database_string(const board* x);
+  static void test_board_get_move_index(const board* x);
+  static void test_board_to_database_board(const board* x);
+  static void test_board_rotate(const board* x);
+  static void test_board_get_rotation(const board* x);
+  static void test_board_get_mobility(const board* x);
+  static void test_board_hash(const board* x,const board* y);
+  static void test_board_validity(const board* b);
   
   static void test_bits64_all();
   static void test_board_all();
   
-  void check_board(const board* b);
+ 
+
+  
+  
   
 public:
   

@@ -247,7 +247,7 @@ inline board& board::operator=(const board& b)
 
 inline bool board::operator==(const board& b) const
 {
-  return me==b.me && opp==b.opp;
+  return (me == b.me) && (opp == b.opp);
 }
 
 inline bool board::operator!=(const board& b) const

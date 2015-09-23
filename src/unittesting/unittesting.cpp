@@ -1,6 +1,6 @@
 #include "unittesting.hpp"
 
-void squared_unittest::check_board(const board* b){
+void squared_unittest::test_board_validity(const board* b){
   assert((b->me & b->opp) == bits64(0x0));
   bits64 center = (1ull << 27) | (1ull << 28) | (1ull << 35) | (1ull << 36);
   bits64 non_empty = b->me | b->opp;
@@ -300,26 +300,26 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
 }
   
 void squared_unittest::test_board_operator_less(const board* x,const board* y){
-  const int pn = 5;
-  board p[pn];
-  for(int i=0;i<pn;++i){
-    p[i].reset();
-    p[i].do_random_moves(9);
-  }
-  p[pn-2] = *x;
-  p[pn-1] = *y;
-  for(int i=0;i<pn;++i){
-    assert(!(p[i] < p[i]));
-    for(int j=0;j<pn;++j){
-      assert(!(p[i]<p[j] && p[j]<p[i]));
-      assert(p[i]<p[j] || p[i]==p[j] || p[j]<p[i]);
-      for(int k=0;k<pn;++k){
-        if(p[i] < p[j] && p[j] < p[k]){
-          assert(p[i] < p[k]);
-        }
-      }
-    }
-  }
+  (void)x;
+  (void)y;
+  std::cout << "TODO";
+//   const int pn = 5;
+//   board p[pn];
+//   for(int i=0;i<pn;++i){
+//     p[i].reset();
+//     p[i].do_random_moves(9);
+//   }
+//   assert(!(p[i] < p[i]));
+//   for(int j=0;j<pn;++j){
+//     assert(!(p[i]<p[j] && p[j]<p[i]));
+//     assert(p[i]<p[j] || p[i]==p[j] || p[j]<p[i]);
+//     for(int k=0;k<pn;++k){
+//       if(p[i] < p[j] && p[j] < p[k]){
+//         assert(p[i] < p[k]);
+//       }
+//     }
+//   }
+//   }
 }
 
 void squared_unittest::test_board_switch_turn(const board* x){
@@ -330,7 +330,7 @@ void squared_unittest::test_board_switch_turn(const board* x){
 }
 
 void squared_unittest::test_board_is_valid_move(const board* x){
-  board         b = *x;
+  board b = *x;
   for(int i=0;i<64;++i){
     assert(b.is_valid_move(i) == b.get_valid_moves().test(i));
   }
@@ -382,14 +382,49 @@ void squared_unittest::test_board_do_random_moves(const board* x){
   board b = *x;
   bits64 non_empty = b.get_non_empty_fields();
   b.do_random_moves(rand() % 15);
+  test_board_validity(&b);
   assert((b.get_non_empty_fields() & non_empty) == non_empty);
 }
 
 void squared_unittest::test_board_reset(){
   board b;
   b.reset();
+  test_board_validity(&b);
   assert(b.me == bits64((1ull << 28) | (1ull << 35)));
   assert(b.opp == bits64((1ull << 27) | (1ull << 36)));
+}
+
+void squared_unittest::test_board_count_discs(const board* x)
+{
+  assert(x->count_discs() == (x->me | x->opp).count());
+}
+
+void squared_unittest::test_board_count_empty_fields(const board* x)
+{
+  assert(x->count_empty_fields() == (~(x->me | x->opp)).count());
+}
+
+void squared_unittest::test_board_count_opponent_moves(const board* x)
+{
+  board b = *x;
+  assert(b.count_opponent_moves() == b.switch_turn()->get_valid_moves());
+}
+
+void squared_unittest::test_board_count_valid_moves(const board* x)
+{
+  assert(x->count_valid_moves() == x->get_valid_moves().count());
+}
+
+void squared_unittest::test_board_do_move(const board* x)
+{
+  bits64 valid_moves = x->get_valid_moves();
+  for(int i=0;i<64;++i){
+    if(valid_moves.test(i)){
+      board t = *x;
+      bits64 t_undo = t.do_move(i);
+      assert(t_undo == (x->me ^ t.opp).reset(i));
+    }
+  }
 }
 
 void squared_unittest::test_bits64_all()
@@ -483,9 +518,21 @@ void squared_unittest::test_board_all()
     std::cout << ".";
   }
 
+  
+  
+  
   std::vector<board> test_input;
+  test_input.push_back(board());
+  test_input.back().reset();
+  test_input.push_back(board());
+  test_input.back().me = 0ull;
+  test_input.back().opp = ~0ull;
+  test_input.push_back(board(test_input.back()));
+  test_input.back().switch_turn();
+  
   while(test_input.size() < N){
     test_input.push_back(board());
+    test_input.back().reset();
     test_input.back().do_random_moves(rand() % 60);
   }
 
