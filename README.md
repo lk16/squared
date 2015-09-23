@@ -1,6 +1,9 @@
 Squared
 =======
 
+A graphical othello/reversi program with (strong) AI/bot/robot.
+Designed to run on *nix 64-bit systems.
+
 Dependencies
 ------------
 * gtkmm-dev
