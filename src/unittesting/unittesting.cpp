@@ -9,7 +9,7 @@ void squared_unittest::check_board(const board* b){
 
 void squared_unittest::announce(const std::string& name)
 {
-  std::cout << "\nTesting " << name << " ";
+  std::cout << "\nTesting " << name << "";
   std::cout.flush();
 }
 
@@ -66,8 +66,7 @@ void squared_unittest::test_bits64_compound_assign_xor(const bits64* x,const bit
   assert(t == (*x ^ *y));
 }  
  
-void squared_unittest::test_bits64_compound_assign_shift(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_compound_assign_shift(const bits64* x){
   bits64 t;
   for(int n=0;n<63;++n){
     t = *x;
@@ -80,8 +79,7 @@ void squared_unittest::test_bits64_compound_assign_shift(const bits64* x,const b
   }
 }
 
-void squared_unittest::test_bits64_operator_tilde(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_operator_tilde(const bits64* x){
   bits64 t = ~*x;
   assert(bits64(t & *x) == bits64(0ull));
   assert(bits64(*x & ~*x) == bits64(0ull));
@@ -105,20 +103,17 @@ void squared_unittest::test_bits64_operator_xor(const bits64* x,const bits64* y)
   assert(bits64(*x ^ *x) == bits64(0ull));
 }
 
-void squared_unittest::test_bits64_operator_bool(const bits64* x,const bits64* y){  
-  (void)y;
+void squared_unittest::test_bits64_operator_bool(const bits64* x){
   assert(((bool)(*x)) == (*x != bits64(0ull)));
 }
 
-void squared_unittest::test_bits64_reset_all(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_reset_all(const bits64* x){
   bits64 t = *x;
   t.reset_all();
   assert(t == bits64(0ull));
 }
 
-void squared_unittest::test_bits64_reset_before(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_reset_before(const bits64* x){
   bits64 t,s;
   s = *x;
   for(int i=0; i<64; ++i){
@@ -133,8 +128,7 @@ void squared_unittest::test_bits64_reset_before(const bits64* x,const bits64* y)
   assert(t == bits64(0ull));
 }
 
-void squared_unittest::test_bits64_reset_after(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_reset_after(const bits64* x){
   bits64 s,t;
   s = *x;
   for(int i=63; i>=0; --i){
@@ -149,8 +143,7 @@ void squared_unittest::test_bits64_reset_after(const bits64* x,const bits64* y){
   assert(t == bits64(0ull));
 }  
 
-void squared_unittest::test_bits64_reset(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_reset(const bits64* x){
   bits64 t,s;
   for(int i=0; i<64; ++i){
     t = *x;
@@ -161,8 +154,7 @@ void squared_unittest::test_bits64_reset(const bits64* x,const bits64* y){
 }
 
   
-void squared_unittest::test_bits64_set(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_set(const bits64* x){
   bits64 t; 
   for(int i=0; i<63; ++i){
     t = *x;
@@ -171,8 +163,7 @@ void squared_unittest::test_bits64_set(const bits64* x,const bits64* y){
   }
 }
 
-void squared_unittest::test_bits64_index_bit(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_index_bit(const bits64* x){
   // first_index last_index first_bit last_bit
   bits64 t = *x;
   {
@@ -196,8 +187,7 @@ void squared_unittest::test_bits64_index_bit(const bits64* x,const bits64* y){
   }
 }
 
-void squared_unittest::test_bits64_counting(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_counting(const bits64* x){
   // count any none all test
   int count = 0;
   bits64 t = *x;
@@ -215,8 +205,7 @@ void squared_unittest::test_bits64_counting(const bits64* x,const bits64* y){
   
 }
   
-void squared_unittest::test_bits64_vertical_line(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_vertical_line(const bits64* x){
   // mirror_veritcal_line
   bits64 t = x->mirror_vertical_line();
   for(int ty=0;ty<8;++ty){
@@ -235,10 +224,9 @@ void squared_unittest::test_bits64_vertical_line(const bits64* x,const bits64* y
   }
 }
 
-void squared_unittest::test_bits64_rotate(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_rotate(const bits64* x){
   (void)x;
-  std::cout << "TODO!\n";
+  std::cout << "x";
 }
   
 void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits64* y){
@@ -250,10 +238,9 @@ void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits6
   }
 }
 
-void squared_unittest::test_bits64_to_ascii(const bits64* x,const bits64* y){
-  (void)y;
+void squared_unittest::test_bits64_to_ascii(const bits64* x){
   (void)x;
-  std::cout << "TODO!\n";
+  std::cout << "x";
 }
 
 
@@ -382,7 +369,6 @@ void squared_unittesting()
 void squared_unittest::run()
 {
   const int N = 10;
-  const int CAP = 40;
   
   { // bits64
   
@@ -415,9 +401,6 @@ void squared_unittest::run()
     
     
     std::vector<bits64> test_input;
-    const bits64 *test_input_start,*test_input_end;
-    test_input_start = test_input.data();
-    test_input_end = test_input_start + test_input.size();
     test_input.push_back(bits64(0ull));
     test_input.push_back(bits64(~0ull));
     test_input.push_back(bits64(1ull));
@@ -427,24 +410,57 @@ void squared_unittest::run()
     while(test_input.size() < N){
       test_input.push_back(bits64(rand_64()));
     }
-
+ 
     
-    std::vector<std::pair<void(squared_unittest::*)(const bits64*,const bits64*),std::string>> test_funcs;
-    test_funcs.push_back(std::make_pair(squared_unittest::test_bits64_operator_equals,"test_bits64_operator_equals"));
+    std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
+    add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
+    add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
+    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
+    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);
+    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_xor);
+    add_to_fun_vec(binary_funcs,test_bits64_operator_or);
+    add_to_fun_vec(binary_funcs,test_bits64_operator_and);
+    add_to_fun_vec(binary_funcs,test_bits64_operator_xor);
+    add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
     
-    for(auto f: test_funcs){
-      std::cout << "Running " << f.second << '\n';
-      for(const bits64* i=test_input_start;i!=test_input_end;++i){
-        for(const bits64* j=test_input_start;j!=test_input_end;++j){
-          this->*(f.first)(i,j);
+    for(auto f: binary_funcs){
+      std::cout << "\nRunning " << f.second << " ";
+      for(const auto& lhs: test_input){
+        for(const auto& rhs: test_input){
+          (f.first)(&lhs,&rhs);
           std::cout << ".";
         }
+      }
+    }
+ 
+    std::vector<std::pair<void(*)(const bits64*),std::string>> unary_funcs;
+    add_to_fun_vec(unary_funcs,test_bits64_to_ascii);
+    add_to_fun_vec(unary_funcs,test_bits64_compound_assign_shift);
+    add_to_fun_vec(unary_funcs,test_bits64_operator_tilde);
+    add_to_fun_vec(unary_funcs,test_bits64_operator_bool);
+    add_to_fun_vec(unary_funcs,test_bits64_reset_all);
+    add_to_fun_vec(unary_funcs,test_bits64_reset_before);
+    add_to_fun_vec(unary_funcs,test_bits64_reset_after);
+    add_to_fun_vec(unary_funcs,test_bits64_reset);
+    add_to_fun_vec(unary_funcs,test_bits64_set);
+    add_to_fun_vec(unary_funcs,test_bits64_index_bit);
+    add_to_fun_vec(unary_funcs,test_bits64_counting);
+    add_to_fun_vec(unary_funcs,test_bits64_vertical_line);
+    add_to_fun_vec(unary_funcs,test_bits64_rotate);
+ 
+    
+    for(auto f: unary_funcs){
+      std::cout << "\nRunning " << f.second << " ";
+      for(const auto& arg: test_input){
+        (f.first)(&arg);
+        std::cout << ".";
       }
     }
     
     
   }
   
+#if 0
   { // board
     std::vector<board> board_vec;
     for(int i=0;i<6;++i){
@@ -461,7 +477,7 @@ void squared_unittest::run()
     announce("board random moves");
     for(i=start;i!=end;++i){
       for(j=start;j!=end;++j){
-        board_test(i,j);
+        test_board(i,j);
         announce_step();
         board_test(j,i);
         announce_step();
@@ -478,6 +494,6 @@ void squared_unittest::run()
 
     // TODO xot
   }
-  
+#endif 
   std::cout << "\nOK\n";
 }
