@@ -15,7 +15,7 @@ Dependencies
 Compilation
 -----------
 * ``cmake .``
-* ``make -j $(echo "\`nproc\`*2" | bc -l)``
+* ``make -j $(echo "`nproc`*2" | bc -l)``
 
 
 Usage
