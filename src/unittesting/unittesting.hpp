@@ -57,7 +57,7 @@ class squared_unittest{
   static void test_board_operator_assign(const board* x);
   static void test_board_operator_equals(const board* x,const board* y);
   static void test_board_operator_unequals(const board* x,const board* y);
-  static void test_board_operator_assign(const board* x,const board* y);
+  static void test_board_operator_less(const board* x,const board* y);
   static void test_board_switch_turn(const board* x);
   static void test_board_is_valid_move(const board* x);
   static void test_board_get_valid_moves(const board* x);

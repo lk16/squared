@@ -278,7 +278,7 @@ void squared_unittest::test_board_copy_ctor(const board* x){
 
 void squared_unittest::test_board_ctor_string(const board* x){
   (void)x;
-  std::cout << "TODO\n";
+  std::cout << "TODO";
 }
 
 void squared_unittest::test_board_operator_assign(const board* x){
@@ -299,7 +299,7 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
   assert((*x == *y) == !(*x != *y));
 }
   
-void squared_unittest::test_board_operator_assign(const board* x,const board* y){
+void squared_unittest::test_board_operator_less(const board* x,const board* y){
   const int pn = 5;
   board p[pn];
   for(int i=0;i<pn;++i){
@@ -473,20 +473,58 @@ void squared_unittest::test_bits64_all()
     
 void squared_unittest::test_board_all()
 {
-  std::cout << "\nTODO implement test_board_all()\n";
-#if 0
-  static void test_board_copy_ctor(const board* x);
-  static void test_board_ctor_string(const board* x);
-  static void test_board_operator_assign(const board* x);
-  static void test_board_operator_equals(const board* x,const board* y);
-  static void test_board_operator_unequals(const board* x,const board* y);
-  static void test_board_operator_assign(const board* x,const board* y);
-  static void test_board_switch_turn(const board* x);
-  static void test_board_is_valid_move(const board* x);
-  static void test_board_get_valid_moves(const board* x);
-  static void test_board_do_random_moves(const board* x);
-  static void test_board_reset();
-#endif
+  
+  std::vector<std::pair<void(*)(),std::string>> noarg_funcs;
+  add_to_fun_vec(noarg_funcs,test_board_reset);
+  
+   for(auto f: noarg_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    (f.first)();
+    std::cout << ".";
+  }
+
+  std::vector<board> test_input;
+  while(test_input.size() < N){
+    test_input.push_back(board());
+    test_input.back().do_random_moves(rand() % 60);
+  }
+
+  
+  
+  std::vector<std::pair<void(*)(const board*),std::string>> unary_funcs;
+  add_to_fun_vec(unary_funcs,test_board_copy_ctor);
+  add_to_fun_vec(unary_funcs,test_board_ctor_string);
+  add_to_fun_vec(unary_funcs,test_board_switch_turn);
+  add_to_fun_vec(unary_funcs,test_board_is_valid_move);
+  add_to_fun_vec(unary_funcs,test_board_get_valid_moves);
+  add_to_fun_vec(unary_funcs,test_board_do_random_moves);
+  add_to_fun_vec(unary_funcs,test_board_operator_assign);
+  
+  for(auto f: unary_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    for(const auto& arg: test_input){
+      (f.first)(&arg);
+      std::cout << ".";
+    }
+  }
+  
+  
+
+  
+  std::vector<std::pair<void(*)(const board*,const board*),std::string>> binary_funcs;
+  add_to_fun_vec(binary_funcs,test_board_operator_equals);
+  add_to_fun_vec(binary_funcs,test_board_operator_unequals);
+  add_to_fun_vec(binary_funcs,test_board_operator_less);
+ 
+  for(auto f: binary_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    for(const auto& lhs: test_input){
+      for(const auto& rhs: test_input){
+        (f.first)(&lhs,&rhs);
+        std::cout << ".";
+      }
+    }
+  }
 }
 
   

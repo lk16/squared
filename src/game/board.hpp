@@ -264,7 +264,10 @@ inline board* board::switch_turn()
 
 inline bool board::operator<(const board& b) const
 {
-  return this->to_database_string() < b.to_database_string();
+  if(me != b.me){
+    return me < b.me;
+  }
+  return opp < b.opp;
 }
 
 inline bits64 board::get_empty_fields() const
