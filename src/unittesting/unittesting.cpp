@@ -244,6 +244,34 @@ void squared_unittest::test_bits64_to_ascii(const bits64* x){
 }
 
 
+void squared_unittest::test_bits64_default_ctor(){
+  assert(bits64() == bits64(0ull));
+}
+
+void squared_unittest::test_bits64_static_const_members(){
+  for(unsigned i=0;i<64;++i){
+    assert(bits64::mask_set[i] == 1ull << i);
+    assert(bits64::mask_reset[i] == ~(1ull << i));
+  }
+  assert(bits64::mask_set[64] == 0ull);
+  assert(bits64::mask_reset[64] == ~0ull);
+}
+
+
+void squared_unittest::test_bits64_test_all(){
+  bits64 t;
+  t.set_all();
+  assert(t == bits64(~0ull));
+}
+  
+void squared_unittest::test_bits64_only_bit_index(){
+  for(int i=0;i<64;++i){
+    assert(bits64(1ull << i).only_bit_index() == i);
+  }
+  assert(bits64(0ull).only_bit_index() == 64);
+}  
+
+
 #if 0
 void board_test(const board* x,const board* y){
   check_board(x);
@@ -362,34 +390,18 @@ void board_test(const board* x,const board* y){
 
 void squared_unittest::test_bits64_all()
 {  
-  announce("bits64 default ctor");
-  assert(bits64() == bits64(0ull));
+  std::vector<std::pair<void(*)(),std::string>> noarg_funcs;
+  add_to_fun_vec(noarg_funcs,test_bits64_default_ctor);
+  add_to_fun_vec(noarg_funcs,test_bits64_static_const_members);
+  add_to_fun_vec(noarg_funcs,test_bits64_test_all);
+  add_to_fun_vec(noarg_funcs,test_bits64_only_bit_index);
   
-  announce("bits64 public static const members");
-  for(unsigned i=0;i<64;++i){
-    assert(bits64::mask_set[i] == 1ull << i);
-    assert(bits64::mask_reset[i] == ~(1ull << i));
+   for(auto f: noarg_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    (f.first)();
+    std::cout << ".";
   }
-  assert(bits64::mask_set[64] == 0ull);
-  assert(bits64::mask_reset[64] == ~0ull);
-  
-  announce("bits64::test_all()");
-  {
-    bits64 t;
-    t.set_all();
-    assert(t == bits64(~0ull));
-  }
-  
 
-  announce("bits64::only_bit_index()");
-  // only_bit_index
-  for(int i=0;i<64;++i){
-    assert(bits64(1ull << i).only_bit_index() == i);
-  }
-  assert(bits64(0ull).only_bit_index() == 64);
-  
-  
-  
   std::vector<bits64> test_input;
   test_input.push_back(bits64(0ull));
   test_input.push_back(bits64(~0ull));
@@ -402,27 +414,7 @@ void squared_unittest::test_bits64_all()
   }
 
   
-  std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
-  add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
-  add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
-  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
-  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);
-  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_xor);
-  add_to_fun_vec(binary_funcs,test_bits64_operator_or);
-  add_to_fun_vec(binary_funcs,test_bits64_operator_and);
-  add_to_fun_vec(binary_funcs,test_bits64_operator_xor);
-  add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
   
-  for(auto f: binary_funcs){
-    std::cout << "\nRunning " << f.second << " ";
-    for(const auto& lhs: test_input){
-      for(const auto& rhs: test_input){
-        (f.first)(&lhs,&rhs);
-        std::cout << ".";
-      }
-    }
-  }
-
   std::vector<std::pair<void(*)(const bits64*),std::string>> unary_funcs;
   add_to_fun_vec(unary_funcs,test_bits64_to_ascii);
   add_to_fun_vec(unary_funcs,test_bits64_compound_assign_shift);
@@ -446,6 +438,33 @@ void squared_unittest::test_bits64_all()
       std::cout << ".";
     }
   }
+  
+  
+
+  
+  std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
+  add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_xor);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_or);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_and);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_xor);
+  add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
+  
+  for(auto f: binary_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    for(const auto& lhs: test_input){
+      for(const auto& rhs: test_input){
+        (f.first)(&lhs,&rhs);
+        std::cout << ".";
+      }
+    }
+  }
+
+
+
 }  
     
   
