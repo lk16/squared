@@ -80,7 +80,7 @@ bool game_control::do_special_tasks()
     return true;
   }
   if(run_unit_test){
-    squared_unittesting();
+    squared_unittest().run();
     return true;
   }
   if(run_speed_test){

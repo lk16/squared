@@ -17,8 +17,12 @@
 
 
 class squared_unittest{
-  void announce(const std::string& name);
-  void announce_step();
+  
+  static const int N = 10;
+  
+  static void announce(const std::string& name);
+  static void TODO();
+  
   
   static void test_bits64_operator_equals(const bits64* x,const bits64* y);
   static void test_bits64_operator_unequals(const bits64* x,const bits64* y);
@@ -42,7 +46,9 @@ class squared_unittest{
   static void test_bits64_rotate(const bits64* x);
   static void test_bits64_is_subset_of_mask(const bits64* x,const bits64* y);
   static void test_bits64_to_ascii(const bits64* x);
-
+  static void test_bits64_all();
+  
+  
   void check_board(const board* b);
   
 public:

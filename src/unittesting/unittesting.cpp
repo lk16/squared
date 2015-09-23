@@ -13,11 +13,11 @@ void squared_unittest::announce(const std::string& name)
   std::cout.flush();
 }
 
-void squared_unittest::announce_step()
+void squared_unittest::TODO()
 {
-  std::cout << '.';
-  std::cout.flush();
+  std::cout << "TODO";
 }
+
   
 void squared_unittest::test_bits64_operator_equals(const bits64* x,const bits64* y){
   bits64 t,s;
@@ -226,7 +226,7 @@ void squared_unittest::test_bits64_vertical_line(const bits64* x){
 
 void squared_unittest::test_bits64_rotate(const bits64* x){
   (void)x;
-  std::cout << "x";
+  TODO();
 }
   
 void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits64* y){
@@ -240,7 +240,7 @@ void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits6
 
 void squared_unittest::test_bits64_to_ascii(const bits64* x){
   (void)x;
-  std::cout << "x";
+  TODO();
 }
 
 
@@ -360,105 +360,99 @@ void board_test(const board* x,const board* y){
 }
 #endif
 
-void squared_unittesting()
-{
-  squared_unittest().run();
-}
-
-
-void squared_unittest::run()
-{
-  const int N = 10;
+void squared_unittest::test_bits64_all()
+{  
+  announce("bits64 default ctor");
+  assert(bits64() == bits64(0ull));
   
-  { // bits64
+  announce("bits64 public static const members");
+  for(unsigned i=0;i<64;++i){
+    assert(bits64::mask_set[i] == 1ull << i);
+    assert(bits64::mask_reset[i] == ~(1ull << i));
+  }
+  assert(bits64::mask_set[64] == 0ull);
+  assert(bits64::mask_reset[64] == ~0ull);
   
-    announce("bits64 default ctor");
-    assert(bits64() == bits64(0ull));
-    
-    announce("bits64 public static const members");
-    for(unsigned i=0;i<64;++i){
-      assert(bits64::mask_set[i] == 1ull << i);
-      assert(bits64::mask_reset[i] == ~(1ull << i));
-    }
-    assert(bits64::mask_set[64] == 0ull);
-    assert(bits64::mask_reset[64] == ~0ull);
-    
-    announce("bits64::test_all()");
-    {
-      bits64 t;
-      t.set_all();
-      assert(t == bits64(~0ull));
-    }
-    
+  announce("bits64::test_all()");
+  {
+    bits64 t;
+    t.set_all();
+    assert(t == bits64(~0ull));
+  }
+  
 
-    announce("bits64::only_bit_index()");
-    // only_bit_index
-    for(int i=0;i<64;++i){
-      assert(bits64(1ull << i).only_bit_index() == i);
-    }
-    assert(bits64(0ull).only_bit_index() == 64);
-    
-    
-    
-    std::vector<bits64> test_input;
-    test_input.push_back(bits64(0ull));
-    test_input.push_back(bits64(~0ull));
-    test_input.push_back(bits64(1ull));
-    test_input.push_back(bits64(1ull << 63));
-    test_input.push_back(bits64(0x3333333333333333));
-    test_input.push_back(bits64(0xcccccccccccccccc));
-    while(test_input.size() < N){
-      test_input.push_back(bits64(rand_64()));
-    }
- 
-    
-    std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
-    add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
-    add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
-    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
-    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);
-    add_to_fun_vec(binary_funcs,test_bits64_compound_assign_xor);
-    add_to_fun_vec(binary_funcs,test_bits64_operator_or);
-    add_to_fun_vec(binary_funcs,test_bits64_operator_and);
-    add_to_fun_vec(binary_funcs,test_bits64_operator_xor);
-    add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
-    
-    for(auto f: binary_funcs){
-      std::cout << "\nRunning " << f.second << " ";
-      for(const auto& lhs: test_input){
-        for(const auto& rhs: test_input){
-          (f.first)(&lhs,&rhs);
-          std::cout << ".";
-        }
-      }
-    }
- 
-    std::vector<std::pair<void(*)(const bits64*),std::string>> unary_funcs;
-    add_to_fun_vec(unary_funcs,test_bits64_to_ascii);
-    add_to_fun_vec(unary_funcs,test_bits64_compound_assign_shift);
-    add_to_fun_vec(unary_funcs,test_bits64_operator_tilde);
-    add_to_fun_vec(unary_funcs,test_bits64_operator_bool);
-    add_to_fun_vec(unary_funcs,test_bits64_reset_all);
-    add_to_fun_vec(unary_funcs,test_bits64_reset_before);
-    add_to_fun_vec(unary_funcs,test_bits64_reset_after);
-    add_to_fun_vec(unary_funcs,test_bits64_reset);
-    add_to_fun_vec(unary_funcs,test_bits64_set);
-    add_to_fun_vec(unary_funcs,test_bits64_index_bit);
-    add_to_fun_vec(unary_funcs,test_bits64_counting);
-    add_to_fun_vec(unary_funcs,test_bits64_vertical_line);
-    add_to_fun_vec(unary_funcs,test_bits64_rotate);
- 
-    
-    for(auto f: unary_funcs){
-      std::cout << "\nRunning " << f.second << " ";
-      for(const auto& arg: test_input){
-        (f.first)(&arg);
+  announce("bits64::only_bit_index()");
+  // only_bit_index
+  for(int i=0;i<64;++i){
+    assert(bits64(1ull << i).only_bit_index() == i);
+  }
+  assert(bits64(0ull).only_bit_index() == 64);
+  
+  
+  
+  std::vector<bits64> test_input;
+  test_input.push_back(bits64(0ull));
+  test_input.push_back(bits64(~0ull));
+  test_input.push_back(bits64(1ull));
+  test_input.push_back(bits64(1ull << 63));
+  test_input.push_back(bits64(0x3333333333333333));
+  test_input.push_back(bits64(0xcccccccccccccccc));
+  while(test_input.size() < N){
+    test_input.push_back(bits64(rand_64()));
+  }
+
+  
+  std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
+  add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);
+  add_to_fun_vec(binary_funcs,test_bits64_compound_assign_xor);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_or);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_and);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_xor);
+  add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
+  
+  for(auto f: binary_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    for(const auto& lhs: test_input){
+      for(const auto& rhs: test_input){
+        (f.first)(&lhs,&rhs);
         std::cout << ".";
       }
     }
-    
-    
   }
+
+  std::vector<std::pair<void(*)(const bits64*),std::string>> unary_funcs;
+  add_to_fun_vec(unary_funcs,test_bits64_to_ascii);
+  add_to_fun_vec(unary_funcs,test_bits64_compound_assign_shift);
+  add_to_fun_vec(unary_funcs,test_bits64_operator_tilde);
+  add_to_fun_vec(unary_funcs,test_bits64_operator_bool);
+  add_to_fun_vec(unary_funcs,test_bits64_reset_all);
+  add_to_fun_vec(unary_funcs,test_bits64_reset_before);
+  add_to_fun_vec(unary_funcs,test_bits64_reset_after);
+  add_to_fun_vec(unary_funcs,test_bits64_reset);
+  add_to_fun_vec(unary_funcs,test_bits64_set);
+  add_to_fun_vec(unary_funcs,test_bits64_index_bit);
+  add_to_fun_vec(unary_funcs,test_bits64_counting);
+  add_to_fun_vec(unary_funcs,test_bits64_vertical_line);
+  add_to_fun_vec(unary_funcs,test_bits64_rotate);
+
+  
+  for(auto f: unary_funcs){
+    std::cout << "\nRunning " << f.second << " ";
+    for(const auto& arg: test_input){
+      (f.first)(&arg);
+      std::cout << ".";
+    }
+  }
+}  
+    
+  
+
+void squared_unittest::run()
+{
+  test_bits64_all();
   
 #if 0
   { // board
