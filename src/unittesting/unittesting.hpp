@@ -7,51 +7,17 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
-#include <iomanip>
 #include <vector>
 #include <set>
 
 #include "game/board.hpp"
 #include "util/math.hpp"
+#include "unittesting/progress_bar.hpp"
 
 #define add_to_fun_vec(vec,f) \
     vec.push_back(std::make_pair(squared_unittest::f,#f))
 
-class progress_bar{
-  static const int bar_size = 100;
-  int bar_printed_chars = 0;
-  int total_steps;
-  int steps_done;
-  
-  
-public:
-  progress_bar(int n,const std::string& func_name){ 
-    std::cout << "\n" << std::setw(40) << func_name << "  ";
-    std::cout.flush();
-    total_steps = n;
-    steps_done = 0;
-    bar_printed_chars = 0;
-  }
-  
-  void step(){
-    ++steps_done;
-    const int needed = (int)((((float)steps_done)/total_steps)*bar_size);
-    while(needed != bar_printed_chars){
-      std::cout << '.';
-      ++bar_printed_chars;
-    }
-    std::cout.flush();
-  }
-  
-  ~progress_bar(){
-    while(bar_printed_chars < bar_size){
-      std::cout << '.';
-      ++bar_printed_chars;
-    }
-    std::cout.flush();
-  }
-  
-};
+
 
 class squared_unittest{
   
@@ -86,6 +52,7 @@ class squared_unittest{
   static void test_bits64_default_ctor();
   static void test_bits64_static_const_members();
   static void test_bits64_test_all();
+  static void test_bits64_get_word(const bits64* x);
   static void test_bits64_only_bit_index();
   
   static void test_board_copy_ctor(const board* x);

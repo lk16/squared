@@ -112,6 +112,9 @@ public:
   
   // equivalent to std::cout << this->to_ascii()
   void show() const;
+  
+  // returns underlying 64 bit word
+  uint64_t get_word() const;
 };
 
 inline bits64::bits64()
@@ -123,6 +126,12 @@ inline bits64::bits64(long long unsigned int x)
 {
   word = x;
 }
+
+inline uint64_t bits64::get_word() const
+{
+  return word;
+}
+
 
 inline int bits64::first_index() const
 {

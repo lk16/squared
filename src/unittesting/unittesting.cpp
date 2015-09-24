@@ -300,22 +300,19 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
 }
   
 void squared_unittest::test_board_operator_less(const board* x,const board* y){
-  const int pn = 5;
-  board p[pn];
-  for(int i=0;i<pn;++i){
-    p[i].reset();
-    p[i].do_random_moves(rand() % 10);
-    assert(!(p[i] < p[i]));
-    assert(!(*x<p[i] && p[i]<*x));
-    if(*x < p[i] && p[i] < *y){
-      assert(*x < *y);
-    }
-    if(p[i] < *x && *x < *y){
-      assert(p[i] < *y);
-    }
-    if(p[i] != *x){
-      assert((p[i] < *x) || (*x < p[i]));
-    }
+  board z;
+  z.reset();
+  z.do_random_moves(3);
+  assert(!(z < z));
+  assert(!(*x<z && z<*x));
+  if(*x < z && z < *y){
+    assert(*x < *y);
+  }
+  if(z < *x && *x < *y){
+    assert(z < *y);
+  }
+  if(z != *x){
+    assert((z < *x) || (*x < z));
   }
 }
 
@@ -567,6 +564,13 @@ void squared_unittest::test_board_position_to_index(const board* x)
   TODO();
 }
 
+void squared_unittest::test_bits64_get_word(const bits64* x)
+{
+  // HACKY
+  assert(x->get_word() == *reinterpret_cast<const uint64_t*>(x));
+}
+
+
 void squared_unittest::test_board_rotate(const board* x)
 {
   (void)x;
@@ -635,8 +639,8 @@ void squared_unittest::test_bits64_all()
   
   for(auto f: noarg_funcs){
     progress_bar pb(1,f.second);
-    (f.first)();
     pb.step();
+    (f.first)();
   }
 
   std::vector<bits64> test_input;
@@ -666,13 +670,14 @@ void squared_unittest::test_bits64_all()
   add_to_fun_vec(unary_funcs,test_bits64_counting);
   add_to_fun_vec(unary_funcs,test_bits64_vertical_line);
   add_to_fun_vec(unary_funcs,test_bits64_rotate);
+  add_to_fun_vec(unary_funcs,test_bits64_get_word);
 
   
   for(auto f: unary_funcs){
     progress_bar pb(N,f.second);
     for(const auto& arg: test_input){
-      (f.first)(&arg);
       pb.step();
+      (f.first)(&arg);
     }
   }
   
@@ -694,8 +699,8 @@ void squared_unittest::test_bits64_all()
     progress_bar pb(N*N,f.second);
     for(const auto& lhs: test_input){
       for(const auto& rhs: test_input){
-        (f.first)(&lhs,&rhs);
         pb.step();
+        (f.first)(&lhs,&rhs);
       }
     }
   }
@@ -711,9 +716,9 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(noarg_funcs,test_board_reset);
   
    for(auto f: noarg_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+    progress_bar pb(1,f.second);
+    pb.step();
     (f.first)();
-    std::cout << ".";
   }
 
   
@@ -774,8 +779,8 @@ void squared_unittest::test_board_all()
   for(auto f: unary_funcs){
     progress_bar pb(N,f.second);
     for(const auto& arg: test_input){
-      (f.first)(&arg);
       pb.step();
+      (f.first)(&arg);
     }
   }
   
@@ -792,8 +797,8 @@ void squared_unittest::test_board_all()
     progress_bar pb(N*N,f.second);
     for(const auto& lhs: test_input){
       for(const auto& rhs: test_input){
-        (f.first)(&lhs,&rhs);
         pb.step();
+        (f.first)(&lhs,&rhs);
       }
     }
   }
@@ -805,5 +810,5 @@ void squared_unittest::run()
 {
   test_bits64_all();
   test_board_all();
-  std::cout << "\nOK\n";
+  std::cout << '\n';
 }
