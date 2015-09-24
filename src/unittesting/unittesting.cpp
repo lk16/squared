@@ -460,6 +460,64 @@ void squared_unittest::test_board_do_move(const board* x)
   }
 }
 
+void squared_unittest::test_board_get_disc_diff(const board* x)
+{
+  int me = x->me.count();
+  int opp = x->opp.count();
+  int disc_diff = x->get_disc_diff();
+  if(me < opp){
+    assert(disc_diff == 64 - 2*me);
+  }
+  else if(opp < me){
+    assert(disc_diff == 64 - 2*opp);
+  }
+  else{
+    assert(disc_diff == 0);
+  }
+}
+
+void squared_unittest::test_board_get_empty_fields(const board* x)
+{
+  assert(x->get_empty_fields() == ~(x->me | x->opp));
+}
+
+void squared_unittest::test_board_get_mobility(const board* x)
+{
+  int total = 0;
+  for(int i=0;i<64;++i){
+    if(x->is_valid_move(i)){
+      board b = *x;
+      total += b.do_move(i).count();
+    }
+  }
+  assert(total == x->get_mobility(x->get_valid_moves()));
+}
+
+void squared_unittest::test_board_get_move_index(const board* x)
+{
+  for(int i=0;i<64;++i){
+    if(x->is_valid_move(i)){
+      board b = *x;
+      b.do_move(i);
+      assert(x->get_move_index(&b) == i);
+    }
+  }
+}
+
+void squared_unittest::test_board_hash(const board* x, const board* y)
+{
+  if(*x == *y){
+    assert(board_hash()(*x) == board_hash()(*y));
+  }
+  else if(board_hash()(*x) == board_hash()(*y)){
+    std::cout << "HASHCOLLISION";
+  }
+}
+
+
+
+
+
 void squared_unittest::test_bits64_all()
 {  
   std::vector<std::pair<void(*)(),std::string>> noarg_funcs;

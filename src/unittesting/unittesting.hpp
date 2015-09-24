@@ -76,6 +76,7 @@ class squared_unittest{
   static void test_board_count_discs(const board* x);
   static void test_board_count_empty_fields(const board* x);
   static void test_board_to_ascii_art(const board* x);
+  static void test_board_show(const board* x);
   static void test_board_get_disc_diff(const board* x);
   static void test_board_do_move(const board* x);
   static void test_board_position_to_index(const board* x);

@@ -140,10 +140,15 @@ struct board{
   
   // returns the amount of empty fields on the board
   int count_empty_fields() const;
+  
+  
     
   // returns string displaying this in a ascii art kind of way
   // adjusts colors for the right turn
   std::string to_ascii_art(int turn) const;
+  
+  // prints this->ascii_art() to cout
+  void show(int turn) const;
   
   // returns disc count difference 
   // positive means me has more than opp
@@ -215,6 +220,10 @@ inline int board::get_move_index(const board* after) const
   return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_bit();
 }
 
+inline void board::show(int turn) const
+{
+  std::cout << to_ascii_art(turn);
+}
 
 
 inline board::board(const board&& b):
