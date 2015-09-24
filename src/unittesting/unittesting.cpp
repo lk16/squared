@@ -302,25 +302,58 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
 void squared_unittest::test_board_operator_less(const board* x,const board* y){
   (void)x;
   (void)y;
-  std::cout << "TODO";
-//   const int pn = 5;
-//   board p[pn];
-//   for(int i=0;i<pn;++i){
-//     p[i].reset();
-//     p[i].do_random_moves(9);
-//   }
-//   assert(!(p[i] < p[i]));
-//   for(int j=0;j<pn;++j){
-//     assert(!(p[i]<p[j] && p[j]<p[i]));
-//     assert(p[i]<p[j] || p[i]==p[j] || p[j]<p[i]);
-//     for(int k=0;k<pn;++k){
-//       if(p[i] < p[j] && p[j] < p[k]){
-//         assert(p[i] < p[k]);
-//       }
-//     }
-//   }
-//   }
+  const int pn = 5;
+  board p[pn];
+  for(int i=0;i<pn;++i){
+    p[i].reset();
+    p[i].do_random_moves(9);
+    assert(!(p[i] < p[i]));
+    assert(!(*x<p[i] && p[i]<*x));
+    if(*x < p[i] && p[i] < *y){
+      assert(*x < *y);
+    }
+    if(p[i] < *x && *x < *y){
+      assert(p[i] < *y);
+    }
+    assert(p[i]<*x || p[i]==*x || *x<p[i]);
+  }
 }
+
+void squared_unittest::test_board_get_children(const board* x)
+{
+  board children[32];
+  board* child_end = x->get_children(children);
+  
+  board same_children[32];
+  board* same_children_end = same_children;
+  for(int i=0;i<64;++i){
+    if(x->is_valid_move(i)){
+      *same_children_end = *x;
+      same_children_end->do_move(i);
+      ++same_children_end;
+    }
+  }
+  
+  assert(std::set<board>(children,child_end) ==
+    std::set<board>(same_children,same_children_end));
+  
+}
+
+void squared_unittest::test_board_get_children_with_moves(const board* x)
+{
+  bits64 valid_moves = x->get_valid_moves();
+  board with[32],without[32];
+  x->get_children(without);
+  x->get_children(with,valid_moves);
+  
+  for(int i=0;i<valid_moves.count();++i){
+    assert(with[i] == without[i]);
+  }
+
+}
+
+
+
 
 void squared_unittest::test_board_switch_turn(const board* x){
   board b = *x;

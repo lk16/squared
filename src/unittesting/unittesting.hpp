@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include "game/board.hpp"
 #include "util/math.hpp"
