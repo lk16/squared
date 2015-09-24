@@ -267,8 +267,11 @@ inline board* board::switch_turn()
 
 inline bool board::operator<(const board& b) const
 {
-  if(me != b.me){
-    return me < b.me;
+  if(me < b.me){
+    return true;
+  }
+  if(b.me < me){
+    return false;
   }
   return opp < b.opp;
 }

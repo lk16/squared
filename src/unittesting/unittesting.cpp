@@ -315,7 +315,7 @@ void squared_unittest::test_board_operator_less(const board* x,const board* y){
     }
     if(p[i] != *x){
       assert((p[i] < *x) || (*x < p[i]));
-      }
+    }
   }
 }
 
