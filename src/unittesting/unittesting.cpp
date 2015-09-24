@@ -15,7 +15,7 @@ void squared_unittest::announce(const std::string& name)
 
 void squared_unittest::TODO()
 {
-  std::cout << "TODO";
+  std::cout << "\bX";
 }
 
   
@@ -507,11 +507,13 @@ void squared_unittest::test_board_get_move_index(const board* x)
 
 void squared_unittest::test_board_hash(const board* x, const board* y)
 {
+  size_t x_hash = board_hash()(*x);
+  size_t y_hash = board_hash()(*y);
   if(*x == *y){
-    assert(board_hash()(*x) == board_hash()(*y));
+    assert(x_hash == y_hash);
   }
-  else if(board_hash()(*x) == board_hash()(*y)){
-    std::cout << "HASHCOLLISION";
+  else if(x_hash == y_hash){
+    std::cout << "\bH";
   }
 }
 
@@ -631,10 +633,10 @@ void squared_unittest::test_bits64_all()
   add_to_fun_vec(noarg_funcs,test_bits64_test_all);
   add_to_fun_vec(noarg_funcs,test_bits64_only_bit_index);
   
-   for(auto f: noarg_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+  for(auto f: noarg_funcs){
+    progress_bar pb(1,f.second);
     (f.first)();
-    std::cout << ".";
+    pb.step();
   }
 
   std::vector<bits64> test_input;
@@ -667,10 +669,10 @@ void squared_unittest::test_bits64_all()
 
   
   for(auto f: unary_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+    progress_bar pb(N,f.second);
     for(const auto& arg: test_input){
       (f.first)(&arg);
-      std::cout << ".";
+      pb.step();
     }
   }
   
@@ -689,11 +691,11 @@ void squared_unittest::test_bits64_all()
   add_to_fun_vec(binary_funcs,test_bits64_is_subset_of_mask);
   
   for(auto f: binary_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+    progress_bar pb(N*N,f.second);
     for(const auto& lhs: test_input){
       for(const auto& rhs: test_input){
         (f.first)(&lhs,&rhs);
-        std::cout << ".";
+        pb.step();
       }
     }
   }
@@ -770,10 +772,10 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(unary_funcs,test_board_validity);
   
   for(auto f: unary_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+    progress_bar pb(N,f.second);
     for(const auto& arg: test_input){
       (f.first)(&arg);
-      std::cout << ".";
+      pb.step();
     }
   }
   
@@ -787,11 +789,11 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(binary_funcs,test_board_hash);
  
   for(auto f: binary_funcs){
-    std::cout << "\nRunning " << f.second << " ";
+    progress_bar pb(N*N,f.second);
     for(const auto& lhs: test_input){
       for(const auto& rhs: test_input){
         (f.first)(&lhs,&rhs);
-        std::cout << ".";
+        pb.step();
       }
     }
   }

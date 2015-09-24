@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <set>
 
@@ -16,10 +17,45 @@
 #define add_to_fun_vec(vec,f) \
     vec.push_back(std::make_pair(squared_unittest::f,#f))
 
+class progress_bar{
+  static const int bar_size = 100;
+  int bar_printed_chars = 0;
+  int total_steps;
+  int steps_done;
+  
+  
+public:
+  progress_bar(int n,const std::string& func_name){ 
+    std::cout << "\n" << std::setw(40) << func_name << "  ";
+    std::cout.flush();
+    total_steps = n;
+    steps_done = 0;
+    bar_printed_chars = 0;
+  }
+  
+  void step(){
+    ++steps_done;
+    const int needed = (int)((((float)steps_done)/total_steps)*bar_size);
+    while(needed != bar_printed_chars){
+      std::cout << '.';
+      ++bar_printed_chars;
+    }
+    std::cout.flush();
+  }
+  
+  ~progress_bar(){
+    while(bar_printed_chars < bar_size){
+      std::cout << '.';
+      ++bar_printed_chars;
+    }
+    std::cout.flush();
+  }
+  
+};
 
 class squared_unittest{
   
-  static const int N = 10;
+  static const int N = 100;
   
   static void announce(const std::string& name);
   static void TODO();
