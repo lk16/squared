@@ -306,7 +306,7 @@ void squared_unittest::test_board_operator_less(const board* x,const board* y){
   board p[pn];
   for(int i=0;i<pn;++i){
     p[i].reset();
-    p[i].do_random_moves(9);
+    p[i].do_random_moves(rand() % 10);
     assert(!(p[i] < p[i]));
     assert(!(*x<p[i] && p[i]<*x));
     if(*x < p[i] && p[i] < *y){
@@ -315,7 +315,9 @@ void squared_unittest::test_board_operator_less(const board* x,const board* y){
     if(p[i] < *x && *x < *y){
       assert(p[i] < *y);
     }
-    assert(p[i]<*x || p[i]==*x || *x<p[i]);
+    if(p[i] != *x){
+      assert((p[i] < *x) || (*x < p[i]));
+    }
   }
 }
 
@@ -513,6 +515,35 @@ void squared_unittest::test_board_hash(const board* x, const board* y)
     std::cout << "HASHCOLLISION";
   }
 }
+
+void squared_unittest::test_board_get_non_empty_fields(const board* x)
+{
+  assert(x->get_non_empty_fields() == (x->me | x->opp));
+}
+
+void squared_unittest::test_board_has_valid_moves(const board* x)
+{
+  assert(x->has_valid_moves() == x->get_valid_moves().any());
+}
+
+void squared_unittest::test_board_get_rotation(const board* x)
+{
+  for(int i=0;i<8;i++){
+    board b = x->rotate(i);
+    assert(b.get_rotation(x) == i); 
+  }
+  
+}
+
+void squared_unittest::test_board_only_similar_siblings(const board* x)
+{
+  (void)x;
+  // this function is already removed on the master branch
+}
+
+
+
+
 
 
 
