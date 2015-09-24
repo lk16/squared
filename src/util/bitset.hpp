@@ -214,7 +214,7 @@ inline bits64 bits64::last_bit() const
 
 inline bits64 bits64::rotate(int n)
 {
-  bits64 x;
+  bits64 x = *this;
   
   if(n & 4){
     x = x.mirror_vertical_line();

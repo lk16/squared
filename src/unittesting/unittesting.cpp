@@ -278,7 +278,7 @@ void squared_unittest::test_board_copy_ctor(const board* x){
 
 void squared_unittest::test_board_ctor_string(const board* x){
   (void)x;
-  std::cout << "TODO";
+  TODO();
 }
 
 void squared_unittest::test_board_operator_assign(const board* x){
@@ -300,8 +300,6 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
 }
   
 void squared_unittest::test_board_operator_less(const board* x,const board* y){
-  (void)x;
-  (void)y;
   const int pn = 5;
   board p[pn];
   for(int i=0;i<pn;++i){
@@ -317,7 +315,7 @@ void squared_unittest::test_board_operator_less(const board* x,const board* y){
     }
     if(p[i] != *x){
       assert((p[i] < *x) || (*x < p[i]));
-    }
+      }
   }
 }
 
@@ -442,7 +440,7 @@ void squared_unittest::test_board_count_empty_fields(const board* x)
 void squared_unittest::test_board_count_opponent_moves(const board* x)
 {
   board b = *x;
-  assert(b.count_opponent_moves() == b.switch_turn()->get_valid_moves());
+  assert(x->count_opponent_moves() == b.switch_turn()->count_valid_moves());
 }
 
 void squared_unittest::test_board_count_valid_moves(const board* x)
@@ -468,7 +466,7 @@ void squared_unittest::test_board_get_disc_diff(const board* x)
   int opp = x->opp.count();
   int disc_diff = x->get_disc_diff();
   if(me < opp){
-    assert(disc_diff == 64 - 2*me);
+    assert(disc_diff == -64 + 2*me);
   }
   else if(opp < me){
     assert(disc_diff == 64 - 2*opp);
@@ -497,8 +495,9 @@ void squared_unittest::test_board_get_mobility(const board* x)
 
 void squared_unittest::test_board_get_move_index(const board* x)
 {
+  bits64 valid_moves = x->get_valid_moves();
   for(int i=0;i<64;++i){
-    if(x->is_valid_move(i)){
+    if(valid_moves.test(i)){
       board b = *x;
       b.do_move(i);
       assert(x->get_move_index(&b) == i);
@@ -528,10 +527,17 @@ void squared_unittest::test_board_has_valid_moves(const board* x)
 
 void squared_unittest::test_board_get_rotation(const board* x)
 {
+  assert(x->get_rotation(x) == 0);
+  
   for(int i=0;i<8;i++){
-    board b = x->rotate(i);
-    assert(b.get_rotation(x) == i); 
+    board b = *x;
+    assert(board(*x).rotate(x->get_rotation(&b)) == *x); 
   }
+  
+  board b = *x;
+  b.me ^= 0x1;
+  b.opp ^= 0x1;
+  assert(b.get_rotation(x) == -1);      
   
 }
 
@@ -540,6 +546,74 @@ void squared_unittest::test_board_only_similar_siblings(const board* x)
   (void)x;
   // this function is already removed on the master branch
 }
+
+void squared_unittest::test_board_opponent_has_moves(const board* x)
+{
+  board b = *x;
+  assert(b.switch_turn()->has_valid_moves() == x->has_valid_moves());
+}
+
+void squared_unittest::test_board_get_frontier_discs(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_position_to_index(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_rotate(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_show(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_to_ascii_art(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_to_database_board(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_to_database_string(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_to_string(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_undo_move(const board* x)
+{
+  (void)x;
+  TODO();
+}
+
+void squared_unittest::test_board_xot()
+{
+  TODO();
+}
+
+
+
 
 
 
@@ -623,10 +697,10 @@ void squared_unittest::test_bits64_all()
       }
     }
   }
-
-
-
 }  
+
+
+
     
 void squared_unittest::test_board_all()
 {
@@ -661,13 +735,39 @@ void squared_unittest::test_board_all()
   
   
   std::vector<std::pair<void(*)(const board*),std::string>> unary_funcs;
-  add_to_fun_vec(unary_funcs,test_board_copy_ctor);
+  add_to_fun_vec(unary_funcs,test_board_copy_ctor); 
   add_to_fun_vec(unary_funcs,test_board_ctor_string);
   add_to_fun_vec(unary_funcs,test_board_switch_turn);
   add_to_fun_vec(unary_funcs,test_board_is_valid_move);
   add_to_fun_vec(unary_funcs,test_board_get_valid_moves);
   add_to_fun_vec(unary_funcs,test_board_do_random_moves);
   add_to_fun_vec(unary_funcs,test_board_operator_assign);
+  add_to_fun_vec(unary_funcs,test_board_get_children);
+  add_to_fun_vec(unary_funcs,test_board_get_children_with_moves);
+  add_to_fun_vec(unary_funcs,test_board_has_valid_moves);
+  add_to_fun_vec(unary_funcs,test_board_count_valid_moves);
+  add_to_fun_vec(unary_funcs,test_board_opponent_has_moves);
+  add_to_fun_vec(unary_funcs,test_board_count_opponent_moves);
+  add_to_fun_vec(unary_funcs,test_board_get_frontier_discs);
+  add_to_fun_vec(unary_funcs,test_board_get_empty_fields);
+  add_to_fun_vec(unary_funcs,test_board_get_non_empty_fields);
+  add_to_fun_vec(unary_funcs,test_board_count_discs);
+  add_to_fun_vec(unary_funcs,test_board_count_empty_fields);
+  add_to_fun_vec(unary_funcs,test_board_to_ascii_art);
+  add_to_fun_vec(unary_funcs,test_board_show);
+  add_to_fun_vec(unary_funcs,test_board_get_disc_diff);
+  add_to_fun_vec(unary_funcs,test_board_do_move);
+  add_to_fun_vec(unary_funcs,test_board_position_to_index);
+  add_to_fun_vec(unary_funcs,test_board_undo_move);
+  add_to_fun_vec(unary_funcs,test_board_only_similar_siblings);
+  add_to_fun_vec(unary_funcs,test_board_to_string);
+  add_to_fun_vec(unary_funcs,test_board_to_database_string);
+  add_to_fun_vec(unary_funcs,test_board_get_move_index);
+  add_to_fun_vec(unary_funcs,test_board_to_database_board);
+  add_to_fun_vec(unary_funcs,test_board_rotate);
+  add_to_fun_vec(unary_funcs,test_board_get_rotation);
+  add_to_fun_vec(unary_funcs,test_board_get_mobility);
+  add_to_fun_vec(unary_funcs,test_board_validity);
   
   for(auto f: unary_funcs){
     std::cout << "\nRunning " << f.second << " ";
@@ -684,6 +784,7 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(binary_funcs,test_board_operator_equals);
   add_to_fun_vec(binary_funcs,test_board_operator_unequals);
   add_to_fun_vec(binary_funcs,test_board_operator_less);
+  add_to_fun_vec(binary_funcs,test_board_hash);
  
   for(auto f: binary_funcs){
     std::cout << "\nRunning " << f.second << " ";

@@ -214,13 +214,10 @@ inline bits64 board::do_move(int move_id)
 
 inline int board::get_move_index(const board* after) const
 {
-  return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_bit();
+  return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_index();
 }
 
-inline void board::show(int turn) const
-{
-  std::cout << to_ascii_art(turn);
-}
+
 
 
 inline board::board(const board&& b):

@@ -182,7 +182,10 @@ int board::get_disc_diff() const
   return diff;
 }
 
-
+void board::show(int turn) const
+{
+  std::cout << to_ascii_art(turn);
+}
 
 
 std::string board::to_ascii_art(int turn) const
