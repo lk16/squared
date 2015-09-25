@@ -10,6 +10,7 @@ class bits64{
   static const char counts[65536];
   static const uint64_t mask_before[65];
   static const uint64_t mask_after[65];  
+  static const uint64_t rotation_masks[7][256];
 
 public:
   
