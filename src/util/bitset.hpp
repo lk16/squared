@@ -201,10 +201,35 @@ inline bits64 bits64::rotate(int n) const
       }
       break;
     case 2:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[1][(get_word() >> (8*i)) & 0xFF] >> i; 
+      }
+      break;
     case 3:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[2][(get_word() >> (8*i)) & 0xFF] >> i*8; 
+      }
+      break;
     case 4:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[3][(get_word() >> (8*i)) & 0xFF] << i*8; 
+      }
+      break;
     case 5:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[4][(get_word() >> (8*i)) & 0xFF] >> i; 
+      }
+      break;
     case 6:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[5][(get_word() >> (8*i)) & 0xFF] >> i*8; 
+      }
+      break;
+    case 7:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[6][(get_word() >> (8*i)) & 0xFF] << i; 
+      }
+      break;
     default: 
       assert(0 && "invalid rotation value");
       break;

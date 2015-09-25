@@ -4,10 +4,11 @@
 
 void testing_area()
 {
-  bits64 x(0x0000000000F00000);
-  x.show();
+  bits64 x(rand_64());
   
-  x.rotate(1).show();
+  for(int i=0;i<8;++i){
+    x.rotate(i).show();
+  }
   
 }
 
