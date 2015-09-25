@@ -279,7 +279,7 @@ std::string board::to_string() const {
    * byte 32: \0
    */
   char res[33];  
-  snprintf(res,33,"%llx%llx",(uint64_t)me,(uint64_t)opp);
+  snprintf(res,33,"%lx%lx",(uint64_t)me,(uint64_t)opp);
   res[32] = '\0';
   return std::string(res);  
 }
@@ -374,25 +374,6 @@ board board::to_database_board() const
   }
   
   return min; 
-}
-
-void board::get_frontier_discs(int* _me,int* _opp) const
-{
-  bits64 both = get_non_empty_fields();
-  bits64 mask = both;
-  
-  mask &= ((both << 9) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both << 8));
-  mask &= ((both << 7) & bits64(0x7F7F7F7F7F7F7F7F));
-  mask &= ((both << 1) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both >> 1) & bits64(0x7F7F7F7F7F7F7F7F));
-  mask &= ((both >> 7) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both >> 8));
-  mask &= ((both >> 9) & bits64(0x7F7F7F7F7F7F7F7F));
-  
-  *_me = mask & this->me;
-  *_opp = mask & this->opp;
-  
 }
 
 const bits64 board::dir_mask[64][8] = 

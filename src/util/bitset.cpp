@@ -1,5 +1,10 @@
 #include "util/bitset.hpp"
 
+void bits64::show() const
+{
+  std::cout << to_ascii();
+}
+
 
 const uint64_t bits64::mask_set[65] = {
   (1ull << 0),

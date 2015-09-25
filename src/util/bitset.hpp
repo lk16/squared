@@ -434,8 +434,4 @@ inline void bits64::set_all()
   word = 0xFFFFFFFFFFFFFFFF;
 }
 
-inline void bits64::show() const
-{
-  std::cout << to_ascii();
-}
 

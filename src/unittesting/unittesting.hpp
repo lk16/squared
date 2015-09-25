@@ -21,7 +21,7 @@
 
 class squared_unittest{
   
-  static const int N = 100;
+  static const int N = 1000;
   
   static void announce(const std::string& name);
   static void TODO();

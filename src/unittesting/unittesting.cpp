@@ -552,12 +552,6 @@ void squared_unittest::test_board_opponent_has_moves(const board* x)
   assert(b.switch_turn()->has_valid_moves() == x->has_valid_moves());
 }
 
-void squared_unittest::test_board_get_frontier_discs(const board* x)
-{
-  (void)x;
-  TODO();
-}
-
 void squared_unittest::test_board_position_to_index(const board* x)
 {
   (void)x;
@@ -755,7 +749,6 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(unary_funcs,test_board_count_valid_moves);
   add_to_fun_vec(unary_funcs,test_board_opponent_has_moves);
   add_to_fun_vec(unary_funcs,test_board_count_opponent_moves);
-  add_to_fun_vec(unary_funcs,test_board_get_frontier_discs);
   add_to_fun_vec(unary_funcs,test_board_get_empty_fields);
   add_to_fun_vec(unary_funcs,test_board_get_non_empty_fields);
   add_to_fun_vec(unary_funcs,test_board_count_discs);
