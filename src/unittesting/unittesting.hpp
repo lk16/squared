@@ -45,7 +45,6 @@ class squared_unittest{
   static void test_bits64_set(const bits64* x);
   static void test_bits64_index_bit(const bits64* x);
   static void test_bits64_counting(const bits64* x);
-  static void test_bits64_vertical_line(const bits64* x);
   static void test_bits64_rotate(const bits64* x);
   static void test_bits64_is_subset_of_mask(const bits64* x,const bits64* y);
   static void test_bits64_to_ascii(const bits64* x);

@@ -92,14 +92,8 @@ public:
   // test if bit i is set
   bool test(int i) const;
   
-  // returns *this seen as 8x8 field mirrored in vertical line
-  bits64 mirror_vertical_line() const;
-  
-  // returns *this seen as 8x8 field rotated left
-  bits64 rotate_left() const;
-  
   // rotates *this: n shall be between 0 and 7, both inclusive
-  bits64 rotate(int n);
+  bits64 rotate(int n) const;
   
   // returns ~0ull if that a subset of *this or 0ull otherwise
   bits64 is_subset_of_mask(const bits64& that) const;
@@ -167,47 +161,11 @@ inline int bits64::last_index() const
 
 inline int bits64::count() const
 {
-#if 0
-  return __builtin_popcountll(word);
-#else
   return counts[word & 0xFFFF] + 
   counts[(word >> 16) & 0xFFFF] +
   counts[(word >> 32) & 0xFFFF] +
   counts[word >> 48];
-#endif
 }
-
-inline bits64 bits64::mirror_vertical_line() const
-{
-  // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
-  bits64 x = word;
-  
-  bits64 y = (x ^ (x >>  7)) & bits64(0x0101010101010101); x ^= y ^ (y <<  7);
-  y = (x ^ (x >>  5)) & bits64(0x0202020202020202); x ^= y ^ (y <<  5);
-  y = (x ^ (x >>  3)) & bits64(0x0404040404040404); x ^= y ^ (y <<  3);
-  y = (x ^ (x >>  1)) & bits64(0x0808080808080808); x ^= y ^ (y <<  1);
-
-
-  
-  return x; 
-}
-
-inline bits64 bits64::rotate_left() const
-{
-  bits64 x = word;
-  
-  // thanks to http://www-cs-faculty.stanford.edu/~knuth/fasc1a.ps.gz
-  bits64 y = (x ^ (x >> 63)) & bits64(0x0000000000000001); x ^= y ^ (y << 63);
-  y = (x ^ (x >> 54)) & bits64(0x0000000000000102); x ^= y ^ (y << 54);
-  y = (x ^ (x >> 45)) & bits64(0x0000000000010204); x ^= y ^ (y << 45);
-  y = (x ^ (x >> 36)) & bits64(0x0000000001020408); x ^= y ^ (y << 36);
-  y = (x ^ (x >> 27)) & bits64(0x0000000102040810); x ^= y ^ (y << 27);
-  y = (x ^ (x >> 18)) & bits64(0x0000010204081020); x ^= y ^ (y << 18);
-  y = (x ^ (x >>  9)) & bits64(0x0001020408102040); x ^= y ^ (y <<  9);
-  return x.mirror_vertical_line();
-}
-
-
 
 inline bits64 bits64::first_bit() const
 {
@@ -222,19 +180,43 @@ inline bits64 bits64::last_bit() const
   return 1ull << (63 - __builtin_clzl(word));
 }
 
-inline bits64 bits64::rotate(int n)
+inline bits64 bits64::rotate(int n) const
 {
-  bits64 x = *this;
-  
-  if(n & 4){
-    x = x.mirror_vertical_line();
+  // bits64::rotation_masks[7][256]
+  // 0: left 
+  // 1: right 
+  // 2: 180 
+  // 3: mirror vertically 
+  // 4: mirror vertically + right
+  // 5: mirror vertically + 180
+  // 6: mirror vertically + left
+  bits64 res = 0ull;
+  switch(n){
+    case 0:
+      res = *this;
+      break;
+    case 1:
+      for(int i=0;i<8;++i){
+        res |= rotation_masks[0][(get_word() >> (8*i)) & 0xFF] << i;
+      }
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    default: 
+      assert(0 && "invalid rotation value");
+      break;
   }
   
-  for(int i=0;i<(n & 3);i++){
-    x = x.rotate_left();
-  }
   
-  return x;
+  
+  
+  
+  
+  
+  return res;
 }
 
 

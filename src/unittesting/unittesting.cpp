@@ -204,25 +204,6 @@ void squared_unittest::test_bits64_counting(const bits64* x){
   assert(t.all() == (count==64));
   
 }
-  
-void squared_unittest::test_bits64_vertical_line(const bits64* x){
-  // mirror_veritcal_line
-  bits64 t = x->mirror_vertical_line();
-  for(int ty=0;ty<8;++ty){
-    for(int tx=0;tx<8;++tx){
-      assert(x->test(8*ty+tx) == t.test(8*ty+(7-tx)));
-    }
-  }
-  
-  
-  // rotate_left
-  t = x->rotate_left();
-  for(int ty=0;ty<8;++ty){
-    for(int tx=0;tx<8;++tx){
-      assert(x->test(8*ty+tx) == t.test(8*(7-tx)+ty));
-    }
-  }
-}
 
 void squared_unittest::test_bits64_rotate(const bits64* x){
   (void)x;
@@ -662,7 +643,6 @@ void squared_unittest::test_bits64_all()
   add_to_fun_vec(unary_funcs,test_bits64_set);
   add_to_fun_vec(unary_funcs,test_bits64_index_bit);
   add_to_fun_vec(unary_funcs,test_bits64_counting);
-  add_to_fun_vec(unary_funcs,test_bits64_vertical_line);
   add_to_fun_vec(unary_funcs,test_bits64_rotate);
   add_to_fun_vec(unary_funcs,test_bits64_get_word);
 
