@@ -92,7 +92,15 @@ public:
   // test if bit i is set
   bool test(int i) const;
   
-  // rotates *this: n shall be between 0 and 7, both inclusive
+  // rotates *this: n shall be between 0 and 7, returns *this rotated
+  // 0: unmodified
+  // 1: left 
+  // 2: right 
+  // 3: 180 
+  // 4: mirror vertically 
+  // 5: mirror vertically + right
+  // 6: mirror vertically + 180
+  // 7: mirror vertically + left
   bits64 rotate(int n) const;
   
   // returns ~0ull if that a subset of *this or 0ull otherwise
@@ -182,14 +190,7 @@ inline bits64 bits64::last_bit() const
 
 inline bits64 bits64::rotate(int n) const
 {
-  // bits64::rotation_masks[7][256]
-  // 0: left 
-  // 1: right 
-  // 2: 180 
-  // 3: mirror vertically 
-  // 4: mirror vertically + right
-  // 5: mirror vertically + 180
-  // 6: mirror vertically + left
+
   bits64 res = 0ull;
   switch(n){
     case 0:

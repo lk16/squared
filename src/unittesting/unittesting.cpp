@@ -206,8 +206,35 @@ void squared_unittest::test_bits64_counting(const bits64* x){
 }
 
 void squared_unittest::test_bits64_rotate(const bits64* x){
-  (void)x;
-  TODO();
+  // 0: unmodified
+  // 1: left 
+  // 2: right 
+  // 3: 180 
+  // 4: mirror vertically 
+  // 5: mirror vertically + right
+  // 6: mirror vertically + 180
+  // 7: mirror vertically + left
+  bits64 rotated[8];
+  for(int i=0;i<8;++i){
+    bits64 b = *x;
+    rotated[i] = b.rotate(i);
+  }
+  
+  assert(*x == rotated[0]);
+  
+  for(int py=0;py<8;++py){
+    for(int px=0;px<8;++px){
+      int p = 8*py + px;
+      assert(x->test(p) == rotated[0].test(p));
+      assert(x->test(p) == rotated[1].test(8*(7-px)+py));
+      assert(x->test(p) == rotated[2].test(8*px+7-py));
+      assert(x->test(p) == rotated[3].test(63-p));
+      assert(x->test(p) == rotated[4].test(8*py+7-px));
+      assert(x->test(p) == rotated[5].test(8*(7-px)+7-py));
+      assert(x->test(p) == rotated[6].test(8*(7-py)+px));
+      assert(x->test(p) == rotated[7].test(8*px+py));
+    }
+  }
 }
   
 void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits64* y){
@@ -220,8 +247,23 @@ void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits6
 }
 
 void squared_unittest::test_bits64_to_ascii(const bits64* x){
+  /*
++-----------------+
+| - - - - - - - - |    
+| - - - - - - - - |    
+| - - - - - - - - |    
+| - - - - @ - - - |    
+| - - - @ - - - - |    
+| - - - - - - - - |    
+| - - - - - - - - |    
+| - - - - - - - - |    
++-----------------+
+*/   
+  //std::string ascii = x->to_ascii();  
+  //assert(ascii.length() == 200);
   (void)x;
   TODO();
+  
 }
 
 
