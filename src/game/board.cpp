@@ -122,7 +122,7 @@ const bits64 board::ordered_locations[10] = {
 
 
 
-void board::xot()
+void board::init_xot()
 {
 //   int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
 //   int index = rand() % xot_boards_size;
@@ -285,46 +285,9 @@ std::string board::to_string() const {
 }
 
 board::board(const std::string& in){
-
-  opp = me = 0ull;
-  bool error = false;
-  if(in.length() != 32){
-    error = true;
-  }
-  for(unsigned i=0;i<in.length();++i){
-    if((in[i]>='0' && in[i]<='9') || (in[i]>='a' && in[i]<='f')){
-      error = true;
-    }
-  }
-  
-  if(error){
-    std::cerr << "ERROR in board::board(): invalid string: \"" << in << "\".\n";
-    return;
-  }
-  
-  
-  unsigned long long x;
-  for(int i=0;i<16;i++){
-    if((in[i]>='0') && (in[i]<='9')){
-      x = in[i]-'0';
-    }
-    else{
-      x = 10 + in[i] - 'a';      
-    }
-    me |= ((x & 0xF) << (i*4));
-  }
-  
-  for(int i=0;i<16;i++){
-    if((in[16+i]>='0') && (in[16+i]<='9')){
-      x = in[16+i]-'0';
-    }
-    else{
-      x = 10 + in[16+i] - 'a';      
-    }
-    opp |= ((x & 0xF) << (i*4));
-  }
-
-  
+  (void)in;
+  std::cerr << "This is not implemented!\n";
+  std::exit(1);
 }
 
 board board::do_random_moves(int count) const

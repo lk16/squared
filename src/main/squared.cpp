@@ -3,7 +3,7 @@
 int main(int argc,char **argv){
   srand(std::time(NULL));
   
-  squared_args parsed_args(argc,(const char**)argv);
+  squared_args parsed_args(argc,const_cast<const char**>(argv));
   game_control control;
   
   parsed_args.gc = &control;

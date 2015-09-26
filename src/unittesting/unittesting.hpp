@@ -34,6 +34,7 @@ class squared_unittest{
   static void test_bits64_compound_assign_xor(const bits64* x,const bits64* y);
   static void test_bits64_compound_assign_shift(const bits64* x);
   static void test_bits64_operator_tilde(const bits64* x);
+  static void test_bits64_operator_less(const bits64* x,const bits64* y);
   static void test_bits64_operator_or(const bits64* x,const bits64* y);
   static void test_bits64_operator_and(const bits64* x,const bits64* y);
   static void test_bits64_operator_xor(const bits64* x,const bits64* y);

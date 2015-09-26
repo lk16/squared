@@ -3,7 +3,7 @@
 
 void tournament_t::run()
 {
-  std::vector<int> pairs;
+  std::vector<unsigned> pairs;
   
   for(unsigned i=0;i<entrants.size();++i){
     pairs.push_back(i);
@@ -12,8 +12,8 @@ void tournament_t::run()
   while(true){
     std::random_shuffle(pairs.begin(),pairs.end());
     for(unsigned p=0;p<pairs.size()-1;p+=2){
-      int b = pairs[p];
-      int w = pairs[p+1];
+      unsigned b = pairs[p];
+      unsigned w = pairs[p+1];
       game_result res;
       res = play_othello_game(entrants[b].bot,entrants[w].bot);
       update_entrants(&entrants[b],&entrants[w],res);
@@ -28,7 +28,7 @@ tournament_t::game_result tournament_t::play_othello_game(bot_base* black, bot_b
   int turn = 0;
   board b;
   b.reset();
-  b.xot();
+  b.init_xot();
   while(true){
     if(!b.has_valid_moves()){
       b.switch_turn();

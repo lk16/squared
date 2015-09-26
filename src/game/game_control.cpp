@@ -202,7 +202,7 @@ void game_control::on_new_game()
   
   current_state->b.reset();
   if(use_xot){
-    current_state->b.xot();
+    current_state->b.init_xot();
   }
   if(random_moves != 0){
     current_state->b = current_state->b.do_random_moves(random_moves);

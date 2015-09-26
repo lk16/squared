@@ -304,8 +304,8 @@ void squared_unittest::test_board_operator_unequals(const board* x,const board* 
   
 void squared_unittest::test_board_operator_less(const board* x,const board* y){
   board z;
-  z.reset();
-  z.do_random_moves(3);
+  z.me = rand_64();
+  z.opp = rand_64() & ~z.me;
   assert(!(z < z));
   assert(!(*x<z && z<*x));
   if(*x < z && z < *y){
@@ -315,9 +315,16 @@ void squared_unittest::test_board_operator_less(const board* x,const board* y){
     assert(z < *y);
   }
   if(z != *x){
+    assert(z.me < x->me || z.opp < x->opp);
     assert((z < *x) || (*x < z));
   }
 }
+
+void squared_unittest::test_bits64_operator_less(const bits64* x,const bits64* y)
+{
+  assert((*x < *y) == (x->get_word() < y->get_word()));
+}
+
 
 void squared_unittest::test_board_get_children(const board* x)
 {
@@ -673,6 +680,7 @@ void squared_unittest::test_bits64_all()
   
   std::vector<std::pair<void(*)(const bits64*,const bits64*),std::string>> binary_funcs;
   add_to_fun_vec(binary_funcs,test_bits64_operator_equals);
+  add_to_fun_vec(binary_funcs,test_bits64_operator_less);
   add_to_fun_vec(binary_funcs,test_bits64_operator_unequals);
   add_to_fun_vec(binary_funcs,test_bits64_compound_assign_or);
   add_to_fun_vec(binary_funcs,test_bits64_compound_assign_and);

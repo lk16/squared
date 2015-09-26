@@ -91,7 +91,7 @@ struct board{
   
   // init with random xot board
   // thanks to http://berg.earthlingz.de/xot/download.php?lang=en
-  void xot();
+  void init_xot();
   
   // switches me and opp
   board* switch_turn();
@@ -164,6 +164,7 @@ struct board{
   // reverses position_to_index
   static std::string index_to_position(int index);
   
+  // does move field_id
   template<int field_id>
   bits64 do_move_internally();
   
@@ -198,7 +199,7 @@ struct board{
 
 struct board_hash {
   size_t operator()(const board b) const{
-    return b.me ^ ((b.opp << 32) | (b.opp >> 32));
+    return ((b.me*17ull)%0xFFFFFFFFFFFFFFull) + ((b.opp*37ull)%0xFFFFFFFFFFFFFDull);
   }
 };
 
@@ -265,11 +266,8 @@ inline board* board::switch_turn()
 
 inline bool board::operator<(const board& b) const
 {
-  if(me < b.me){
-    return true;
-  }
-  if(b.me < me){
-    return false;
+  if(me != b.me){
+    return me < b.me;
   }
   return opp < b.opp;
 }
@@ -320,55 +318,21 @@ bits64 res = 0ull;
   // this funtion is a modified version of code from Edax
   const bits64 mask = opp & bits64(0x7E7E7E7E7E7E7E7Eull);
 
-  flip_l = mask & (me << 1);
-  flip_l |= mask & (flip_l << 1);
-  mask_l = mask & (mask << 1);
-  flip_l |= mask_l & (flip_l << 2);
-  flip_l |= mask_l & (flip_l << 2);
-  flip_r = mask & (me >> 1);
-  flip_r |= mask & (flip_r >> 1);
-  mask_r = mask & (mask >> 1);
-  flip_r |= mask_r & (flip_r >> 2);
-  flip_r |= mask_r & (flip_r >> 2);
-  res |= (flip_l << 1) | (flip_r >> 1);
-
-  flip_l = opp & (me << 8);
-  flip_l |= opp & (flip_l << 8);
-  mask_l = opp & (opp << 8);
-  flip_l |= mask_l & (flip_l << 16);
-  flip_l |= mask_l & (flip_l << 16);
-  flip_r = opp & (me >> 8);
-  flip_r |= opp & (flip_r >> 8);
-  mask_r = opp & (opp >> 8);
-  flip_r |= mask_r & (flip_r >> 16);
-  flip_r |= mask_r & (flip_r >> 16);
-  res |= (flip_l << 8) | (flip_r >> 8);
-
-  flip_l = mask & (me << 7);
-  flip_l |= mask & (flip_l << 7);
-  mask_l = mask & (mask << 7);
-  flip_l |= mask_l & (flip_l << 14);
-  flip_l |= mask_l & (flip_l << 14);
-  flip_r = mask & (me >> 7);
-  flip_r |= mask & (flip_r >> 7);
-  mask_r = mask & (mask >> 7);
-  flip_r |= mask_r & (flip_r >> 14);
-  flip_r |= mask_r & (flip_r >> 14);
-  res |= (flip_l << 7) | (flip_r >> 7);
-
-  flip_l = mask & (me << 9);
-  flip_l |= mask & (flip_l << 9);
-  mask_l = mask & (mask << 9);
-  flip_l |= mask_l & (flip_l << 18);
-  flip_l |= mask_l & (flip_l << 18);
-  flip_r = mask & (me >> 9);
-  flip_r |= mask & (flip_r >> 9);
-  mask_r = mask & (mask >> 9);
-  flip_r |= mask_r & (flip_r >> 18);
-  flip_r |= mask_r & (flip_r >> 18);
-  res |= (flip_l << 9) | (flip_r >> 9);
-
+  int diff[4] = {1,7,8,9};
   
+  for(int i=0;i<4;++i){
+    flip_l = mask & (me << diff[i]);
+    flip_l |= mask & (flip_l << diff[i]);
+    mask_l = mask & (mask << diff[i]);
+    flip_l |= mask_l & (flip_l << (2*diff[i]));
+    flip_l |= mask_l & (flip_l << (2*diff[i]));
+    flip_r = mask & (me >> diff[i]);
+    flip_r |= mask & (flip_r >> diff[i]);
+    mask_r = mask & (mask >> diff[i]);
+    flip_r |= mask_r & (flip_r >> (2*diff[i]));
+    flip_r |= mask_r & (flip_r >> (2*diff[i]));
+    res |= (flip_l << diff[i]) | (flip_r >> diff[i]);
+  }
   return res & get_empty_fields(); // mask with empties
 }
 

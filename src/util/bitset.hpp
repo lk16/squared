@@ -24,6 +24,8 @@ public:
   ~bits64() = default;
   
   bits64& operator=(const bits64& that);
+  
+  bool operator<(const bits64& that) const;
 
   bits64& operator|=(const bits64& that);
   bits64& operator&=(const bits64& that);
@@ -133,6 +135,11 @@ inline bits64::bits64(long long unsigned int x)
 inline uint64_t bits64::get_word() const
 {
   return word;
+}
+
+inline bool bits64::operator<(const bits64& that) const
+{
+  return get_word() < that.get_word();
 }
 
 
