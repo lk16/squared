@@ -5,28 +5,9 @@ bot_base::bot_base():
   name("base"),
   output_stream(&std::cout)
 {
+  search_depth = -1;
+  perfect_depth = -1;
 }
-
-void bot_base::set_last_move_heur(int heur)
-{
-  last_move_heur = heur;
-}
-
-
-int bot_base::get_last_move_heur() const
-{
-  return last_move_heur;
-}
-
-int bot_base::rough_prediction(const board* b) const
-{
-  (void)b;
-  std::cout << "warning: bot_" << get_name() << " did not implement ";
-  std::cout << " rough_prediction()\n";
-  return 0;
-}
-
-
 
 int bot_base::get_search_depth() const
 {

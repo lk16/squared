@@ -138,7 +138,6 @@ void bot_pvs::do_move_one_possibility(const board* b, board* res)
   board children[32];
   b->get_children(children);
   *res = children[0];
-  set_last_move_heur(NO_HEUR_AVAILABLE);
   output() << "only one valid move found, evaluation skipped.\n";
 }
 
@@ -187,7 +186,6 @@ void bot_pvs::do_move_search(const board* b, board* res)
     output() << ": " << best_heur << '\n';
   }
   
-  set_last_move_heur(best_heur);
   *res = children[best_id];
     
   stats.stop_timer();

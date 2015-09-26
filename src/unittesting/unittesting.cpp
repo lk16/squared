@@ -7,12 +7,6 @@ void squared_unittest::test_board_validity(const board* b){
   assert((non_empty & center) == center);
 }
 
-void squared_unittest::announce(const std::string& name)
-{
-  std::cout << "\nTesting " << name << "";
-  std::cout.flush();
-}
-
 void squared_unittest::TODO()
 {
   std::cout << "\bX";
@@ -709,6 +703,7 @@ void squared_unittest::test_board_all()
   
   std::vector<std::pair<void(*)(),std::string>> noarg_funcs;
   add_to_fun_vec(noarg_funcs,test_board_reset);
+  add_to_fun_vec(noarg_funcs,test_board_xot);
   
    for(auto f: noarg_funcs){
     progress_bar pb(1,f.second);

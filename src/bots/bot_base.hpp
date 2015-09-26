@@ -20,7 +20,6 @@ class bot_base{
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
-  int last_move_heur;
   
 public: 
   
@@ -39,9 +38,6 @@ public:
     void reset();
   };
   
-  
-  static const int NO_HEUR_AVAILABLE = 1000000;
-  
   stat_t stats;
   
   // ctor
@@ -56,10 +52,6 @@ public:
   // perform some action when a new game starts
   virtual void on_new_game();
   
-  // does a very rough prediction on the perfect play
-  virtual int rough_prediction(const board* b) const;
-  
-  
   // output stream to be used instead of std::cout
   // may for example return reference to dummystream
   std::ostream& output();
@@ -69,10 +61,6 @@ public:
   int get_perfect_depth() const;
   
   std::string get_name() const;
-  
-  int get_last_move_heur() const;
-  
-  void set_last_move_heur(int heur);
   
   void set_search_depth(int _search_depth,int _perfect_depth);
   
