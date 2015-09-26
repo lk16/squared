@@ -591,8 +591,15 @@ void squared_unittest::test_board_to_string(const board* x)
 
 void squared_unittest::test_board_undo_move(const board* x)
 {
-  (void)x;
-  TODO();
+  bits64 valid_moves = x->get_valid_moves();
+  while(valid_moves.any()){
+    int move = valid_moves.first_index();
+    board b = *x;
+    bits64 flipped = b.do_move(move);
+    b.undo_move(bits64(1ull << move),flipped);
+    assert(b == *x);
+    valid_moves.reset(move);
+  }
 }
 
 void squared_unittest::test_board_xot()
