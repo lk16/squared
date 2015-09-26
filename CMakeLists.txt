@@ -48,22 +48,22 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${GTKMM_LIBRARY_DIRS})
-include_directories(${GTKMM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GTKMM_INCLUDE_DIRS})
 
 include_directories(${GLIBMM_LIBRARY_DIRS})
-include_directories(${GLIBMM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GLIBMM_INCLUDE_DIRS})
 
 include_directories(${GDK_PIXBUF_LIBRARY_DIRS})
-include_directories(${GDK_PIXBUF_INCLUDE_DIRS})
+include_directories(SYSTEM ${GDK_PIXBUF_INCLUDE_DIRS})
 
 include_directories(${GTK_PLUS_LIBRARY_DIRS})
-include_directories(${GTK_PLUS_INCLUDE_DIRS})
+include_directories(SYSTEM ${GTK_PLUS_INCLUDE_DIRS})
 
 include_directories(${GIOMM_LIBRARY_DIRS})
-include_directories(${GIOMM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GIOMM_INCLUDE_DIRS})
 
 include_directories(${GDKMM_LIBRARY_DIRS})
-include_directories(${GDKMM_INCLUDE_DIRS})
+include_directories(SYSTEM ${GDKMM_INCLUDE_DIRS})
 
 
 file(GLOB SOURCE_FILES

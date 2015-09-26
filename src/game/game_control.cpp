@@ -98,7 +98,7 @@ bool game_control::do_special_tasks()
       board dummy;
       speedrun_bot->set_search_depth(i,i);
       speedrun_bot->do_move(&current_state->b,&dummy);
-      long long speed = speedrun_bot->stats.get_nodes_per_second();
+      long long unsigned speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
       std::cout << speedrun_bot->stats.get_seconds() << " seconds.\n";

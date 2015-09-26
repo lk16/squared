@@ -64,8 +64,8 @@ void main_window::init_ui(){
     vbox.pack_start(*menubar,Gtk::PACK_SHRINK);
   }
   
-  for(int y=0;y<8;y++){ 
-    for(int x=0;x<8;x++){
+  for(size_t y=0;y<8;y++){ 
+    for(size_t x=0;x<8;x++){
       fields[x][y].init(this,y*8+x,IMAGE_PATH + "empty.png");
       table.attach(fields[x][y],x,x+1,y,y+1);
     }

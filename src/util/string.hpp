@@ -24,7 +24,7 @@ inline T from_str(std::string x){
   return temp;
 }
 
-std::string big_number(long long x);
+std::string big_number(unsigned long long x);
 
 std::vector<std::string> str_explode(std::string s,char d);
 
