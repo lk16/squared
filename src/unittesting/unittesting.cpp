@@ -246,26 +246,6 @@ void squared_unittest::test_bits64_is_subset_of_mask(const bits64* x,const bits6
   }
 }
 
-void squared_unittest::test_bits64_to_ascii(const bits64* x){
-  /*
-+-----------------+
-| - - - - - - - - |    
-| - - - - - - - - |    
-| - - - - - - - - |    
-| - - - - @ - - - |    
-| - - - @ - - - - |    
-| - - - - - - - - |    
-| - - - - - - - - |    
-| - - - - - - - - |    
-+-----------------+
-*/   
-  //std::string ascii = x->to_ascii();  
-  //assert(ascii.length() == 200);
-  (void)x;
-  TODO();
-  
-}
-
 
 void squared_unittest::test_bits64_default_ctor(){
   assert(bits64() == bits64(0ull));
@@ -563,12 +543,6 @@ void squared_unittest::test_board_get_rotation(const board* x)
   
 }
 
-void squared_unittest::test_board_only_similar_siblings(const board* x)
-{
-  (void)x;
-  // this function is already removed on the master branch
-}
-
 void squared_unittest::test_board_opponent_has_moves(const board* x)
 {
   board b = *x;
@@ -590,20 +564,11 @@ void squared_unittest::test_bits64_get_word(const bits64* x)
 
 void squared_unittest::test_board_rotate(const board* x)
 {
-  (void)x;
-  TODO();
-}
-
-void squared_unittest::test_board_show(const board* x)
-{
-  (void)x;
-  TODO();
-}
-
-void squared_unittest::test_board_to_ascii_art(const board* x)
-{
-  (void)x;
-  TODO();
+  for(int i=0;i<8;++i){
+    board rot = x->rotate(i);
+    assert(rot.me == x->me.rotate(i));
+    assert(rot.opp == x->opp.rotate(i));
+  }
 }
 
 void squared_unittest::test_board_to_database_board(const board* x)
@@ -674,7 +639,6 @@ void squared_unittest::test_bits64_all()
   
   
   std::vector<std::pair<void(*)(const bits64*),std::string>> unary_funcs;
-  add_to_fun_vec(unary_funcs,test_bits64_to_ascii);
   add_to_fun_vec(unary_funcs,test_bits64_compound_assign_shift);
   add_to_fun_vec(unary_funcs,test_bits64_operator_tilde);
   add_to_fun_vec(unary_funcs,test_bits64_operator_bool);
@@ -775,13 +739,10 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(unary_funcs,test_board_get_non_empty_fields);
   add_to_fun_vec(unary_funcs,test_board_count_discs);
   add_to_fun_vec(unary_funcs,test_board_count_empty_fields);
-  add_to_fun_vec(unary_funcs,test_board_to_ascii_art);
-  add_to_fun_vec(unary_funcs,test_board_show);
   add_to_fun_vec(unary_funcs,test_board_get_disc_diff);
   add_to_fun_vec(unary_funcs,test_board_do_move);
   add_to_fun_vec(unary_funcs,test_board_position_to_index);
   add_to_fun_vec(unary_funcs,test_board_undo_move);
-  add_to_fun_vec(unary_funcs,test_board_only_similar_siblings);
   add_to_fun_vec(unary_funcs,test_board_to_string);
   add_to_fun_vec(unary_funcs,test_board_to_database_string);
   add_to_fun_vec(unary_funcs,test_board_get_move_index);

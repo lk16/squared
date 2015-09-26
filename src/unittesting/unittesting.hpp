@@ -47,7 +47,6 @@ class squared_unittest{
   static void test_bits64_counting(const bits64* x);
   static void test_bits64_rotate(const bits64* x);
   static void test_bits64_is_subset_of_mask(const bits64* x,const bits64* y);
-  static void test_bits64_to_ascii(const bits64* x);
   static void test_bits64_default_ctor();
   static void test_bits64_static_const_members();
   static void test_bits64_test_all();
@@ -72,18 +71,14 @@ class squared_unittest{
   static void test_board_count_valid_moves(const board* x);
   static void test_board_opponent_has_moves(const board* x);
   static void test_board_count_opponent_moves(const board* x);
-  static void test_board_get_frontier_discs(const board* x);
   static void test_board_get_empty_fields(const board* x);
   static void test_board_get_non_empty_fields(const board* x);
   static void test_board_count_discs(const board* x);
   static void test_board_count_empty_fields(const board* x);
-  static void test_board_to_ascii_art(const board* x);
-  static void test_board_show(const board* x);
   static void test_board_get_disc_diff(const board* x);
   static void test_board_do_move(const board* x);
   static void test_board_position_to_index(const board* x);
   static void test_board_undo_move(const board* x);
-  static void test_board_only_similar_siblings(const board* x);
   static void test_board_to_string(const board* x);
   static void test_board_to_database_string(const board* x);
   static void test_board_get_move_index(const board* x);
