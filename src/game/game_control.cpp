@@ -28,6 +28,7 @@ game_control::game_control()
   
   current_state = last_redo = board_states;
   
+  mw = nullptr;
   
   current_state->b.reset();
   current_state->turn = BLACK;

@@ -279,7 +279,7 @@ std::string board::to_string() const {
    * byte 32: \0
    */
   char res[33];  
-  snprintf(res,33,"%lx%lx",(uint64_t)me,(uint64_t)opp);
+  snprintf(res,33,"%016lx%016lx",me.get_word(),opp.get_word());
   res[32] = '\0';
   return std::string(res);  
 }
