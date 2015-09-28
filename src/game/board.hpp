@@ -13,6 +13,7 @@
 #include "util/bitset.hpp"
 #include "util/macros.hpp"
 #include "util/math.hpp"
+#include "util/string.hpp"
 
 struct board;
 

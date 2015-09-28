@@ -285,9 +285,29 @@ std::string board::to_string() const {
 }
 
 board::board(const std::string& in){
-  (void)in;
-  std::cerr << "This is not implemented!\n";
-  std::exit(1);
+  bool error = false;
+  do{
+    if(in.size() != 32){
+      error = true;
+      break;
+    }
+    uint64_t me_tmp,opp_tmp;
+    
+    if(false
+      || sscanf((std::string("0x") + in.substr(0,16)).c_str(),"%lx",&me_tmp) < 0
+      || sscanf((std::string("0x") + in.substr(16,16)).c_str(),"%lx",&opp_tmp) < 0
+    ){
+      error = true;
+      break;
+    }
+    me.from_uint64(me_tmp);
+    opp.from_uint64(opp_tmp);
+   
+  }while(false);
+  if(error){
+    std::cerr << "Error in board ctor from string!\n";
+    me = opp = 0ull;
+  }
 }
 
 board board::do_random_moves(int count) const

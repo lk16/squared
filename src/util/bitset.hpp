@@ -19,7 +19,7 @@ public:
   
   
   bits64();
-  bits64(unsigned long long);
+  bits64(uint64_t x);
   
   ~bits64() = default;
   
@@ -120,6 +120,8 @@ public:
   
   // returns underlying 64 bit word
   uint64_t get_word() const;
+  
+  void from_uint64(uint64_t x);
 };
 
 inline bits64::bits64()
@@ -127,10 +129,16 @@ inline bits64::bits64()
   word = 0ull;
 }
 
-inline bits64::bits64(long long unsigned int x)
+inline bits64::bits64(uint64_t x)
+{
+  from_uint64(x);
+}
+
+inline void bits64::from_uint64(uint64_t x)
 {
   word = x;
 }
+
 
 inline uint64_t bits64::get_word() const
 {

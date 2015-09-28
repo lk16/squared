@@ -274,8 +274,7 @@ void squared_unittest::test_board_copy_ctor(const board* x){
 }
 
 void squared_unittest::test_board_ctor_string(const board* x){
-  (void)x;
-  TODO();
+  assert(board(x->to_string()) == *x);
 }
 
 void squared_unittest::test_board_operator_assign(const board* x){
@@ -283,6 +282,14 @@ void squared_unittest::test_board_operator_assign(const board* x){
   assert(b == (b = *x));
   assert(b == *x);
 }
+
+void squared_unittest::test_bits64_from_uint64(const bits64* x)
+{
+  bits64 b;
+  b.from_uint64(x->get_word());
+  assert(b == *x);
+}
+
 
 void squared_unittest::test_board_operator_equals(const board* x,const board* y){
   board b;
@@ -659,7 +666,7 @@ void squared_unittest::test_bits64_all()
   add_to_fun_vec(unary_funcs,test_bits64_counting);
   add_to_fun_vec(unary_funcs,test_bits64_rotate);
   add_to_fun_vec(unary_funcs,test_bits64_get_word);
-
+  add_to_fun_vec(unary_funcs,test_bits64_from_uint64);
   
   for(auto f: unary_funcs){
     progress_bar pb(N,f.second);

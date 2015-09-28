@@ -21,7 +21,7 @@
 
 class squared_unittest{
   
-  static const int N = 10000;
+  static const int N = 100;
   static void TODO();
   
   
@@ -51,6 +51,7 @@ class squared_unittest{
   static void test_bits64_test_all();
   static void test_bits64_get_word(const bits64* x);
   static void test_bits64_only_bit_index();
+  static void test_bits64_from_uint64(const bits64* x);
   
   static void test_board_copy_ctor(const board* x);
   static void test_board_ctor_string(const board* x);
