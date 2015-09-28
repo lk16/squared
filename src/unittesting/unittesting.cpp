@@ -557,9 +557,19 @@ void squared_unittest::test_board_opponent_has_moves(const board* x)
   assert(b.switch_turn()->has_valid_moves() == x->has_valid_moves());
 }
 
-void squared_unittest::test_board_position_to_index(const board* x)
+void squared_unittest::test_board_position_to_index()
 {
-  (void)x;
+  int index = 0;
+  for(char a='a';a<='h';++a){
+    for(char b='1';b<'8';++b){
+      ++index;
+      std::string s = std::string(a) + b;
+      assert(board::position_to_index(s) == index);
+    }
+  }
+  
+  assert(board::position_to_index("--") == -1);
+  
   TODO();
 }
 
@@ -711,6 +721,7 @@ void squared_unittest::test_board_all()
   std::vector<std::pair<void(*)(),std::string>> noarg_funcs;
   add_to_fun_vec(noarg_funcs,test_board_reset);
   add_to_fun_vec(noarg_funcs,test_board_xot);
+  add_to_fun_vec(noarg_funcs,test_board_position_to_index);
   
    for(auto f: noarg_funcs){
     progress_bar pb(1,f.second);
@@ -758,7 +769,6 @@ void squared_unittest::test_board_all()
   add_to_fun_vec(unary_funcs,test_board_count_empty_fields);
   add_to_fun_vec(unary_funcs,test_board_get_disc_diff);
   add_to_fun_vec(unary_funcs,test_board_do_move);
-  add_to_fun_vec(unary_funcs,test_board_position_to_index);
   add_to_fun_vec(unary_funcs,test_board_undo_move);
   add_to_fun_vec(unary_funcs,test_board_to_string);
   add_to_fun_vec(unary_funcs,test_board_to_database_string);
