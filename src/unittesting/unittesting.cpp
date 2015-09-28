@@ -563,7 +563,7 @@ void squared_unittest::test_board_position_to_index()
   for(char a='a';a<='h';++a){
     for(char b='1';b<'8';++b){
       ++index;
-      std::string s = std::string(a) + b;
+      std::string s = std::string("") + a + b;
       assert(board::position_to_index(s) == index);
     }
   }
