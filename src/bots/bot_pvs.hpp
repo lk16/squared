@@ -33,8 +33,6 @@ public:
 
   
 private:
-  // sort children
-  void do_sorting(board* children,int n);
   
   // search for the best move
   template<bool exact>
@@ -47,8 +45,4 @@ private:
   // performs null window search
   template<bool exact>
   int pvs_null_window(int alpha);
-  
-  void do_move_normally(const board* b,board* res);
-  
-  void do_move_perfectly(const board* b,board* res);
 };
