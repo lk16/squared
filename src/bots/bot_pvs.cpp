@@ -1,5 +1,6 @@
 #include "bots/bot_pvs.hpp"
 
+
 void bot_pvs::do_sorting(board* children, int child_count)
 {
   int heur[32];
@@ -23,8 +24,13 @@ template<bool sort,bool exact>
 int bot_pvs::pvs(int alpha, int beta)
 {
   
-  if(sort && ((exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)) || ((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)))){
-      return pvs<false,exact>(alpha,beta);
+  if(sort){
+    if(exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)){
+      return pvs<false,true>(alpha,beta);
+    }
+    if((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)){
+      return pvs<false,false>(alpha,beta);
+    }
   }
 
   stats.inc_nodes();
@@ -34,25 +40,21 @@ int bot_pvs::pvs(int alpha, int beta)
     return heuristic();
   }
   
-  bits64 moves = inspected.get_valid_moves();
-  if(moves.none()){
-    int heur;
+  if(!inspected.has_valid_moves()){
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
-      heur = -inspected.get_disc_diff();
+      int diff = inspected.get_disc_diff();
       inspected.switch_turn();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR; 
-      }
-      return heur;  
+      return -EXACT_SCORE_FACTOR * diff;  
     }
-    heur = -pvs<sort,exact>(-beta,-alpha);
+    int heur = -pvs<sort,exact>(-beta,-alpha);
     inspected.switch_turn();
     return heur;
   }
     
   board children[32]; 
-  int child_count = inspected.get_children(children,moves) - children;
+  int child_count = inspected.get_children(children) - children;
+    
   
   if(sort){
     do_sorting(children,child_count);
@@ -66,7 +68,12 @@ int bot_pvs::pvs(int alpha, int beta)
       score = -pvs<sort,exact>(-beta,-alpha);
     }
     else{
-      score = -pvs_null_window<exact>(-alpha-1);
+      //if(exact){
+      //  score = -pvs_exact_null_window(-alpha-1);
+      //}
+      //else{
+        score = -pvs_null_window<exact>(-alpha-1);
+      //}
       if((alpha < score) && (score < beta)){
         score = -pvs<sort,exact>(-beta,-score);
       } 
@@ -101,10 +108,7 @@ int bot_pvs::pvs_null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves().none()){
-      heur = -inspected.get_disc_diff();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR;
-      }
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
       heur = -pvs_null_window<exact>(-alpha-1);
@@ -113,21 +117,18 @@ int bot_pvs::pvs_null_window(int alpha)
     return heur;
   }
   
-  for(int i=0;i<9;i++){
-    bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(location_moves.any()){
-      bits64 bit = location_moves.first_bit();
-      int move = bit.only_bit_index();
-      bits64 undo_data = inspected.do_move(move);
-      moves_left--;
-      int score = -pvs_null_window<exact>(-alpha-1);
-      moves_left++;
-      inspected.undo_move(bit,undo_data);
-      if(score > alpha){
-        return alpha+1;
-      }
-      location_moves ^= bit;
+  while(valid_moves.none()){
+    int move = valid_moves.first_index();
+    bits64 undo_data = inspected.do_move(move);
+    moves_left--;
+    int score = -pvs_null_window<exact>(-alpha-1);
+    moves_left++;
+    inspected.undo_move(move,undo_data);
+    
+    if(score > alpha){
+      return alpha+1;
     }
+    valid_moves.reset(move);
   }
   return alpha;
   
@@ -142,28 +143,30 @@ void bot_pvs::do_move_one_possibility(const board* b, board* res)
   output() << "only one valid move found, evaluation skipped.\n";
 }
 
-template<bool exact>
-void bot_pvs::do_move_search(const board* b, board* res)
+void bot_pvs::do_move_normally(const board* b, board* res)
 {
   stats.start_timer();
   
   board children[32];
   int child_count = b->get_children(children) - children;
   
-  output() << "bot_" << get_name() << " searching ";
-  if(exact){
-    output() << "perfectly at depth " << b->count_empty_fields() << '\n';
-  }
-  else{ 
-    output() << "at depth " << get_search_depth() << '\n';
-  }
   
-  if(exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH)){
-    do_sorting(children,child_count);
-  }
-  
-  if((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
-    do_sorting(children,child_count);
+  output() << "bot_" << get_name() << " searching at depth ";
+  output() << get_search_depth() << '\n';
+
+  if(get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
+    
+    moves_left = NORMAL_MOVE_SORT_DEPTH;
+    
+    int heurs[32];
+    for(int i=0;i<child_count;i++){
+      inspected = children[i];
+      moves_left--;
+      heurs[i] = -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC);
+      moves_left++;
+    }
+    ugly_sort<board>(children,heurs,child_count);
+    
   }
 
   moves_left = get_search_depth();
@@ -172,24 +175,24 @@ void bot_pvs::do_move_search(const board* b, board* res)
   
   int best_heur,best_id=0;
   
-  best_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
+  best_heur = MIN_HEURISTIC;
   for(int id=0;id<child_count;++id){
     inspected = children[id];
     moves_left--;
-    int cur_heur = -pvs<true,exact>(exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,false>(MIN_HEURISTIC,-best_heur);
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       best_id = id;
     }
     output() << "move " << (id+1) << "/" << (child_count);
-    output() << " (" << board::index_to_position(b->get_move_index(children+id)) << ')';
-    output() << ": " << best_heur << '\n';
+    output() << ": " << best_heur << std::endl;
+    
   }
   
   set_last_move_heur(best_heur);
   *res = children[best_id];
-    
+  
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -198,16 +201,68 @@ void bot_pvs::do_move_search(const board* b, board* res)
   
 }
 
+void bot_pvs::do_move_perfectly(const board* b, board* res)
+{
+  stats.start_timer();
+  
+  board children[32];
+  int child_count = b->get_children(children) - children;
+  
+  output() << "bot_" << get_name() << " searching perfectly at depth ";
+  output() << b->count_empty_fields() << '\n';
+  
+  
+  if(moves_left > PERFECT_MOVE_SORT_DEPTH){
+    
+    moves_left = PERFECT_MOVE_SORT_DEPTH;
+    
+    int heurs[32];
+    for(int i=0;i<child_count;i++){
+      inspected = children[i];
+      heurs[i] = -pvs<false,true>(MIN_HEURISTIC,MAX_HEURISTIC);
+    }
+    ugly_sort<board>(children,heurs,child_count);
+    
+  }
+  
+  moves_left = 64 - inspected.count_discs();
+  
+  int best_id = 0;
+  int best_heur = -64000;
+  for(int id=0;id<child_count;++id){
+    inspected = children[id];
+    int cur_heur = -pvs<true,true>(-64000,-best_heur);
+    if(cur_heur > best_heur){
+      best_heur = cur_heur;
+      best_id = id;
+    }
+    output() << "move " << (id+1) << "/" << (child_count);
+    output() << ": " << best_heur/1000 << std::endl;
+  }
+  
+  *res = children[best_id];
+  set_last_move_heur(best_heur);
+  
+  stats.stop_timer();
+  
+  output() << big_number(stats.get_nodes()) << " nodes in ";
+  output() << stats.get_seconds() << " seconds: ";
+  output() << big_number(stats.get_nodes_per_second()) << " nodes / sec\n";
+}
+
+
+
+
 void bot_pvs::do_move(const board* b,board* res)
 {
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
   }
   else if(b->count_empty_fields() > get_perfect_depth()){
-    do_move_search<false>(b,res);
+    do_move_normally(b,res);
   }
   else{
-    do_move_search<true>(b,res);
+    do_move_perfectly(b,res);
   }
 }
 
