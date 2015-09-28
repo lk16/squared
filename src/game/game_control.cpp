@@ -9,6 +9,7 @@ game_control::game_control()
   use_xot = false;
   
   run_speed_test = false;
+  run_unit_test = false;
   pgn_task = NULL;
   random_moves = 0;
   learn_threads = 0;
@@ -27,6 +28,7 @@ game_control::game_control()
   
   current_state = last_redo = board_states;
   
+  mw = nullptr;
   
   current_state->b.reset();
   current_state->turn = BLACK;
@@ -74,11 +76,14 @@ bool game_control::do_special_tasks()
     pgn_bot->set_search_depth(task->search_depth,task->perfect_depth);
     pgn_bot->disable_shell_output();
     pgn pgn_file(task->filename);
-    std::cout << pgn_file.analyse(pgn_bot,true,true);
+    std::cout << "pgn_file.analyse() is no longer implemented\n";
     delete pgn_bot;
     return true;
   }
-  
+  if(run_unit_test){
+    squared_unittest().run();
+    return true;
+  }
   if(run_speed_test){
     if(random_moves == 0){
       random_moves = 1;
@@ -94,7 +99,7 @@ bool game_control::do_special_tasks()
       board dummy;
       speedrun_bot->set_search_depth(i,i);
       speedrun_bot->do_move(&current_state->b,&dummy);
-      long long speed = speedrun_bot->stats.get_nodes_per_second();
+      long long unsigned speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
       std::cout << speedrun_bot->stats.get_seconds() << " seconds.\n";
@@ -198,7 +203,7 @@ void game_control::on_new_game()
   
   current_state->b.reset();
   if(use_xot){
-    current_state->b.xot();
+    current_state->b.init_xot();
   }
   if(random_moves != 0){
     current_state->b = current_state->b.do_random_moves(random_moves);

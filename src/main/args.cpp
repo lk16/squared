@@ -35,6 +35,9 @@ squared_args::squared_args(int argc,const char **argv):
   add_modifier("-wbot",&squared_args::add_white_bot,"","Enable a black bot. Can be used in combination with white bot.");
   
   add_modifier("--tournament",&squared_args::tournament_flag,"Mix of {-lvl <search_depth> <perfect_depth>} and any bot name","Runs a tournament between bots. Change in level applies to bots specified after the bot names only.");
+
+  add_modifier("--unittest",&squared_args::flag_unittests,"","Run unittests");
+  duplicate_modifier("-u","--unittest");
 }
 
 int squared_args::use_xot()
@@ -51,6 +54,12 @@ int squared_args::process_pgn()
   gc->pgn_task = new pgn_task_t;
   gc->pgn_task->filename = get_subarg(1);
   gc->run_windowed_game = false;
+  return PARSING_IGNORE_OTHER_ARGS;
+}
+
+int squared_args::flag_unittests()
+{
+  gc->run_unit_test = true;
   return PARSING_IGNORE_OTHER_ARGS;
 }
 

@@ -36,9 +36,6 @@ private:
   // sort children
   void do_sorting(board* children,int n);
   
-  // does the only move, no evaluation necessary
-  void do_move_one_possibility(const board* b,board* res);
-
   // search for the best move
   template<bool exact>
   void do_move_search(const board* b,board* res);
@@ -51,7 +48,7 @@ private:
   template<bool exact>
   int pvs_null_window(int alpha);
   
-    void do_move_normally(const board* b,board* res);
+  void do_move_normally(const board* b,board* res);
   
   void do_move_perfectly(const board* b,board* res);
 };

@@ -40,7 +40,8 @@ int bot_pvs::pvs(int alpha, int beta)
     return heuristic();
   }
   
-  if(!inspected.has_valid_moves()){
+  bits64 moves = inspected.get_valid_moves();
+  if(moves.none()){
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
       int diff = inspected.get_disc_diff();
@@ -51,6 +52,7 @@ int bot_pvs::pvs(int alpha, int beta)
     inspected.switch_turn();
     return heur;
   }
+    
     
   board children[32]; 
   int child_count = inspected.get_children(children) - children;
@@ -116,34 +118,34 @@ int bot_pvs::pvs_null_window(int alpha)
     inspected.switch_turn();
     return heur;
   }
-  
-  while(valid_moves.none()){
-    int move = valid_moves.first_index();
-    bits64 undo_data = inspected.do_move(move);
-    moves_left--;
-    int score = -pvs_null_window<exact>(-alpha-1);
-    moves_left++;
-    inspected.undo_move(move,undo_data);
-    
-    if(score > alpha){
-      return alpha+1;
+  for(int i=0;i<9;i++){
+    bits64 location_moves = valid_moves & board::ordered_locations[i];
+    while(location_moves.any()){
+      bits64 bit = location_moves.first_bit();
+      int move = bit.only_bit_index();
+      bits64 undo_data = inspected.do_move(move);
+      moves_left--;
+      int score = -pvs_null_window<exact>(-alpha-1);
+      moves_left++;
+      inspected.undo_move(bit,undo_data);
+      if(score > alpha){
+        return alpha+1;
+      }
+      location_moves ^= bit;
     }
-    valid_moves.reset(move);
   }
   return alpha;
   
 }
 
-void bot_pvs::do_move_one_possibility(const board* b, board* res)
+void bot_pvs::do_move_normally(const board* b, board* res)
 {
-  board children[32];
-  b->get_children(children);
-  *res = children[0];
-  set_last_move_heur(NO_HEUR_AVAILABLE);
-  output() << "only one valid move found, evaluation skipped.\n";
+  do_move_search<false>(b,res);
 }
 
-void bot_pvs::do_move_normally(const board* b, board* res)
+
+template<bool exact>
+void bot_pvs::do_move_search(const board* b, board* res)
 {
   stats.start_timer();
   
@@ -190,7 +192,6 @@ void bot_pvs::do_move_normally(const board* b, board* res)
     
   }
   
-  set_last_move_heur(best_heur);
   *res = children[best_id];
   
   stats.stop_timer();
@@ -241,7 +242,6 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
   }
   
   *res = children[best_id];
-  set_last_move_heur(best_heur);
   
   stats.stop_timer();
   
@@ -256,7 +256,10 @@ void bot_pvs::do_move_perfectly(const board* b, board* res)
 void bot_pvs::do_move(const board* b,board* res)
 {
   if(b->count_valid_moves() == 1){
-    do_move_one_possibility(b,res);
+    board children[32];
+    b->get_children(children);
+    *res = children[0];
+    std::cout << "Only one valid move, evaluation skipped.\n";
   }
   else if(b->count_empty_fields() > get_perfect_depth()){
     do_move_normally(b,res);

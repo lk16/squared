@@ -81,8 +81,6 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     output() << ": " << best_heur << '\n';    
   }
   
-  set_last_move_heur(best_heur);
-  
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -132,9 +130,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
 {
   int g = f;
   int upper_bound = MAX_HEURISTIC;
-  int beta;
   while(upper_bound > lower_bound){
-    beta = g + ((g==lower_bound) ? (exact ? 2 : 1) : 0);
+    int beta = g + ((g==lower_bound) ? (exact ? 2 : 1) : 0);
     std::cout << "g = " << g << '\n';
     g = -null_window<sort,exact>(-beta);
     if(g < beta){

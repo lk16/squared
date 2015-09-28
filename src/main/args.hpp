@@ -37,4 +37,5 @@ struct squared_args:
   int process_pgn();
   int use_xot();
   int tournament_flag();
+  int flag_unittests();
 };
