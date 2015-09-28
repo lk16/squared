@@ -129,7 +129,7 @@ void bot_pvs::do_move_search(const board* b, board* res)
     if(!exact){
       moves_left--;
     }
-    int cur_heur = -pvs<true,false>(MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<true,exact>(MIN_HEURISTIC,-best_heur);
     if(!exact){ 
       moves_left++;
     }
