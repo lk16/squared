@@ -21,7 +21,7 @@
 
 class squared_unittest{
   
-  static const int N = 100;
+  static const int N = 300;
   static void TODO();
   
   

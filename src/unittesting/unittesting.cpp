@@ -560,11 +560,11 @@ void squared_unittest::test_board_opponent_has_moves(const board* x)
 void squared_unittest::test_board_position_to_index()
 {
   int index = 0;
-  for(char a='a';a<='h';++a){
-    for(char b='1';b<'8';++b){
-      ++index;
+  for(char b='1';b<'8';++b){
+    for(char a='a';a<='h';++a){
       std::string s = std::string("") + a + b;
       assert(board::position_to_index(s) == index);
+      ++index;
     }
   }
   
