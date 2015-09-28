@@ -48,5 +48,7 @@ private:
   template<bool exact>
   int pvs_null_window(int alpha);
   
+  void do_move_normally(const board* b,board* res);
   
+  void do_move_perfectly(const board* b,board* res);
 };
