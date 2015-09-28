@@ -23,8 +23,13 @@ template<bool sort,bool exact>
 int bot_pvs::pvs(int alpha, int beta)
 {
   
-  if(sort && ((exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)) || ((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)))){
-      return pvs<false,exact>(alpha,beta);
+  if(sort){
+    if(exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)){
+      return pvs<false,true>(alpha,beta);
+    }
+    if((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)){
+      return pvs<false,false>(alpha,beta);
+    }
   }
 
   stats.inc_nodes();
@@ -36,20 +41,17 @@ int bot_pvs::pvs(int alpha, int beta)
   
   bits64 moves = inspected.get_valid_moves();
   if(moves.none()){
-    int heur;
     inspected.switch_turn();
     if(!inspected.has_valid_moves()){
-      heur = -inspected.get_disc_diff();
+      int diff = inspected.get_disc_diff();
       inspected.switch_turn();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR; 
-      }
-      return heur;  
+      return -EXACT_SCORE_FACTOR * diff;  
     }
-    heur = -pvs<sort,exact>(-beta,-alpha);
+    int heur = -pvs<sort,exact>(-beta,-alpha);
     inspected.switch_turn();
     return heur;
   }
+    
     
   board children[32]; 
   int child_count = inspected.get_children(children,moves) - children;
@@ -101,10 +103,7 @@ int bot_pvs::pvs_null_window(int alpha)
     int heur;
     inspected.switch_turn();
     if(inspected.get_valid_moves().none()){
-      heur = -inspected.get_disc_diff();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR;
-      }
+      heur = -EXACT_SCORE_FACTOR * inspected.get_disc_diff();    
     }
     else{
       heur = -pvs_null_window<exact>(-alpha-1);
@@ -112,7 +111,6 @@ int bot_pvs::pvs_null_window(int alpha)
     inspected.switch_turn();
     return heur;
   }
-  
   for(int i=0;i<9;i++){
     bits64 location_moves = valid_moves & board::ordered_locations[i];
     while(location_moves.any()){
@@ -131,14 +129,6 @@ int bot_pvs::pvs_null_window(int alpha)
   }
   return alpha;
   
-}
-
-void bot_pvs::do_move_one_possibility(const board* b, board* res)
-{
-  board children[32];
-  b->get_children(children);
-  *res = children[0];
-  output() << "only one valid move found, evaluation skipped.\n";
 }
 
 template<bool exact>
@@ -199,7 +189,10 @@ void bot_pvs::do_move_search(const board* b, board* res)
 void bot_pvs::do_move(const board* b,board* res)
 {
   if(b->count_valid_moves() == 1){
-    do_move_one_possibility(b,res);
+    board children[32];
+    b->get_children(children);
+    *res = children[0];
+    std::cout << "Only one valid move, evaluation skipped.\n";
   }
   else if(b->count_empty_fields() > get_perfect_depth()){
     do_move_search<false>(b,res);
