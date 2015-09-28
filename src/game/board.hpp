@@ -319,21 +319,56 @@ bits64 res = 0ull;
   // this funtion is a modified version of code from Edax
   const bits64 mask = opp & bits64(0x7E7E7E7E7E7E7E7Eull);
 
-  int diff[4] = {1,7,8,9};
   
-  for(int i=0;i<4;++i){
-    flip_l = mask & (me << diff[i]);
-    flip_l |= mask & (flip_l << diff[i]);
-    mask_l = mask & (mask << diff[i]);
-    flip_l |= mask_l & (flip_l << (2*diff[i]));
-    flip_l |= mask_l & (flip_l << (2*diff[i]));
-    flip_r = mask & (me >> diff[i]);
-    flip_r |= mask & (flip_r >> diff[i]);
-    mask_r = mask & (mask >> diff[i]);
-    flip_r |= mask_r & (flip_r >> (2*diff[i]));
-    flip_r |= mask_r & (flip_r >> (2*diff[i]));
-    res |= (flip_l << diff[i]) | (flip_r >> diff[i]);
-  }
+  flip_l = mask & (me << 1);
+  flip_l |= mask & (flip_l << 1);
+  mask_l = mask & (mask << 1);
+  flip_l |= mask_l & (flip_l << 2);
+  flip_l |= mask_l & (flip_l << 2);
+  flip_r = mask & (me >> 1);
+  flip_r |= mask & (flip_r >> 1);
+  mask_r = mask & (mask >> 1);
+  flip_r |= mask_r & (flip_r >> 2);
+  flip_r |= mask_r & (flip_r >> 2);
+  res |= (flip_l << 1) | (flip_r >> 1);
+
+  flip_l = opp & (me << 8);
+  flip_l |= opp & (flip_l << 8);
+  mask_l = opp & (opp << 8);
+  flip_l |= mask_l & (flip_l << 16);
+  flip_l |= mask_l & (flip_l << 16);
+  flip_r = opp & (me >> 8);
+  flip_r |= opp & (flip_r >> 8);
+  mask_r = opp & (opp >> 8);
+  flip_r |= mask_r & (flip_r >> 16);
+  flip_r |= mask_r & (flip_r >> 16);
+  res |= (flip_l << 8) | (flip_r >> 8);
+
+  flip_l = mask & (me << 7);
+  flip_l |= mask & (flip_l << 7);
+  mask_l = mask & (mask << 7);
+  flip_l |= mask_l & (flip_l << 14);
+  flip_l |= mask_l & (flip_l << 14);
+  flip_r = mask & (me >> 7);
+  flip_r |= mask & (flip_r >> 7);
+  mask_r = mask & (mask >> 7);
+  flip_r |= mask_r & (flip_r >> 14);
+  flip_r |= mask_r & (flip_r >> 14);
+  res |= (flip_l << 7) | (flip_r >> 7);
+
+  flip_l = mask & (me << 9);
+  flip_l |= mask & (flip_l << 9);
+  mask_l = mask & (mask << 9);
+  flip_l |= mask_l & (flip_l << 18);
+  flip_l |= mask_l & (flip_l << 18);
+  flip_r = mask & (me >> 9);
+  flip_r |= mask & (flip_r >> 9);
+  mask_r = mask & (mask >> 9);
+  flip_r |= mask_r & (flip_r >> 18);
+  flip_r |= mask_r & (flip_r >> 18);
+  res |= (flip_l << 9) | (flip_r >> 9);
+
+  
   return res & get_empty_fields(); // mask with empties
 }
 

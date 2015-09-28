@@ -569,8 +569,6 @@ void squared_unittest::test_board_position_to_index()
   }
   
   assert(board::position_to_index("--") == -1);
-  
-  TODO();
 }
 
 void squared_unittest::test_bits64_get_word(const bits64* x)
