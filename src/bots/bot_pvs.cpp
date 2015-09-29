@@ -51,7 +51,6 @@ int bot_pvs::alpha_beta(int alpha, int beta)
   }
  
   stats.inc_nodes();
- 
   bits64 valid_moves = inspected.get_valid_moves();
   if(valid_moves.none()){
     inspected.switch_turn();
