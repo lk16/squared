@@ -114,7 +114,6 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
 template<bool exact>
 int bot_pvs::pvs_null_window(int alpha,const board* b)
 {
-  int beta = alpha+1;
   
   if((!exact) && moves_left==0){
     return heuristic(b);
@@ -127,7 +126,7 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
     copy.switch_turn();
     int heur;
     if(copy.has_valid_moves()){
-      heur = -pvs_null_window<exact>(-beta,&copy);
+      heur = -pvs_null_window<exact>(-alpha-1,&copy);
     }
     else{
       return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
@@ -139,10 +138,10 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
   board* child_end = b->get_children(children,valid_moves);
   for(const board* child=children;child!=child_end;++child){
     --moves_left;
-    alpha = -pvs_null_window<exact>(-beta,child); 
+    int heur = -pvs_null_window<exact>(-alpha-1,child); 
     ++moves_left;
-    if(alpha >= beta){
-      alpha = beta;
+    if(heur > alpha){
+      ++alpha;
       break;
     }
   }
