@@ -68,7 +68,7 @@ int bot_pvs::alpha_beta(int alpha, int beta)
       heur = -alpha_beta<exact>(-beta,-alpha);
     }
     else{
-      return (exact ? 1 : EXACT_SCORE_FACTOR) * inspected.get_disc_diff();
+      return (exact ? -1 : -EXACT_SCORE_FACTOR) * inspected.get_disc_diff();
     }
     inspected.switch_turn();
     return heur;
