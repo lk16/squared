@@ -36,8 +36,8 @@ private:
   
   // search for the best move
   template<bool exact>
-  void do_move_search(const board* b,board* res);
+  void search(const board* b,board* res);
 
   template<bool exact>
-  int alpha_beta(int alpha,int beta);
+  int pvs(int alpha,int beta);
 };

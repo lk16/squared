@@ -2,7 +2,7 @@
 
   
 template<bool exact>
-void bot_pvs::do_move_search(const board* b, board* res)
+void bot_pvs::search(const board* b, board* res)
 {
   stats.start_timer();
   
@@ -44,7 +44,7 @@ void bot_pvs::do_move_search(const board* b, board* res)
 }
 
 template<bool exact>
-int bot_pvs::alpha_beta(int alpha, int beta)
+int bot_pvs::pvs(int alpha, int beta)
 {
   if((!exact) && moves_left==0){
     return heuristic();
@@ -66,7 +66,7 @@ int bot_pvs::alpha_beta(int alpha, int beta)
   }
   
   board children[32];
-  board* child_end = inspected.get_children(children);
+  board* child_end = inspected.get_children(children,valid_moves);
   for(int i=0;i<(child_end-children);++i){
     std::swap(inspected,children[i]);
     --moves_left;
@@ -84,17 +84,17 @@ int bot_pvs::alpha_beta(int alpha, int beta)
 
 void bot_pvs::do_move(const board* b,board* res)
 {
-  /*if(b->count_valid_moves() == 1){
+  if(b->count_valid_moves() == 1){
     board children[32];
     b->get_children(children);
     *res = children[0];
     std::cout << "Only one valid move, evaluation skipped.\n";
   }
-  else */if(b->count_empty_fields() > get_perfect_depth()){
-    do_move_search<false>(b,res);
+  else if(b->count_empty_fields() > get_perfect_depth()){
+    search<false>(b,res);
   }
   else{
-    do_move_search<true>(b,res);
+    search<true>(b,res);
   }
 }
 
