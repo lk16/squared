@@ -116,7 +116,7 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
 {
   
   if((!exact) && moves_left==0){
-    return heuristic(b);
+    return heuristic(b) > alpha ? (alpha+1) : alpha;
   }
  
   stats.inc_nodes();
@@ -124,16 +124,15 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
   if(valid_moves.none()){
     board copy = *b;
     copy.switch_turn();
-    int heur;
     if(copy.has_valid_moves()){
-      heur = -pvs_null_window<exact>(-alpha-1,&copy);
+      return -pvs_null_window<exact>(-alpha-1,&copy);
     }
     else{
-      return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
+      int heur = (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
+      return (heur > alpha) ? (alpha+1) : alpha;
     }
-    return heur;
   }
-  
+
   board children[32];
   board* child_end = b->get_children(children,valid_moves);
   for(const board* child=children;child!=child_end;++child){
@@ -141,8 +140,7 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
     int heur = -pvs_null_window<exact>(-alpha-1,child); 
     ++moves_left;
     if(heur > alpha){
-      ++alpha;
-      break;
+      return alpha+1;
     }
   }
   return alpha;
