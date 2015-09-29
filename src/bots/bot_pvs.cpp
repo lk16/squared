@@ -96,7 +96,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
     else{
       heur = -pvs<exact>(-alpha-1,-alpha,child);
       if(heur > alpha && heur < beta){
-        heur = -pvs<exact>(-beta,-alpha-1,child);
+        heur = -pvs<exact>(-beta,-heur,child);
       }
     }
     ++moves_left;
