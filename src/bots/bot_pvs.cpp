@@ -15,7 +15,7 @@ void bot_pvs::do_move_search(const board* b, board* res)
     output() << "perfectly at depth " << get_perfect_depth() << '\n';
   }
   else{
-    output() << "at depth " << get_search_depth() << '\n';
+    output() << "at depth " << inspected.count_empty_fields() << '\n';
   }
 
   moves_left = get_search_depth();
