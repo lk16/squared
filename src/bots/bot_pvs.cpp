@@ -12,7 +12,7 @@ void bot_pvs::search(const board* b, board* res)
   
   output() << "bot_" << get_name() << " searching ";
   if(exact){
-    output() << "perfectly at depth " << inspected.count_empty_fields() << '\n';
+    output() << "perfectly at depth " << b->count_empty_fields() << '\n';
   }
   else{
     output() << "at depth " << get_search_depth() << '\n';
@@ -22,9 +22,8 @@ void bot_pvs::search(const board* b, board* res)
   
   int best_heur = MIN_HEURISTIC;
   for(const board* child=children;child!=child_end;++child){
-    inspected = *child;
     moves_left--;
-    int cur_heur = -alpha_beta<exact>(MIN_HEURISTIC,-best_heur);        
+    int cur_heur = -pvs<exact>(MIN_HEURISTIC,-best_heur,child);        
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -44,35 +43,33 @@ void bot_pvs::search(const board* b, board* res)
 }
 
 template<bool exact>
-int bot_pvs::pvs(int alpha, int beta)
+int bot_pvs::pvs(int alpha, int beta,const board* b)
 {
   if((!exact) && moves_left==0){
-    return heuristic();
+    return heuristic(b);
   }
  
   stats.inc_nodes();
-  bits64 valid_moves = inspected.get_valid_moves();
+  bits64 valid_moves = b->get_valid_moves();
   if(valid_moves.none()){
-    inspected.switch_turn();
+    board copy = *b;
+    copy.switch_turn();
     int heur;
-    if(inspected.has_valid_moves()){
-      heur = -alpha_beta<exact>(-beta,-alpha);
+    if(copy.has_valid_moves()){
+      heur = -pvs<exact>(-beta,-alpha,&copy);
     }
     else{
-      return (exact ? -1 : -EXACT_SCORE_FACTOR) * inspected.get_disc_diff();
+      return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
     }
-    inspected.switch_turn();
     return heur;
   }
   
   board children[32];
-  board* child_end = inspected.get_children(children,valid_moves);
-  for(int i=0;i<(child_end-children);++i){
-    std::swap(inspected,children[i]);
+  board* child_end = b->get_children(children,valid_moves);
+  for(const board* child=children;child!=child_end;++child){
     --moves_left;
-    alpha = max(alpha,-alpha_beta<exact>(-beta,-alpha));
+    alpha = max(alpha,-pvs<exact>(-beta,-alpha,child));
     ++moves_left;
-    std::swap(inspected,children[i]);
     if(alpha >= beta){
       alpha = beta;
       break;

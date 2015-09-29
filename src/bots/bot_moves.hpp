@@ -11,6 +11,6 @@ struct bot_moves:
   virtual ~bot_moves() = default;
   
   virtual void on_new_game();
-  virtual int heuristic();
+  virtual int heuristic(const board* b);
   
 };

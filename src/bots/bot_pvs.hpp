@@ -14,7 +14,6 @@ class bot_pvs:
   static const int PERFECT_MOVE_SORT_DEPTH = 4;
   
 public:
-  board inspected;
   
   // ctor
   bot_pvs() = default;  
@@ -29,7 +28,7 @@ public:
   virtual void on_new_game() = 0;
   
   // calculates the heuristic for this->inspected
-  virtual int heuristic() = 0;
+  virtual int heuristic(const board* b) = 0;
 
   
 private:
@@ -39,5 +38,5 @@ private:
   void search(const board* b,board* res);
 
   template<bool exact>
-  int pvs(int alpha,int beta);
+  int pvs(int alpha,int beta,const board* b);
 };

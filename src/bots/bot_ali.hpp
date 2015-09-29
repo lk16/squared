@@ -28,7 +28,7 @@ struct bot_ali:
   virtual void on_new_game();
   
   // calculates the heuristic for this->inspected
-  int heuristic();
+  virtual int heuristic(const board* b);
 
   
 };
