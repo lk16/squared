@@ -38,11 +38,6 @@ private:
   template<bool exact>
   void do_move_search(const board* b,board* res);
 
-  // performs principle variation search, unsorted
-  template<bool sort,bool exact>
-  int pvs(int alpha, int beta);
-  
-  // performs null window search
   template<bool exact>
-  int pvs_null_window(int alpha);
+  int alpha_beta(int alpha,int beta);
 };
