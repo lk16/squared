@@ -23,13 +23,9 @@ void bot_pvs::do_move_search(const board* b, board* res)
   int best_heur = MIN_HEURISTIC;
   for(const board* child=children;child!=child_end;++child){
     inspected = *child;
-    if(!exact){
-      moves_left--;
-    }
+    moves_left--;
     int cur_heur = -alpha_beta<exact>(MIN_HEURISTIC,-best_heur);        
-    if(!exact){ 
-      moves_left++;
-    }
+    moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
       *res = *child;
@@ -53,7 +49,9 @@ int bot_pvs::alpha_beta(int alpha, int beta)
   if((!exact) && moves_left==0){
     return heuristic();
   }
-  
+ 
+  stats.inc_nodes();
+ 
   bits64 valid_moves = inspected.get_valid_moves();
   if(valid_moves.none()){
     inspected.switch_turn();
@@ -74,12 +72,12 @@ int bot_pvs::alpha_beta(int alpha, int beta)
     std::swap(inspected,children[i]);
     --moves_left;
     alpha = max(alpha,-alpha_beta<exact>(-beta,-alpha));
+    ++moves_left;
+    std::swap(inspected,children[i]);
     if(alpha >= beta){
       alpha = beta;
       break;
     }
-    ++moves_left;
-    std::swap(inspected,children[i]);
   }
   return alpha;
 }

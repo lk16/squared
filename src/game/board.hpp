@@ -139,8 +139,6 @@ struct board{
   
   // returns the amount of empty fields on the board
   int count_empty_fields() const;
-  
-  
     
   // returns string displaying this in a ascii art kind of way
   // adjusts colors for the right turn
