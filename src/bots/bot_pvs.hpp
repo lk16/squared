@@ -10,9 +10,6 @@ class bot_pvs:
   int search_max_sort_depth;
   int moves_left;
   
-  static const int NORMAL_MOVE_SORT_DEPTH = 7;
-  static const int PERFECT_MOVE_SORT_DEPTH = 4;
-  
 public:
   
   // ctor
@@ -32,6 +29,7 @@ public:
 
   
 private:
+  int LOOK_AHEAD_DEPTH = 4;
   
   // search for the best move
   template<bool exact>
@@ -39,4 +37,6 @@ private:
 
   template<bool exact>
   int pvs(int alpha,int beta,const board* b);
+  
+  int look_ahead(const board* b);
 };
