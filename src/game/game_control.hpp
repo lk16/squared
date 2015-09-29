@@ -57,6 +57,7 @@ struct game_control{
   
   
   game_control();
+  game_control(const game_control&) = delete;
   ~game_control();
   
   void add_bot(int color);

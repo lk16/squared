@@ -54,7 +54,6 @@ int bot_pvs::alpha_beta(int alpha, int beta)
     return heuristic();
   }
   
-  
   bits64 valid_moves = inspected.get_valid_moves();
   if(valid_moves.none()){
     inspected.switch_turn();
@@ -71,7 +70,6 @@ int bot_pvs::alpha_beta(int alpha, int beta)
   
   board children[32];
   board* child_end = inspected.get_children(children);
-  int best = alpha;
   for(int i=0;i<(child_end-children);++i){
     std::swap(inspected,children[i]);
     --moves_left;
