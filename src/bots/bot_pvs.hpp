@@ -37,6 +37,10 @@ private:
 
   template<bool exact>
   int pvs(int alpha,int beta,const board* b);
+
+  template<bool exact>
+  int pvs_null_window(int alpha,const board* b);
+
   
   int look_ahead(const board* b);
 };

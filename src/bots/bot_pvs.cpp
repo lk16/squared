@@ -73,7 +73,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   board* child_end = b->get_children(children,valid_moves);
 
   if((!exact) && (moves_left >= LOOK_AHEAD_DEPTH + 3)){
-    int swap_var;
+    int swap_var = LOOK_AHEAD_DEPTH;
     std::swap<int>(swap_var,moves_left);
     int best_estimation = look_ahead(&children[0]);
     for(board* child=children+1;child!=child_end;++child){
@@ -94,7 +94,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
       heur = -pvs<exact>(-beta,-alpha,child);
     }
     else{
-      heur = -pvs<exact>(-alpha-1,-alpha,child);
+      heur = -pvs_null_window<exact>(-alpha-1,child);
       if(heur > alpha && heur < beta){
         heur = -pvs<exact>(-beta,-heur,child);
       }
@@ -111,6 +111,43 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   return alpha;
 }
 
+template<bool exact>
+int bot_pvs::pvs_null_window(int alpha,const board* b)
+{
+  int beta = alpha+1;
+  
+  if((!exact) && moves_left==0){
+    return heuristic(b);
+  }
+ 
+  stats.inc_nodes();
+  bits64 valid_moves = b->get_valid_moves();
+  if(valid_moves.none()){
+    board copy = *b;
+    copy.switch_turn();
+    int heur;
+    if(copy.has_valid_moves()){
+      heur = -pvs_null_window<exact>(-beta,&copy);
+    }
+    else{
+      return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
+    }
+    return heur;
+  }
+  
+  board children[32];
+  board* child_end = b->get_children(children,valid_moves);
+  for(const board* child=children;child!=child_end;++child){
+    --moves_left;
+    alpha = -pvs_null_window<exact>(-beta,child); 
+    ++moves_left;
+    if(alpha >= beta){
+      alpha = beta;
+      break;
+    }
+  }
+  return alpha;
+}
 
 void bot_pvs::do_move(const board* b,board* res)
 {
