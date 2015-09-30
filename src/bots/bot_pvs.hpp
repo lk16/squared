@@ -6,10 +6,24 @@
 class bot_pvs:
   public bot_base
 {
-
-  int search_max_sort_depth;
+private:
+  int ESTIMATE_DEPTH = 4;
+  int MIN_SORT_DEPTH = ESTIMATE_DEPTH + 3;
+  
   int moves_left;
   
+  // search for the best move
+  template<bool exact>
+  void search(const board* b,board* res);
+
+  template<bool exact,bool sorted>
+  int pvs(int alpha,int beta,const board* b);
+
+  template<bool exact>
+  int pvs_null_window(int alpha,const board* b);
+
+  
+  int look_ahead(const board* b);
 public:
   
   // ctor
@@ -28,20 +42,5 @@ public:
   virtual int heuristic(const board* b) = 0;
 
   
-private:
-  int ESTIMATE_DEPTH = 4;
-  int MIN_SORT_DEPTH = ESTIMATE_DEPTH + 3;
-  
-  // search for the best move
-  template<bool exact>
-  void search(const board* b,board* res);
 
-  template<bool exact,bool sorted>
-  int pvs(int alpha,int beta,const board* b);
-
-  template<bool exact>
-  int pvs_null_window(int alpha,const board* b);
-
-  
-  int look_ahead(const board* b);
 };

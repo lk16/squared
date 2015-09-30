@@ -25,10 +25,12 @@ void bot_pvs::search(const board* b, board* res)
 
   moves_left = get_search_depth();
   
-  int best_heur = MIN_HEURISTIC;
+  const int worst_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
+  int best_heur = worst_heur;
+
   for(const board* child=children;child!=child_end;++child){
     moves_left--;
-    int cur_heur = -pvs<exact,true>(MIN_HEURISTIC,-best_heur,child);        
+    int cur_heur = -pvs<exact,true>(worst_heur,-best_heur,child);        
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -156,11 +158,6 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
       return (heur > alpha) ? (alpha+1) : alpha;
     }
   }
-
-  /*board children[32];
-  board* child_end = b->get_children(children,valid_moves);
-  for(const board* child=children;child!=child_end;++child){
-  */
   board child;
   while(valid_moves.any()){
     bits64 move_bit = valid_moves.first_bit();
