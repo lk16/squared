@@ -2,7 +2,7 @@
 
 int bot_pvs::look_ahead(const board* b)
 {
-  return -pvs<false>(MIN_HEURISTIC,MAX_HEURISTIC,b);
+  return -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC,b);
 }
 
   
@@ -28,7 +28,7 @@ void bot_pvs::search(const board* b, board* res)
   int best_heur = MIN_HEURISTIC;
   for(const board* child=children;child!=child_end;++child){
     moves_left--;
-    int cur_heur = -pvs<exact>(MIN_HEURISTIC,-best_heur,child);        
+    int cur_heur = -pvs<exact,true>(MIN_HEURISTIC,-best_heur,child);        
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
@@ -47,20 +47,25 @@ void bot_pvs::search(const board* b, board* res)
   
 }
 
-template<bool exact>
+template<bool exact,bool sorted>
 int bot_pvs::pvs(int alpha, int beta,const board* b)
 {
   if((!exact) && moves_left==0){
     return heuristic(b);
   }
- 
+  
+  if(sorted && moves_left < MIN_SORT_DEPTH){
+    return pvs<exact,false>(alpha,beta,b);
+  }
+  
+  
   stats.inc_nodes();
   bits64 valid_moves = b->get_valid_moves();
   if(valid_moves.none()){
     board copy = *b;
     copy.switch_turn();
     if(copy.has_valid_moves()){
-      return -pvs<exact>(-beta,-alpha,&copy);
+      return -pvs<exact,sorted>(-beta,-alpha,&copy);
     }
     else{
       return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
@@ -70,40 +75,61 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   board children[32];
   board* child_end = b->get_children(children,valid_moves);
 
-//   if((!exact) && (moves_left >= LOOK_AHEAD_DEPTH + 3)){
-//     int swap_var = LOOK_AHEAD_DEPTH;
-//     std::swap<int>(swap_var,moves_left);
-//     int best_estimation = look_ahead(&children[0]);
-//     for(board* child=children+1;child!=child_end;++child){
-//       int estimation = look_ahead(child);
-//       if(estimation > best_estimation){
-//         std::swap<board>(children[0],*child);
-//         best_estimation = estimation;
-//       }
-//     }
-//     std::swap<int>(swap_var,moves_left);
-//   }
-//   
-  
-  for(const board* child=children;child!=child_end;++child){
-    --moves_left;
-    int heur; 
-    if(child == children){
-      heur = -pvs<exact>(-beta,-alpha,child);
-    }
-    else{
-      heur = -pvs_null_window<exact>(-alpha-1,child);
-      if(heur > alpha && heur < beta){
-        heur = -pvs<exact>(-beta,-heur,child);
+  if((!exact) && sorted && (moves_left >= MIN_SORT_DEPTH)){
+    int swap_var = ESTIMATE_DEPTH;
+    std::swap<int>(swap_var,moves_left);
+    int best_estimation = look_ahead(&children[0]);
+    for(board* child=children+1;child!=child_end;++child){
+      int estimation = look_ahead(child);
+      if(estimation > best_estimation){
+        std::swap<board>(children[0],*child);
+        best_estimation = estimation;
       }
     }
-    ++moves_left;
-    if(heur > alpha){
-      alpha = heur;
+    std::swap<int>(swap_var,moves_left);
+  }
+  
+  if(sorted){
+    for(const board* child=children;child!=child_end;++child){
+      --moves_left;
+      int heur; 
+      if(child == children){
+        heur = -pvs<exact,sorted>(-beta,-alpha,child);
+      }
+      else{
+        heur = -pvs_null_window<exact>(-alpha-1,child);
+        if(heur > alpha && heur < beta){
+          heur = -pvs<exact,sorted>(-beta,-heur,child);
+        }
+      }
+      ++moves_left;
+      if(heur > alpha){
+        alpha = heur;
+      }
+      if(alpha >= beta){
+        alpha = beta;
+        break;
+      }
     }
-    if(alpha >= beta){
-      alpha = beta;
-      break;
+  }
+  else{
+    board child;
+    int heur;
+    while(valid_moves.any()){
+      bits64 move_bit = valid_moves.first_bit();
+      int move = move_bit.only_bit_index();
+      --moves_left;
+      child = *b;
+      child.do_move(move);
+      heur = -pvs<exact,sorted>(-beta,-alpha,&child);
+      ++moves_left;
+      if(heur > alpha){
+        alpha = heur;
+      }
+      if(alpha >= beta){
+        return beta;
+      }
+      valid_moves ^= move_bit;
     }
   }
   return alpha;

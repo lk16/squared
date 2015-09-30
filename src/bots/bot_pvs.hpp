@@ -29,13 +29,14 @@ public:
 
   
 private:
-  int LOOK_AHEAD_DEPTH = 4;
+  int ESTIMATE_DEPTH = 4;
+  int MIN_SORT_DEPTH = ESTIMATE_DEPTH + 3;
   
   // search for the best move
   template<bool exact>
   void search(const board* b,board* res);
 
-  template<bool exact>
+  template<bool exact,bool sorted>
   int pvs(int alpha,int beta,const board* b);
 
   template<bool exact>
