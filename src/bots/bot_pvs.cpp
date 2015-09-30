@@ -59,14 +59,12 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   if(valid_moves.none()){
     board copy = *b;
     copy.switch_turn();
-    int heur;
     if(copy.has_valid_moves()){
-      heur = -pvs<exact>(-beta,-alpha,&copy);
+      return -pvs<exact>(-beta,-alpha,&copy);
     }
     else{
       return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
     }
-    return heur;
   }
   
   board children[32];
