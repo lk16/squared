@@ -70,20 +70,20 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   board children[32];
   board* child_end = b->get_children(children,valid_moves);
 
-  if((!exact) && (moves_left >= LOOK_AHEAD_DEPTH + 3)){
-    int swap_var = LOOK_AHEAD_DEPTH;
-    std::swap<int>(swap_var,moves_left);
-    int best_estimation = look_ahead(&children[0]);
-    for(board* child=children+1;child!=child_end;++child){
-      int estimation = look_ahead(child);
-      if(estimation > best_estimation){
-        std::swap<board>(children[0],*child);
-        best_estimation = estimation;
-      }
-    }
-    std::swap<int>(swap_var,moves_left);
-  }
-  
+//   if((!exact) && (moves_left >= LOOK_AHEAD_DEPTH + 3)){
+//     int swap_var = LOOK_AHEAD_DEPTH;
+//     std::swap<int>(swap_var,moves_left);
+//     int best_estimation = look_ahead(&children[0]);
+//     for(board* child=children+1;child!=child_end;++child){
+//       int estimation = look_ahead(child);
+//       if(estimation > best_estimation){
+//         std::swap<board>(children[0],*child);
+//         best_estimation = estimation;
+//       }
+//     }
+//     std::swap<int>(swap_var,moves_left);
+//   }
+//   
   
   for(const board* child=children;child!=child_end;++child){
     --moves_left;
@@ -131,15 +131,23 @@ int bot_pvs::pvs_null_window(int alpha,const board* b)
     }
   }
 
-  board children[32];
+  /*board children[32];
   board* child_end = b->get_children(children,valid_moves);
   for(const board* child=children;child!=child_end;++child){
+  */
+  board child;
+  while(valid_moves.any()){
+    bits64 move_bit = valid_moves.first_bit();
+    int move = move_bit.only_bit_index();
     --moves_left;
-    int heur = -pvs_null_window<exact>(-alpha-1,child); 
+    child = *b;
+    child.do_move(move);
+    int heur = -pvs_null_window<exact>(-alpha-1,&child); 
     ++moves_left;
     if(heur > alpha){
       return alpha+1;
     }
+    valid_moves ^= move_bit;
   }
   return alpha;
 }
