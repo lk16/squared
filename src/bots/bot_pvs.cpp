@@ -77,7 +77,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   board children[32];
   board* child_end = b->get_children(children,valid_moves);
 
-  if((!exact) && sorted && (moves_left >= MIN_SORT_DEPTH)){
+  if(sorted){
     int swap_var = ESTIMATE_DEPTH;
     std::swap<int>(swap_var,moves_left);
     int best_estimation = look_ahead(&children[0]);
@@ -88,10 +88,8 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
         best_estimation = estimation;
       }
     }
-    std::swap<int>(swap_var,moves_left);
-  }
   
-  if(sorted){
+    std::swap<int>(swap_var,moves_left);
     for(const board* child=children;child!=child_end;++child){
       --moves_left;
       int heur; 
