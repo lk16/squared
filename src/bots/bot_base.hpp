@@ -72,10 +72,11 @@ public:
 
 struct ht_item{
   // ctor
-  ht_item(int u,int l): upper_bound(u),lower_bound(l){}
-  
-  // ctor
-  ht_item(int u,int l,int pv): upper_bound(u),lower_bound(l),pv_move(pv){}
+  ht_item(){
+    upper_bound = MAX_HEURISTIC;
+    lower_bound = MIN_HEURISTIC;
+    pv_move = -1;
+  }
   
   // bounds
   int upper_bound,lower_bound;

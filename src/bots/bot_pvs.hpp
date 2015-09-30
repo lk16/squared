@@ -1,12 +1,15 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "bots/bot_register.hpp"
 #include "bots/bot_base.hpp"
 
 class bot_pvs:
   public bot_base
 {
-private:
+  
+  
   int ESTIMATE_DEPTH = 4;
   int MIN_SORT_DEPTH = ESTIMATE_DEPTH + 3;
   
@@ -25,6 +28,13 @@ private:
   
   int look_ahead(const board* b);
 public:
+  
+  // TODO make private when stable
+  typedef std::unordered_map<board,ht_item> hash_table_t;
+  typedef hash_table_t::iterator hash_table_iter;
+  typedef hash_table_t::const_iterator hash_table_citer;
+ 
+  hash_table_t hash_table;
   
   // ctor
   bot_pvs() = default;  
