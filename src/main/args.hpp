@@ -38,4 +38,5 @@ struct squared_args:
   int use_xot();
   int tournament_flag();
   int flag_unittests();
+  int flag_forced_move();
 };

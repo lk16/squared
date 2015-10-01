@@ -7,6 +7,7 @@ game_control::game_control()
   loop_game = false;
   show_board_flag = false;
   use_xot = false;
+  do_forced_move = false;
   
   run_speed_test = false;
   run_unit_test = false;
@@ -177,7 +178,7 @@ void game_control::on_undo()
       mw->update_status_bar("Cannot undo");
       return;
     }
-  }while(bot[undo->turn] || !undo->b.has_valid_moves());
+  }while(bot[undo->turn] || !undo->b.has_valid_moves() || (do_forced_move && (undo->b.count_valid_moves()==1)));
   current_state = undo;
   mw->update_fields();
 }
@@ -256,6 +257,12 @@ bool game_control::timeout_handler()
 {
   if(bot[current_state->turn]){
     on_bot_do_move();  
+  }
+  else if(do_forced_move && (current_state->b.count_valid_moves() == 1)){
+    ++current_state;
+    *current_state = *(current_state-1);
+    current_state->b.do_move(current_state->b.get_valid_moves().only_bit_index());
+    on_any_move();
   }
   return true;
 }

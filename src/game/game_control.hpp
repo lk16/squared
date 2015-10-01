@@ -38,6 +38,7 @@ struct game_control{
   bool loop_game;
   bool show_board_flag;
   bool use_xot;
+  bool do_forced_move;
   std::string board_string;
   
   // behaviour modifiers

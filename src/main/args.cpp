@@ -38,7 +38,18 @@ squared_args::squared_args(int argc,const char **argv):
 
   add_modifier("--unittest",&squared_args::flag_unittests,"","Run unittests");
   duplicate_modifier("-u","--unittest");
+
+  add_modifier("--forced-moves",&squared_args::flag_forced_move,"","When only one move is possible, do it automatically.");
+  duplicate_modifier("-f","--forced-moves");
+  
 }
+
+int squared_args::flag_forced_move()
+{
+  gc->do_forced_move = true;
+  return 1;
+}
+
 
 int squared_args::use_xot()
 {
