@@ -19,7 +19,7 @@ set(WARNING_FLAGS
 )
 
 set(COMMON_FLAGS
-  "-I./src -std=c++0x -pthread ${WARNING_FLAGS}"
+  "-I./src -I./submodules/SQLiteCpp/include -std=c++0x -pthread ${WARNING_FLAGS}"
 )
 
 

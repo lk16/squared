@@ -12,6 +12,8 @@
 #include "util/dummystream.hpp"
 #include "util/string.hpp"
 
+#include "SQLiteCpp/SQLiteCpp.h"
+
 class bot_base{
 
 
@@ -20,6 +22,7 @@ class bot_base{
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
+  SQLite::Database* book;
   
 public: 
   
@@ -68,6 +71,14 @@ public:
     
   void disable_shell_output();
   
+  void open_book();
+  
+  // add entry to book
+  // may do nothing if entry with larger depth exists
+  void add_to_book(const board* b,int depth,int heuristic,int pv);
+  
+  // assign heuristic and pv values for board b with depth at least depth
+  void lookup_book(const board* b,int depth,int* heuristic,int* pv);
 };
 
 struct ht_item{
