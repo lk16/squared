@@ -10,12 +10,13 @@ Dependencies
 * gtkmm-dev
 * glibmm-dev
 * libboost-dev
+* sqlite3-dev
 
 
 Compilation
 -----------
 * ``cmake .``
-* ``make -j $(echo "`nproc`*2" | bc -l)``
+* ``make -j \`nproc\```
 
 
 Usage
