@@ -13,8 +13,13 @@ Dependencies
 * sqlite3-dev
 
 
-Compilation
+Local installation
 -----------
+* install dependencies
+* ``cd squared``
+* ``git clone https://github.com/lk16/squared
+* ``git submodule init``
+* ``git submodule update``
 * ``cmake .``
 * ``make -j \`nproc\```
 
