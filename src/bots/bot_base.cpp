@@ -119,6 +119,8 @@ void bot_base::open_book()
   catch(const SQLite::Exception& e){
     std::cerr << e.what() << '\n';
   }
+  delete book;
+  book = new SQLite::Database("./book/openings.db3",SQLITE_OPEN_READWRITE);
 }
 
 void bot_base::add_to_book(const board* b, int depth, int heuristic, int pv)
