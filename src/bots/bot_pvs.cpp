@@ -11,14 +11,16 @@ void bot_pvs::search(const board* b, board* res)
 {
   moves_left = exact ? b->count_empty_fields() : get_search_depth();
   
-//   {
-//     int heuristic,pv;
-//     if(lookup_book(b,moves_left,&heuristic,&pv)){
-//       output() << "Found board in book, heuristic = " << heuristic;
-//       
-//     }
-//   }
-//   
+  {
+    int book_heur,pv;
+    if(lookup_book(b,moves_left,&book_heur,&pv)){
+      output() << "Found board in book, heuristic = " << book_heur;
+      *res = *b;
+      res->do_move(pv);
+      return;
+    }
+  }
+  
   stats.start_timer();
   
   board children[32];
@@ -50,7 +52,7 @@ void bot_pvs::search(const board* b, board* res)
     
   }     
 
-  add_to_book(b,moves_left,best_heur,-1);
+  add_to_book(b,moves_left,best_heur,b->get_move_index(res));
   
   stats.stop_timer();
   

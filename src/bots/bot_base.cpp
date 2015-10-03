@@ -145,7 +145,7 @@ bool bot_base::lookup_book(const board* b, int depth, int* heuristic, int* pv)
   if(!book){
     return false;
   }
-  std::string query_str = "SELECT * FROM bot_" + get_name() + "WHERE board = ?";
+  std::string query_str = "SELECT * FROM bot_" + get_name() + " WHERE board = ?";
   SQLite::Statement query(*book,query_str);
   query.bind(1,b,sizeof(board));
   try{
