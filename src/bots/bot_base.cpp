@@ -123,8 +123,46 @@ void bot_base::open_book()
 
 void bot_base::add_to_book(const board* b, int depth, int heuristic, int pv)
 {
-  
+  if(!book){
+    return;
+  }
+  std::string query_str = "INSERT INTO bot_" + get_name() + " VALUES(?,?,?,?)";
+  SQLite::Statement query(*book,query_str);
+  query.bind(1,b,sizeof(board));
+  query.bind(2,depth);
+  query.bind(3,heuristic);
+  query.bind(4,pv);
+  try{
+    query.exec();
+  }
+  catch(const SQLite::Exception& e){
+    std::cerr << e.what() << '\n';
+  }
 }
+
+bool bot_base::lookup_book(const board* b, int depth, int* heuristic, int* pv)
+{
+  if(!book){
+    return false;
+  }
+  std::string query_str = "SELECT * FROM bot_" + get_name() + "WHERE board = ?";
+  SQLite::Statement query(*book,query_str);
+  query.bind(1,b,sizeof(board));
+  try{
+    query.exec();
+    if(query.getColumn(1).getInt() < depth){
+      return false;
+    }
+    *heuristic = query.getColumn(2).getInt();
+    *pv = query.getColumn(3).getInt();
+    return true;
+  }
+  catch(const SQLite::Exception& e){
+    std::cerr << e.what() << '\n';
+  }
+  return false;
+}
+
 
 bot_base::~bot_base()
 {

@@ -78,7 +78,8 @@ public:
   void add_to_book(const board* b,int depth,int heuristic,int pv);
   
   // assign heuristic and pv values for board b with depth at least depth
-  void lookup_book(const board* b,int depth,int* heuristic,int* pv);
+  // returns whether succesful
+  bool lookup_book(const board* b,int depth,int* heuristic,int* pv);
 };
 
 struct ht_item{

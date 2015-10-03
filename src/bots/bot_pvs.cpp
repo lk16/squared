@@ -9,6 +9,16 @@ int bot_pvs::look_ahead(const board* b)
 template<bool exact>
 void bot_pvs::search(const board* b, board* res)
 {
+  moves_left = exact ? b->count_empty_fields() : get_search_depth();
+  
+//   {
+//     int heuristic,pv;
+//     if(lookup_book(b,moves_left,&heuristic,&pv)){
+//       output() << "Found board in book, heuristic = " << heuristic;
+//       
+//     }
+//   }
+//   
   stats.start_timer();
   
   board children[32];
@@ -23,7 +33,6 @@ void bot_pvs::search(const board* b, board* res)
     output() << "at depth " << get_search_depth() << '\n';
   }
 
-  moves_left = get_search_depth();
   
   const int worst_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
   int best_heur = worst_heur;
@@ -41,6 +50,8 @@ void bot_pvs::search(const board* b, board* res)
     
   }     
 
+  add_to_book(b,moves_left,best_heur,-1);
+  
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
