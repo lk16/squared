@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <endian.h>
 #include <iostream>
 #include <sstream>
 
@@ -194,6 +195,9 @@ struct board{
   // count sum of flippable discs for all moves
   int get_mobility(bits64 moves) const;
   
+  // convert board to big endian
+  board to_big_endian() const;
+  
 };
 
 struct board_hash {
@@ -215,6 +219,13 @@ inline int board::get_move_index(const board* after) const
   return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_index();
 }
 
+inline board board::to_big_endian() const
+{
+  board res = *this;
+  res.me = htobe64(me);
+  res.opp = htobe64(opp);
+  return res;
+}
 
 
 

@@ -47,7 +47,7 @@ public:
   bot_base();
     
   // dtor
-  virtual ~bot_base() = default;
+  virtual ~bot_base();
 
   // perform a move on board in, put result in out
   virtual void do_move(const board* in,board* out) = 0;

@@ -3,7 +3,8 @@
 REGISTER_BOT(moves);
 
 bot_moves::bot_moves(){
-  //set_name("moves");
+  set_name("moves");
+  open_book();
 }
 
 

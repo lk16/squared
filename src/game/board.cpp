@@ -345,17 +345,11 @@ board board::to_database_board() const
   
   for(int i=1;i<8;i++){
     board x = rotate(i);
-    if(x.me == min.me){
-      if(x.opp < min.opp){
-        min = x;
-      }
-    }
-    else if(x.me < min.me){
+    if(x < min){
       min = x;
     }
   }
-  
-  return min; 
+  return min.to_big_endian(); 
 }
 
 const bits64 board::dir_mask[64][8] = 

@@ -12,6 +12,7 @@ pkg_check_modules(GTK_PLUS gtk+-2.0)
 pkg_check_modules(GDK_PIXBUF gdk-pixbuf-2.0)
 pkg_check_modules(GIOMM giomm-2.4)
 pkg_check_modules(GDKMM gdkmm-2.4)
+pkg_check_modules(SQLITE3 sqlite3)
 
 
 set(WARNING_FLAGS
@@ -67,6 +68,8 @@ include_directories(SYSTEM ${GIOMM_INCLUDE_DIRS})
 include_directories(${GDKMM_LIBRARY_DIRS})
 include_directories(SYSTEM ${GDKMM_INCLUDE_DIRS})
 
+include_directories(${SQLITE3_LIBRARY_DIRS})
+include_directories(SYSTEM ${SQLITE3_INCLUDE_DIRS})
 
 file(GLOB SOURCE_FILES
     "src/*.cpp"
@@ -81,5 +84,6 @@ target_link_libraries(squared
   ${GTKMM_LIBRARIES}
   ${GLIBMM_LIBRARIES}
   ${GDK_PIXBUF_LIBRARIES}
+  ${SQLITE3_LIBRARIES}
   SQLiteCpp
 )

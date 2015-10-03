@@ -7,6 +7,7 @@ bot_base::bot_base():
 {
   search_depth = -1;
   perfect_depth = -1;
+  book = nullptr;
 }
 
 int bot_base::get_search_depth() const
@@ -95,4 +96,39 @@ std::ostream& bot_base::output()
 void bot_base::on_new_game()
 {
   return;
+}
+
+
+void bot_base::open_book()
+{
+  if(book || (get_name() == "base")){
+    return;
+  }
+  book = new SQLite::Database("./book/openings.db3",SQLITE_OPEN_READWRITE);
+  std::string query = 
+  "CREATE TABLE IF NOT EXISTS \"bot_" + get_name() + "\" ("
+  "`board` BLOB NOT NULL,"
+  "`depth` INTEGER NOT NULL,"
+  "`heuristic` INTEGER NOT NULL,"
+  "`pv` INTEGER NOT NULL,"
+  "PRIMARY KEY(board)"
+  ")"; 
+  try{
+    book->exec(query);
+  }
+  catch(const SQLite::Exception& e){
+    std::cerr << e.what() << '\n';
+  }
+}
+
+void bot_base::add_to_book(const board* b, int depth, int heuristic, int pv)
+{
+  
+}
+
+bot_base::~bot_base()
+{
+  if(book){
+    delete book;
+  }
 }
