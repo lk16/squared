@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(squared)
 
+add_subdirectory(submodules/SQLiteCpp/)
+
 find_package(PkgConfig)
 
 pkg_check_modules(GTKMM gtkmm-2.4)
@@ -79,4 +81,5 @@ target_link_libraries(squared
   ${GTKMM_LIBRARIES}
   ${GLIBMM_LIBRARIES}
   ${GDK_PIXBUF_LIBRARIES}
+  SQLiteCpp
 )
