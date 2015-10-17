@@ -138,6 +138,7 @@ void game_control::on_bot_do_move()
   ++current_state;
   *current_state = *(current_state-1);
   get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
+  gettimeofday(&last_move_time,NULL);
   on_any_move(); 
 }
 
@@ -167,7 +168,6 @@ void game_control::on_any_move()
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
   
-  gettimeofday(&last_move_time,NULL);
 }
 
 
