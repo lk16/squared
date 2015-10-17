@@ -49,7 +49,11 @@ struct game_control{
   int learn_threads;
   tournament_t* tournament;
   
+  // timeval of last move
+  timeval last_move_time;
   
+  // minimum time to wait between moves (micro seconds)
+  static const int AUTO_MOVE_WAIT = 300000;
   
   // bot modifiers
   std::string bot_type;
