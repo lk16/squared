@@ -33,6 +33,8 @@ game_control::game_control()
   
   current_state->b.reset();
   current_state->turn = BLACK;
+  
+  gettimeofday(&last_move_time,NULL);
 }
 
 
@@ -137,6 +139,7 @@ void game_control::on_bot_do_move()
   ++current_state;
   *current_state = *(current_state-1);
   get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
+  gettimeofday(&last_move_time,NULL);
   on_any_move(); 
 }
 
@@ -165,6 +168,7 @@ void game_control::on_any_move()
   if(bot[BLACK] && bot[WHITE]){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
+  
 }
 
 
@@ -255,6 +259,12 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
+  timeval now;
+  gettimeofday(&now,NULL);
+  long diff = 1000000*(now.tv_sec - last_move_time.tv_sec) + now.tv_usec - last_move_time.tv_usec;
+  if(diff < AUTO_MOVE_WAIT){
+    return true;
+  }  
   if(bot[current_state->turn]){
     on_bot_do_move();  
   }
