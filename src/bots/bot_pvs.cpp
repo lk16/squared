@@ -124,7 +124,6 @@ int bot_pvs::pvs(int alpha, int beta,board* b)
     }
   }
   else{
-    board child = *b;
     bits64 undo_data;
     int heur;
     bool first = true;
@@ -132,18 +131,18 @@ int bot_pvs::pvs(int alpha, int beta,board* b)
       bits64 move_bit = valid_moves.first_bit();
       int move = move_bit.only_bit_index();
       --moves_left;
-      undo_data = child.do_move(move);
+      undo_data = b->do_move(move);
       if(first){
-        heur = -pvs<exact,sorted>(-beta,-alpha,&child);
+        heur = -pvs<exact,sorted>(-beta,-alpha,b);
         first = false;
       }
       else{
-        heur = -pvs_null_window<exact>(-alpha-1,&child);
+        heur = -pvs_null_window<exact>(-alpha-1,b);
         if(heur > alpha && heur < beta){
-          heur = -pvs<exact,sorted>(-beta,-heur,&child);
+          heur = -pvs<exact,sorted>(-beta,-heur,b);
         }
       }
-      child.undo_move(move_bit,undo_data);
+      b->undo_move(move_bit,undo_data);
       ++moves_left;
       if(alpha >= beta){
         alpha = beta;
@@ -179,14 +178,14 @@ int bot_pvs::pvs_null_window(int alpha,board* b)
       return (heur > alpha) ? (alpha+1) : alpha;
     }
   }
-  board child;
+  bits64 undo_data;
   while(valid_moves.any()){
     bits64 move_bit = valid_moves.first_bit();
     int move = move_bit.only_bit_index();
     --moves_left;
-    child = *b;
-    child.do_move(move);
-    int heur = -pvs_null_window<exact>(-alpha-1,&child); 
+    undo_data = b->do_move(move);
+    int heur = -pvs_null_window<exact>(-alpha-1,b);
+    b->undo_move(move_bit,undo_data);
     ++moves_left;
     if(heur > alpha){
       return alpha+1;
