@@ -114,25 +114,25 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
         }
       }
       ++moves_left;
-      if(heur > alpha){
-        alpha = heur;
-      }
       if(alpha >= beta){
         alpha = beta;
         break;
       }
+      if(heur > alpha){
+        alpha = heur;
+      }
     }
   }
   else{
-    board child;
+    board child = *b;
+    bits64 undo_data;
     int heur;
     bool first = true;
     while(valid_moves.any()){
       bits64 move_bit = valid_moves.first_bit();
       int move = move_bit.only_bit_index();
       --moves_left;
-      child = *b;
-      child.do_move(move);
+      undo_data = child.do_move(move);
       if(first){
         heur = -pvs<exact,sorted>(-beta,-alpha,&child);
         first = false;
@@ -143,13 +143,14 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
           heur = -pvs<exact,sorted>(-beta,-heur,&child);
         }
       }
+      child.undo_move(move_bit,undo_data);
       ++moves_left;
-      if(heur > alpha){
-        alpha = heur;
-      }
       if(alpha >= beta){
         alpha = beta;
         break;
+      }
+      if(heur > alpha){
+        alpha = heur;
       }
       valid_moves ^= move_bit;
     }
