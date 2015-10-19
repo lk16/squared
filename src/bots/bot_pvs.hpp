@@ -12,6 +12,9 @@ private:
   
   int moves_left;
   
+  // sort children
+  void sort_children(board* children,board* child_end);
+  
   // search for the best move
   template<bool exact>
   void search(const board* b,board* res);

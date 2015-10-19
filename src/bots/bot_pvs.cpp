@@ -49,6 +49,22 @@ void bot_pvs::search(const board* b, board* res)
   
 }
 
+void bot_pvs::sort_children(board* children, board* child_end)
+{
+  int swap_var = ESTIMATE_DEPTH;
+  std::swap<int>(swap_var,moves_left);
+  int best_estimation = look_ahead(&children[0]);
+  for(board* child=children+1;child!=child_end;++child){
+    int estimation = look_ahead(child);
+    if(estimation > best_estimation){
+      std::swap<board>(children[0],*child);
+      best_estimation = estimation;
+    }
+  }
+  std::swap<int>(swap_var,moves_left);
+}
+
+
 template<bool exact,bool sorted>
 int bot_pvs::pvs(int alpha, int beta,const board* b)
 {
@@ -81,18 +97,8 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
     board children[32];
     board* child_end = b->get_children(children,valid_moves);
 
-    if((!exact) && (moves_left >= MIN_SORT_DEPTH)){
-      int swap_var = ESTIMATE_DEPTH;
-      std::swap<int>(swap_var,moves_left);
-      int best_estimation = look_ahead(&children[0]);
-      for(board* child=children+1;child!=child_end;++child){
-        int estimation = look_ahead(child);
-        if(estimation > best_estimation){
-          std::swap<board>(children[0],*child);
-          best_estimation = estimation;
-        }
-      }
-      std::swap<int>(swap_var,moves_left);
+    if(!exact){
+      sort_children(children,child_end);
     }
     
     for(const board* child=children;child!=child_end;++child){
