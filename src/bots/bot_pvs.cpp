@@ -1,6 +1,6 @@
 #include "bots/bot_pvs.hpp"
 
-int bot_pvs::look_ahead(const board* b)
+int bot_pvs::look_ahead(board* b)
 {
   return -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC,b);
 }
@@ -28,7 +28,7 @@ void bot_pvs::search(const board* b, board* res)
   const int worst_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
   int best_heur = worst_heur;
 
-  for(const board* child=children;child!=child_end;++child){
+  for(board* child=children;child!=child_end;++child){
     moves_left--;
     int cur_heur = -pvs<exact,true>(worst_heur,-best_heur,child);        
     moves_left++;
@@ -66,7 +66,7 @@ void bot_pvs::sort_children(board* children, board* child_end)
 
 
 template<bool exact,bool sorted>
-int bot_pvs::pvs(int alpha, int beta,const board* b)
+int bot_pvs::pvs(int alpha, int beta,board* b)
 {
   if((!exact) && moves_left==0){
     return heuristic(b);
@@ -101,7 +101,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
       sort_children(children,child_end);
     }
     
-    for(const board* child=children;child!=child_end;++child){
+    for(board* child=children;child!=child_end;++child){
       --moves_left;
       int heur; 
       if(child == children){
@@ -159,7 +159,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
 }
 
 template<bool exact>
-int bot_pvs::pvs_null_window(int alpha,const board* b)
+int bot_pvs::pvs_null_window(int alpha,board* b)
 {
   
   if((!exact) && moves_left==0){
@@ -203,12 +203,14 @@ void bot_pvs::do_move(const board* b,board* res)
     b->get_children(children);
     *res = children[0];
     std::cout << "Only one valid move, evaluation skipped.\n";
+    return;
   }
-  else if(b->count_empty_fields() > get_perfect_depth()){
-    search<false>(b,res);
+  board copy(*b);
+  if(b->count_empty_fields() > get_perfect_depth()){
+    search<false>(&copy,res);
   }
   else{
-    search<true>(b,res);
+    search<true>(&copy,res);
   }
 }
 

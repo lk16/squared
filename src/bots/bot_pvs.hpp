@@ -20,13 +20,13 @@ private:
   void search(const board* b,board* res);
 
   template<bool exact,bool sorted>
-  int pvs(int alpha,int beta,const board* b);
+  int pvs(int alpha,int beta,board* b);
 
   template<bool exact>
-  int pvs_null_window(int alpha,const board* b);
+  int pvs_null_window(int alpha,board* b);
 
   
-  int look_ahead(const board* b);
+  int look_ahead(board* b);
 public:
   
   // ctor
