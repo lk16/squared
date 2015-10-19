@@ -126,19 +126,30 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
   else{
     board child;
     int heur;
+    bool first = true;
     while(valid_moves.any()){
       bits64 move_bit = valid_moves.first_bit();
       int move = move_bit.only_bit_index();
       --moves_left;
       child = *b;
       child.do_move(move);
-      heur = -pvs<exact,sorted>(-beta,-alpha,&child);
+      if(first){
+        heur = -pvs<exact,sorted>(-beta,-alpha,&child);
+        first = false;
+      }
+      else{
+        heur = -pvs_null_window<exact>(-alpha-1,&child);
+        if(heur > alpha && heur < beta){
+          heur = -pvs<exact,sorted>(-beta,-heur,&child);
+        }
+      }
       ++moves_left;
       if(heur > alpha){
         alpha = heur;
       }
       if(alpha >= beta){
-        return beta;
+        alpha = beta;
+        break;
       }
       valid_moves ^= move_bit;
     }
