@@ -58,7 +58,7 @@ void game_control::run()
     main_window window;
     mw = &window;
     window.control = this;
-    window.update_fields();
+    window.update_fields(current_state,current_state);
     Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     on_new_game();
     Gtk::Main::run(window);
@@ -161,9 +161,13 @@ void game_control::on_any_move()
       *current_state = *(current_state-1);
       current_state->switch_turn();
       current_state->b.switch_turn();
+      mw->update_fields(current_state-1,current_state);
     }
   }
-  mw->update_fields();
+  else{
+    mw->update_fields(current_state-1,current_state);
+  }
+  
   if(bot[BLACK] && bot[WHITE]){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
@@ -182,8 +186,8 @@ void game_control::on_undo()
       return;
     }
   }while(bot[undo->turn] || !undo->b.has_valid_moves() || (do_forced_move && (undo->b.count_valid_moves()==1)));
+  mw->update_fields(current_state,undo);
   current_state = undo;
-  mw->update_fields();
 }
 
 void game_control::on_redo()
@@ -196,14 +200,16 @@ void game_control::on_redo()
       return;
     }
   }while(bot[redo->turn]);
+  mw->update_fields(current_state,redo);
   current_state = redo;
-  mw->update_fields();
 }
 
 void game_control::on_new_game()
 {
+  board_state_t* before = current_state;
   current_state = last_redo = board_states;
   current_state->turn = BLACK;
+  mw->update_fields(before,current_state);
   
   current_state->b.reset();
   if(use_xot){
@@ -217,7 +223,6 @@ void game_control::on_new_game()
   }
   
   
-  mw->update_fields();
   mw->update_status_bar(std::string("A new game has started."));
   
   for(int i=0;i<2;i++){
