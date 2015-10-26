@@ -181,9 +181,7 @@ void main_window::update_fields(
     else{
       after_str = "empty";
     }
-    std::string filename = IMAGE_PATH + before_str[i] + "_to_" + after_str + ".gif";
-    std::cout << filename << '\n';
-    fields[i%8][i/8].set_image(filename);
+    fields[i%8][i/8].set_image(IMAGE_PATH + before_str[i] + "_to_" + after_str + ".gif");
   }
 }
 
