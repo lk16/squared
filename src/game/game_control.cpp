@@ -161,13 +161,11 @@ void game_control::on_any_move()
       *current_state = *(current_state-1);
       current_state->switch_turn();
       current_state->b.switch_turn();
-      mw->update_fields(current_state-1,current_state);
     }
   }
-  else{
-    mw->update_fields(current_state-1,current_state);
-  }
-  
+
+  mw->update_fields(current_state-1,current_state);
+
   if(bot[BLACK] && bot[WHITE]){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
@@ -206,10 +204,9 @@ void game_control::on_redo()
 
 void game_control::on_new_game()
 {
-  board_state_t* before = current_state;
+  board_state_t before = *current_state;
   current_state = last_redo = board_states;
   current_state->turn = BLACK;
-  mw->update_fields(before,current_state);
   
   current_state->b.reset();
   if(use_xot){
@@ -223,6 +220,7 @@ void game_control::on_new_game()
   }
   
   
+  mw->update_fields(&before,current_state);
   mw->update_status_bar(std::string("A new game has started."));
   
   for(int i=0;i<2;i++){
