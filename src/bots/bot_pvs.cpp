@@ -82,7 +82,7 @@ int bot_pvs::pvs(int alpha, int beta,const board* b)
     board* child_end = b->get_children(children,valid_moves);
 
     
-    if((!exact) && (moves_left >= MIN_SORT_DEPTH)){
+    if(/*(!exact) && */ (moves_left >= MIN_SORT_DEPTH)){
       int swap_var = ESTIMATE_DEPTH;
       std::swap<int>(swap_var,moves_left);
       int best_estimation = look_ahead(&children[0]);
