@@ -9,5 +9,3 @@ do
         convert $lhs $rhs -loop 1 -morph 3 $out_file
     done
 done
-
-touch gifs_created
