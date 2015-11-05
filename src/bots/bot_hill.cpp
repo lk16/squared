@@ -21,8 +21,8 @@ void bot_hill::do_move(const board* b, board* res)
       best_heur = current_heur;
       *res = *child;
     }
-    output() << "move " << (id+1) << "/" << "TODO";
-    output() << " (" << "TODO" << ')';
+    output() << "move " << (id+1) << "/" << (child_end-children);
+    output() << " (" << board::index_to_position(b->get_move_index(child)) << ')';
     output() << ": " << best_heur << '\n';
     ++id;
   }     
@@ -44,9 +44,7 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     board children[32];
     board* child_end = b->get_children(children);
     for(const board* child = children;child != child_end;++child){
-      board copy = *child;
-      movesbot->do_move(child,&dummy);
-      int heur = movesbot->last_heuristic();
+      int heur = movesbot->get_search_heuristic(child);
       if(heur > best_heur){
         best_heur = heur;
         best_child = *child;
@@ -55,8 +53,7 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     *b = best_child;
     turn = 1 - turn;
   }
-  movesbot->do_move(b,&dummy);
-  int heur = movesbot->last_heuristic();
+  int heur = movesbot->get_search_heuristic(b);
   delete movesbot;
   return heur;  
 }

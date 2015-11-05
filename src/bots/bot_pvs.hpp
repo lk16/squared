@@ -14,9 +14,6 @@ private:
   // number of recursion steps left in pvs or pvs_null_window
   int moves_left;
   
-  // last heuristic
-  int last_heur;
-  
   // sort children
   void sort_children(board* children,board* child_end);
   
@@ -35,7 +32,7 @@ private:
 public:
   
   // ctor
-  bot_pvs();  
+  bot_pvs() = default;  
   
   // dtor
   ~bot_pvs() = default;
@@ -48,8 +45,11 @@ public:
   
   // calculates the heuristic for this->inspected
   virtual int heuristic(const board* b) = 0;
-
-  // get last heuristic
-  int last_heuristic() const;
  
+  // calculates heuristic for b after search/perfect depth
+  int get_search_heuristic(const board* b);
+  
+  // calculates heuristic for b after search/perfect depth with alpha/beta
+  int get_search_heuristic(const board* b,int alpha,int beta);
+  
 };
