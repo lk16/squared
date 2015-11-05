@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bots/bot_base.hpp"
+#include "bots/bot_moves.hpp"
 
 struct bot_hill:
   public bot_base
@@ -19,18 +20,7 @@ struct bot_hill:
   // does something when a new game starts
   virtual void on_new_game();
   
-  // calculates the heuristic for this->inspected
-  virtual int heuristic();
-
 private:
-  // HACK FIXME
-  int heuristic(const board* b);
-  
-  // minimax because I am a lame programmer
-  int minimax(const board* b,int d,bool max);
-  
-  int alphabeta(const board* b,int d,int alpha,int beta);
-  
   
   // perform hill climbing algorithm
   int hill_climbing(board* b,int d,int pd);
