@@ -30,21 +30,28 @@ void bot_hill::do_move(const board* b, board* res)
 
 int bot_hill::hill_climbing(board* b,int d,int pd){
   int turn = 0;
-  bot_moves* movesbot = dynamic_cast<bot_moves*>(bot_registration::bots()["moves"]());
-  if(!movesbot){
-    output() << "ERROR! cannot cast bot_base up to bot_moves in bot_hill::hill_climbing()\n";
-    exit(1);
-  }
-  movesbot->disable_shell_output();
-  movesbot->set_search_depth(d,pd);
-  board dummy;
+  bot_moves movesbot;
+  movesbot.disable_shell_output();
+  movesbot.set_search_depth(d,pd);
   while(64 - b->count_discs() > pd){
-    board best_child;
+    std::cout << ".";
+    std::cout.flush();
     int best_heur = MIN_HEURISTIC;
     board children[32];
     board* child_end = b->get_children(children);
+    if(child_end == children){
+      b->switch_turn();
+      if(b->has_valid_moves()){
+        turn = 1 - turn;
+        continue;
+      }
+      else{
+        return -b->get_disc_diff();
+      }
+    }
+    board best_child = children[0];
     for(const board* child = children;child != child_end;++child){
-      int heur = movesbot->get_search_heuristic(child);
+      int heur = movesbot.get_search_heuristic(child);
       if(heur > best_heur){
         best_heur = heur;
         best_child = *child;
@@ -53,8 +60,7 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
     *b = best_child;
     turn = 1 - turn;
   }
-  int heur = movesbot->get_search_heuristic(b);
-  delete movesbot;
+  int heur = movesbot.get_search_heuristic(b);
   return heur;  
 }
 
