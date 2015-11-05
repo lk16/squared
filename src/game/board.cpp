@@ -122,7 +122,7 @@ const bits64 board::ordered_locations[10] = {
 
 
 
-void board::xot()
+void board::init_xot()
 {
 //   int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
 //   int index = rand() % xot_boards_size;
@@ -165,18 +165,6 @@ int board::get_mobility(bits64 moves) const
 }
 
 
-bool board::only_similar_siblings(const board* siblings, int n)
-{
-  const board x = siblings[0].to_database_board();
-  
-  for(int i=1;i<n;i++){
-    if(siblings[i].to_database_board() != x){
-      return false;
-    }
-  }
-  return true;  
-}
-
 int board::get_disc_diff() const
 {
   
@@ -194,63 +182,10 @@ int board::get_disc_diff() const
   return diff;
 }
 
-std::string board::to_html_table(int turn) const
+void board::show(int turn) const
 {
-  std::stringstream ss;
-    
-  std::string colors[2] = {"black","white"};
-  
-  
-  bits64 moves = get_valid_moves();
-  
-  // top line 
-  ss << "<table border='0' cellspacing='0' cellpadding='0'><tr>\n";
-  ss << "<td></td>\n";
-  for(int i=0;i<8;i++){
-    ss << "<td align='center'>" << (char)('a'+i) << "</td>\n";
-  }
-  ss << "</tr>";
-  
-  
-  for(int f=0;f<64;f++){
-    
-    // left line
-    if(f%8 == 0){
-      ss << "<tr><td width='15' align='center'>" << (char)('1'+(f/8)) << "</td>";
-    }
-    
-    bits64 thisbit = bits64().set(f);
-    ss << "<td><img src='" << IMAGE_PATH << "small/";
-    
-    if(me & thisbit){
-      ss << colors[turn] << ".png'>";
-    }
-    else if(opp & thisbit){
-      ss << colors[1-turn] << ".png'>";
-    }
-    else if(moves & thisbit){
-      
-      ss << "move_" << colors[turn] << ".png'>";
-    }  
-    else{
-      ss << "empty.png'>";
-    }
-    
-    ss << "</td>";
-    
-    // right line
-    if(f%8 == 7){
-      ss << "</tr>";
-    }
-  }
-  
-  // bottom line
-  ss << "</table>\n";
-  
-  return ss.str();
+  std::cout << to_ascii_art(turn);
 }
-
-
 
 
 std::string board::to_ascii_art(int turn) const
@@ -313,7 +248,12 @@ int board::position_to_index(const std::string& str)
   if(str == "--"){
     return -1;
   }
-  if(str.length()==2 && in_bounds(str[0],'a','h') && in_bounds(str[1],'1','8')){
+  if(str.length()==2 
+    && str[0]>='a'
+    && str[0]<='h'
+    && str[1]>='1'
+    && str[1]<='8'
+  ){
     return 8*(str[1] - '1') + str[0] - 'a';
   }
   return -2;
@@ -321,7 +261,7 @@ int board::position_to_index(const std::string& str)
 
 std::string board::index_to_position(int index)
 {
-  if(out_bounds(index,0,63)){
+  if(index>=0 && index<=63){
     return "??";
   }
   char s[3];
@@ -339,70 +279,43 @@ std::string board::to_string() const {
    * byte 32: \0
    */
   char res[33];  
-  const char* hex = "0123456789abcdef";
-  
-  for(int i=0;i<16;i++){
-    int j = (me >> (4*i)) & bits64(0xF);
-    res[i] = hex[j];
-    j = (opp >> (4*i)) & bits64(0xF);
-    res[16+i] = hex[j];
-  }
-  
+  snprintf(res,33,"%016lx%016lx",me.get_word(),opp.get_word());
   res[32] = '\0';
-  
   return std::string(res);  
 }
 
 board::board(const std::string& in){
-
-  opp = me = 0ull;
   bool error = false;
-  if(in.length() != 32){
-    error = true;
-  }
-  for(unsigned i=0;i<in.length();++i){
-    if(out_bounds(in[i],'0','9') && out_bounds(in[i],'a','f')){
+  do{
+    if(in.size() != 32){
       error = true;
+      break;
     }
-  }
-  
+    uint64_t me_tmp,opp_tmp;
+    
+    if(false
+      || sscanf((std::string("0x") + in.substr(0,16)).c_str(),"%lx",&me_tmp) < 0
+      || sscanf((std::string("0x") + in.substr(16,16)).c_str(),"%lx",&opp_tmp) < 0
+    ){
+      error = true;
+      break;
+    }
+    me.from_uint64(me_tmp);
+    opp.from_uint64(opp_tmp);
+   
+  }while(false);
   if(error){
-    std::cerr << "ERROR in board::board(): invalid string: \"" << in << "\".\n";
-    return;
+    std::cerr << "Error in board ctor from string!\n";
+    me = opp = 0ull;
   }
-  
-  
-  unsigned long long x;
-  for(int i=0;i<16;i++){
-    if((in[i]>='0') && (in[i]<='9')){
-      x = in[i]-'0';
-    }
-    else{
-      x = 10 + in[i] - 'a';      
-    }
-    me |= ((x & 0xF) << (i*4));
-  }
-  
-  for(int i=0;i<16;i++){
-    if((in[16+i]>='0') && (in[16+i]<='9')){
-      x = in[16+i]-'0';
-    }
-    else{
-      x = 10 + in[16+i] - 'a';      
-    }
-    opp |= ((x & 0xF) << (i*4));
-  }
-
-  
 }
 
 board board::do_random_moves(int count) const
 {
   board moves[32];
-  board* end = NULL;
   board res = *this;
   for(int i=0;i<count;i++){
-    end = res.get_children(moves);
+    board* end = res.get_children(moves);
     if(end == moves){
       return res;
     }
@@ -443,25 +356,6 @@ board board::to_database_board() const
   }
   
   return min; 
-}
-
-void board::get_frontier_discs(int* _me,int* _opp) const
-{
-  bits64 both = get_non_empty_fields();
-  bits64 mask = both;
-  
-  mask &= ((both << 9) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both << 8));
-  mask &= ((both << 7) & bits64(0x7F7F7F7F7F7F7F7F));
-  mask &= ((both << 1) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both >> 1) & bits64(0x7F7F7F7F7F7F7F7F));
-  mask &= ((both >> 7) & bits64(0xFEFEFEFEFEFEFEFE));
-  mask &= ((both >> 8));
-  mask &= ((both >> 9) & bits64(0x7F7F7F7F7F7F7F7F));
-  
-  *_me = mask & this->me;
-  *_opp = mask & this->opp;
-  
 }
 
 const bits64 board::dir_mask[64][8] = 

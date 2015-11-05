@@ -8,9 +8,6 @@ const std::string IMAGE_PATH = "./images/";
 // subdirectory where xml files containing ui are stored
 const std::string UI_PATH = "./xml/";
 
-// subdirectory where book data is stored
-const std::string BOOK_PATH = "./book/";
-
 // multiplication factor for heuristics when finding an exact score 
 const int EXACT_SCORE_FACTOR = 1000;
 

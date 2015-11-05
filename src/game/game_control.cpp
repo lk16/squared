@@ -6,11 +6,11 @@ game_control::game_control()
   quit_if_game_over = false;
   loop_game = false;
   show_board_flag = false;
-  use_book = false;
   use_xot = false;
+  do_forced_move = false;
   
   run_speed_test = false;
-  compress_book = false;
+  run_unit_test = false;
   pgn_task = NULL;
   random_moves = 0;
   learn_threads = 0;
@@ -29,9 +29,12 @@ game_control::game_control()
   
   current_state = last_redo = board_states;
   
+  mw = nullptr;
   
   current_state->b.reset();
   current_state->turn = BLACK;
+  
+  gettimeofday(&last_move_time,NULL);
 }
 
 
@@ -76,11 +79,14 @@ bool game_control::do_special_tasks()
     pgn_bot->set_search_depth(task->search_depth,task->perfect_depth);
     pgn_bot->disable_shell_output();
     pgn pgn_file(task->filename);
-    std::cout << pgn_file.analyse(pgn_bot,true,true);
+    std::cout << "pgn_file.analyse() is no longer implemented\n";
     delete pgn_bot;
     return true;
   }
-  
+  if(run_unit_test){
+    squared_unittest().run();
+    return true;
+  }
   if(run_speed_test){
     if(random_moves == 0){
       random_moves = 1;
@@ -89,7 +95,6 @@ bool game_control::do_special_tasks()
     
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
-    speedrun_bot->disable_book();
     std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
     std::cout << current_state->b.to_ascii_art(current_state->turn);
     std::cout << "Interrupt whenever you like.\n";
@@ -97,25 +102,13 @@ bool game_control::do_special_tasks()
       board dummy;
       speedrun_bot->set_search_depth(i,i);
       speedrun_bot->do_move(&current_state->b,&dummy);
-      long long speed = speedrun_bot->stats.get_nodes_per_second();
+      long long unsigned speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
       std::cout << speedrun_bot->stats.get_seconds() << " seconds.\n";
     }
     return true;
   }
-  
-  if(learn_threads != 0){
-    std::cout << "learn book: " << BOOK_PATH + bot_type + "_book.csv" << '\n';
-    book_t(BOOK_PATH + bot_type + "_book.csv").learn(bot_type,learn_threads);
-    return true;
-  }
-  
-  if(compress_book){
-    book_t(BOOK_PATH + bot_type + "_book.csv").clean();
-    return true;
-  }
-  
   if(tournament){
     tournament->run();
     return true;
@@ -174,6 +167,7 @@ void game_control::on_any_move()
   if(bot[BLACK] && bot[WHITE]){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
+  
 }
 
 
@@ -187,7 +181,7 @@ void game_control::on_undo()
       mw->update_status_bar("Cannot undo");
       return;
     }
-  }while(bot[undo->turn] || !undo->b.has_valid_moves());
+  }while(bot[undo->turn] || !undo->b.has_valid_moves() || (do_forced_move && (undo->b.count_valid_moves()==1)));
   current_state = undo;
   mw->update_fields();
 }
@@ -213,7 +207,7 @@ void game_control::on_new_game()
   
   current_state->b.reset();
   if(use_xot){
-    current_state->b.xot();
+    current_state->b.init_xot();
   }
   if(random_moves != 0){
     current_state->b = current_state->b.do_random_moves(random_moves);
@@ -264,9 +258,22 @@ void game_control::on_game_ended()
 
 bool game_control::timeout_handler()
 {
+  timeval now;
+  gettimeofday(&now,NULL);
+  long diff = 1000000*(now.tv_sec - last_move_time.tv_sec) + now.tv_usec - last_move_time.tv_usec;
+  if(diff < AUTO_MOVE_WAIT){
+    return true;
+  }
   if(bot[current_state->turn]){
     on_bot_do_move();  
   }
+  else if(do_forced_move && (current_state->b.count_valid_moves() == 1)){
+    ++current_state;
+    *current_state = *(current_state-1);
+    current_state->b.do_move(current_state->b.get_valid_moves().only_bit_index());
+    on_any_move();
+  }
+  gettimeofday(&last_move_time,NULL);
   return true;
 }
 

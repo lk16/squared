@@ -9,18 +9,18 @@ bot_moves::bot_moves(){
 
 
 
-int bot_moves::heuristic()
+int bot_moves::heuristic(const board* b)
 {
-  int res = inspected.count_valid_moves();
-  int opp_move_count = inspected.count_opponent_moves();
+  int res = b->count_valid_moves();
+  int opp_move_count = b->count_opponent_moves();
   if(res==0 && opp_move_count==0){
-    return EXACT_SCORE_FACTOR * inspected.get_disc_diff();
+    return EXACT_SCORE_FACTOR * b->get_disc_diff();
   }
   res -= opp_move_count;
   
   res += 3 *(
-      (inspected.me & board::location[board::X_SQUARES]).count() 
-      - (inspected.opp & board::location[board::X_SQUARES]).count()
+      (b->me & board::location[board::X_SQUARES]).count() 
+      - (b->opp & board::location[board::X_SQUARES]).count()
   );
   
   return res;

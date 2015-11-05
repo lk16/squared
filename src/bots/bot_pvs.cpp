@@ -1,237 +1,46 @@
 #include "bots/bot_pvs.hpp"
 
-void bot_pvs::do_sorting(board* children, int child_count)
+int bot_pvs::look_ahead(board* b)
 {
-  int heur[32];
-  
-  int tmp = moves_left;
-  moves_left = 2;
-  
-  for(int i=0;i<child_count;i++){
-    std::swap(inspected,children[i]);
-    moves_left--;
-    heur[i] = -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC);
-    moves_left++;
-    std::swap(inspected,children[i]);
-  }
-  
-  ugly_sort<board>(children,heur,child_count);
-  moves_left = tmp;
+  return -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC,b);
 }
 
-template<bool sort,bool exact>
-int bot_pvs::pvs(int alpha, int beta)
-{
   
-  if(sort && ((exact && (moves_left < NORMAL_MOVE_SORT_DEPTH)) || ((!exact) && (moves_left < PERFECT_MOVE_SORT_DEPTH)))){
-      return pvs<false,exact>(alpha,beta);
-  }
-
-  stats.inc_nodes();
-
-  
-  if((!exact) && moves_left == 0){
-    return heuristic();
-  }
-  
-  if((!exact) && get_use_book()){
-    book_t::value bv = book->lookup(&inspected,moves_left);
-    if(bv.best_move != book_t::NOT_FOUND){
-      return min(max(bv.heur,alpha),beta);
-    }
-  }
-  
-  bits64 moves = inspected.get_valid_moves();
-  if(moves.none()){
-    int heur;
-    inspected.switch_turn();
-    if(!inspected.has_valid_moves()){
-      heur = -inspected.get_disc_diff();
-      inspected.switch_turn();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR; 
-      }
-      return heur;  
-    }
-    heur = -pvs<sort,exact>(-beta,-alpha);
-    inspected.switch_turn();
-    return heur;
-  }
-    
-  board children[32]; 
-  int child_count = inspected.get_children(children,moves) - children;
-  
-  if(sort){
-    do_sorting(children,child_count);
-  }
-  
-  int score;
-  for(int i=0;i<child_count;i++){
-    std::swap<board>(inspected,children[i]);
-    moves_left--;
-    if(i==0){
-      score = -pvs<sort,exact>(-beta,-alpha);
-    }
-    else{
-      score = -pvs_null_window<exact>(-alpha-1);
-      if((alpha < score) && (score < beta)){
-        score = -pvs<sort,exact>(-beta,-score);
-      } 
-    }
-    moves_left++;
-    
-    std::swap<board>(inspected,children[i]);
-      
-    
-    if(score >= beta){
-      return beta;
-    }
-    alpha = max(alpha,score);
-  }
-  return alpha;
-    
-    
-}
-
 template<bool exact>
-int bot_pvs::pvs_null_window(int alpha)
-{
-  stats.inc_nodes();
-  
-  if((!exact) && moves_left == 0){
-    return heuristic();
-  }
-  
-  bits64 valid_moves = inspected.get_valid_moves();
-
-  if(valid_moves.none()){
-    int heur;
-    inspected.switch_turn();
-    if(inspected.get_valid_moves().none()){
-      heur = -inspected.get_disc_diff();
-      if(!exact){
-        heur *= EXACT_SCORE_FACTOR;
-      }
-    }
-    else{
-      heur = -pvs_null_window<exact>(-alpha-1);
-    }
-    inspected.switch_turn();
-    return heur;
-  }
-  
-  for(int i=0;i<9;i++){
-    bits64 location_moves = valid_moves & board::ordered_locations[i];
-    while(location_moves.any()){
-      bits64 bit = location_moves.first_bit();
-      int move = bit.only_bit_index();
-      bits64 undo_data = inspected.do_move(move);
-      moves_left--;
-      int score = -pvs_null_window<exact>(-alpha-1);
-      moves_left++;
-      inspected.undo_move(bit,undo_data);
-      if(score > alpha){
-        return alpha+1;
-      }
-      location_moves ^= bit;
-    }
-  }
-  return alpha;
-  
-}
-
-void bot_pvs::do_move_one_possibility(const board* b, board* res)
-{
-  board children[32];
-  b->get_children(children);
-  *res = children[0];
-  set_last_move_heur(NO_HEUR_AVAILABLE);
-  output() << "only one valid move found, evaluation skipped.\n";
-}
-
-bool bot_pvs::do_move_book(const board* b, board* res)
-{
-  if(get_use_book()){
-    book_t::value lookup = book->lookup(b,get_search_depth());
-    if(lookup.best_move != book_t::NOT_FOUND){
-      *res = *b;
-      res->do_move(lookup.best_move);
-      output() << "bot_" << get_name() << " found best move (";
-      output() << board::index_to_position(lookup.best_move);
-      output() << ") in book at depth " << lookup.depth;
-      output() << ", heuristic " << lookup.heur << '\n';
-      set_last_move_heur(lookup.heur);
-      return true;
-    }
-  }
-  return false;
-}
-template<bool exact>
-void bot_pvs::do_move_search(const board* b, board* res)
+void bot_pvs::search(const board* b, board* res)
 {
   stats.start_timer();
   
   board children[32];
-  int child_count = b->get_children(children) - children;
-  
-  if(board::only_similar_siblings(children,child_count)){
-    output() << "bot_" << get_name() << " sees that all moves are similar.\n";
-    set_last_move_heur(0);
-    *res = children[0];
-    return;
-  }
+  board* child_end = b->get_children(children);
   
   
   output() << "bot_" << get_name() << " searching ";
   if(exact){
     output() << "perfectly at depth " << b->count_empty_fields() << '\n';
   }
-  else{ 
+  else{
     output() << "at depth " << get_search_depth() << '\n';
-  }
-  
-  if(exact && (b->count_empty_fields() > PERFECT_MOVE_SORT_DEPTH)){
-    do_sorting(children,child_count);
-  }
-  
-  if((!exact) && get_search_depth() > NORMAL_MOVE_SORT_DEPTH){
-    do_sorting(children,child_count);
   }
 
   moves_left = get_search_depth();
   
+  const int worst_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
+  int best_heur = worst_heur;
 
-  
-  int best_heur,best_id=0;
-  
-  best_heur = exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC;
-  for(int id=0;id<child_count;++id){
-    inspected = children[id];
+  for(board* child=children;child!=child_end;++child){
     moves_left--;
-    int cur_heur = -pvs<true,exact>(exact ? MIN_PERFECT_HEURISTIC : MIN_HEURISTIC,-best_heur);
+    int cur_heur = -pvs<exact,true>(worst_heur,-best_heur,child);        
     moves_left++;
     if(cur_heur > best_heur){
       best_heur = cur_heur;
-      best_id = id;
+      *res = *child;
     }
-    output() << "move " << (id+1) << "/" << (child_count);
-    output() << " (" << board::index_to_position(b->get_move_index(children+id)) << ')';
-    output() << ": " << best_heur << '\n';
-  }
-  
-  set_last_move_heur(best_heur);
-  *res = children[best_id];
-  
-  if((!exact) && get_use_book()){
-    int move = b->get_move_index(res);
-    book_t::value v(move,get_search_depth(),best_heur);
+    output() << "move " << (child-children+1) << "/" << (child_end-children) << ": ";
+    output() << best_heur << '\n';
     
-    if(book->add(b,&v)){
-      output() << "board was added to book\n";
-    }
-  }
-  
-  
+  }     
+
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -240,19 +49,167 @@ void bot_pvs::do_move_search(const board* b, board* res)
   
 }
 
+void bot_pvs::sort_children(board* children, board* child_end)
+{
+  int swap_var = ESTIMATE_DEPTH;
+  std::swap<int>(swap_var,moves_left);
+  int best_estimation = look_ahead(&children[0]);
+  for(board* child=children+1;child!=child_end;++child){
+    int estimation = look_ahead(child);
+    if(estimation > best_estimation){
+      std::swap<board>(children[0],*child);
+      best_estimation = estimation;
+    }
+  }
+  std::swap<int>(swap_var,moves_left);
+}
+
+
+template<bool exact,bool sorted>
+int bot_pvs::pvs(int alpha, int beta,board* b)
+{
+  if((!exact) && moves_left==0){
+    return heuristic(b);
+  }
+  
+  if(sorted && moves_left < MIN_SORT_DEPTH){
+    return pvs<exact,false>(alpha,beta,b);
+  }
+  
+  
+  stats.inc_nodes();
+  bits64 valid_moves = b->get_valid_moves();
+  if(valid_moves.none()){
+    board copy = *b;
+    copy.switch_turn();
+    if(copy.has_valid_moves()){
+      return -pvs<exact,sorted>(-beta,-alpha,&copy);
+    }
+    else{
+      return (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
+    }
+  }
+  
+
+  
+  
+  if(sorted){
+    board children[32];
+    board* child_end = b->get_children(children,valid_moves);
+
+    if(!exact){
+      sort_children(children,child_end);
+    }
+    
+    for(board* child=children;child!=child_end;++child){
+      --moves_left;
+      int heur; 
+      if(child == children){
+        heur = -pvs<exact,sorted>(-beta,-alpha,child);
+      }
+      else{
+        heur = -pvs_null_window<exact>(-alpha-1,child);
+        if(heur > alpha && heur < beta){
+          heur = -pvs<exact,sorted>(-beta,-heur,child);
+        }
+      }
+      ++moves_left;
+      if(alpha >= beta){
+        alpha = beta;
+        break;
+      }
+      if(heur > alpha){
+        alpha = heur;
+      }
+    }
+  }
+  else{
+    bits64 undo_data;
+    int heur;
+    bool first = true;
+    while(valid_moves.any()){
+      bits64 move_bit = valid_moves.first_bit();
+      int move = move_bit.only_bit_index();
+      --moves_left;
+      undo_data = b->do_move(move);
+      if(first){
+        heur = -pvs<exact,sorted>(-beta,-alpha,b);
+        first = false;
+      }
+      else{
+        heur = -pvs_null_window<exact>(-alpha-1,b);
+        if(heur > alpha && heur < beta){
+          heur = -pvs<exact,sorted>(-beta,-heur,b);
+        }
+      }
+      b->undo_move(move_bit,undo_data);
+      ++moves_left;
+      if(alpha >= beta){
+        alpha = beta;
+        break;
+      }
+      if(heur > alpha){
+        alpha = heur;
+      }
+      valid_moves ^= move_bit;
+    }
+  }
+  return alpha;
+}
+
+template<bool exact>
+int bot_pvs::pvs_null_window(int alpha,board* b)
+{
+  
+  if((!exact) && moves_left==0){
+    return heuristic(b) > alpha ? (alpha+1) : alpha;
+  }
+ 
+  stats.inc_nodes();
+  bits64 valid_moves = b->get_valid_moves();
+  if(valid_moves.none()){
+    board copy = *b;
+    copy.switch_turn();
+    if(copy.has_valid_moves()){
+      return -pvs_null_window<exact>(-alpha-1,&copy);
+    }
+    else{
+      int heur = (exact ? -1 : -EXACT_SCORE_FACTOR) * copy.get_disc_diff();
+      return (heur > alpha) ? (alpha+1) : alpha;
+    }
+  }
+  bits64 undo_data;
+  while(valid_moves.any()){
+    bits64 move_bit = valid_moves.first_bit();
+    int move = move_bit.only_bit_index();
+    --moves_left;
+    undo_data = b->do_move(move);
+    int heur = -pvs_null_window<exact>(-alpha-1,b);
+    b->undo_move(move_bit,undo_data);
+    ++moves_left;
+    if(heur > alpha){
+      return alpha+1;
+    }
+    valid_moves ^= move_bit;
+  }
+  return alpha;
+}
+
 void bot_pvs::do_move(const board* b,board* res)
 {
   if(b->count_valid_moves() == 1){
-    do_move_one_possibility(b,res);
+    board children[32];
+    b->get_children(children);
+    *res = children[0];
+    std::cout << "Only one valid move, evaluation skipped.\n";
+    return;
   }
-  else if(do_move_book(b,res)){
-    (void)0;
-  }  
-  else if(b->count_empty_fields() > get_perfect_depth()){
-    do_move_search<false>(b,res);
+  board copy(*b);
+  if(b->count_empty_fields() > get_perfect_depth()){
+    search<false>(&copy,res);
   }
   else{
-    do_move_search<true>(b,res);
+    search<true>(&copy,res);
   }
 }
 

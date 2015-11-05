@@ -7,12 +7,6 @@ bot_random::bot_random()
   set_name("random");
 }
 
-void bot_random::disable_book()
-{
-  // do nothing
-}
-
-
 void bot_random::do_move(const board* in, board* out)
 {
   board moves[32];

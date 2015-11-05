@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 
@@ -12,6 +13,7 @@
 #include "util/bitset.hpp"
 #include "util/macros.hpp"
 #include "util/math.hpp"
+#include "util/string.hpp"
 
 struct board;
 
@@ -90,7 +92,7 @@ struct board{
   
   // init with random xot board
   // thanks to http://berg.earthlingz.de/xot/download.php?lang=en
-  void xot();
+  void init_xot();
   
   // switches me and opp
   board* switch_turn();
@@ -126,9 +128,6 @@ struct board{
   // returns the number of opponent moves  
   int count_opponent_moves() const;
   
-  // counts frontier discs
-  void get_frontier_discs(int* me,int* opp) const;
-  
   // returns a bitset of empty fields
   bits64 get_empty_fields() const;
   
@@ -145,9 +144,8 @@ struct board{
   // adjusts colors for the right turn
   std::string to_ascii_art(int turn) const;
   
-  // returns html code displaying *this
-  // adjusts colors for the right turn
-  std::string to_html_table(int turn) const;
+  // prints this->ascii_art() to cout
+  void show(int turn) const;
   
   // returns disc count difference 
   // positive means me has more than opp
@@ -165,15 +163,13 @@ struct board{
   // reverses position_to_index
   static std::string index_to_position(int index);
   
+  // does move field_id
   template<int field_id>
   bits64 do_move_internally();
   
   // undoes move field_id, flips back all discs represented by undo_data
   void undo_move(bits64 move_bit,bits64 undo_data); 
-  
-  // returns whether all children are the same modulo rotation/mirroring
-  static bool only_similar_siblings(const board* siblings,int n);
-  
+
   // returns string representation of *this
   std::string to_string() const;
   
@@ -202,7 +198,7 @@ struct board{
 
 struct board_hash {
   size_t operator()(const board b) const{
-    return b.me ^ ((b.opp << 32) | (b.opp >> 32));
+    return ((b.me*17ull)%0xFFFFFFFFFFFFFFull) + ((b.opp*37ull)%0xFFFFFFFFFFFFFDull);
   }
 };
 
@@ -216,8 +212,9 @@ inline bits64 board::do_move(int move_id)
 
 inline int board::get_move_index(const board* after) const
 {
-  return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_bit();
+  return (get_non_empty_fields() ^ after->get_non_empty_fields()).first_index();
 }
+
 
 
 
@@ -251,7 +248,7 @@ inline board& board::operator=(const board& b)
 
 inline bool board::operator==(const board& b) const
 {
-  return me==b.me && opp==b.opp;
+  return (me == b.me) && (opp == b.opp);
 }
 
 inline bool board::operator!=(const board& b) const
@@ -268,7 +265,10 @@ inline board* board::switch_turn()
 
 inline bool board::operator<(const board& b) const
 {
-  return this->to_database_string() < b.to_database_string();
+  if(me != b.me){
+    return me < b.me;
+  }
+  return opp < b.opp;
 }
 
 inline bits64 board::get_empty_fields() const
@@ -317,6 +317,7 @@ bits64 res = 0ull;
   // this funtion is a modified version of code from Edax
   const bits64 mask = opp & bits64(0x7E7E7E7E7E7E7E7Eull);
 
+  
   flip_l = mask & (me << 1);
   flip_l |= mask & (flip_l << 1);
   mask_l = mask & (mask << 1);
@@ -406,11 +407,11 @@ inline bits64 board::do_move_internally()
     bits64 line = mask[d];
     if(d<4){
       int end = (line & me).last_index();
-      line.reset_after(end);
+      line.reset_before(end);
     }
     else{
       int end = (line & me).first_index();
-      line.reset_before(end);
+      line.reset_after(end);
     }
     flipped |= line.is_subset_of_mask(opp) & line;
   }

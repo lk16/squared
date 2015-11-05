@@ -10,12 +10,12 @@ bot_ali::bot_ali()
   set_name("ali");
 }
 
-int bot_ali::heuristic()
+int bot_ali::heuristic(const board* b)
 {
   int heur = 0;
   for(int i=0;i<10;++i){
     heur += bot_ali::location_values[i] * ( 
-      (inspected.me & board::location[i]).count() - (inspected.opp & board::location[i]).count()
+      (b->me & board::location[i]).count() - (b->opp & board::location[i]).count()
     );
   }
   return heur;

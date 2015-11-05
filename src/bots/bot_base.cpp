@@ -3,31 +3,11 @@
 
 bot_base::bot_base():
   name("base"),
-  output_stream(&std::cout),
-  book(nullptr)
+  output_stream(&std::cout)
 {
+  search_depth = -1;
+  perfect_depth = -1;
 }
-
-void bot_base::set_last_move_heur(int heur)
-{
-  last_move_heur = heur;
-}
-
-
-int bot_base::get_last_move_heur() const
-{
-  return last_move_heur;
-}
-
-int bot_base::rough_prediction(const board* b) const
-{
-  (void)b;
-  std::cout << "warning: bot_" << get_name() << " did not implement ";
-  std::cout << " rough_prediction()\n";
-  return 0;
-}
-
-
 
 int bot_base::get_search_depth() const
 {
@@ -91,14 +71,6 @@ void bot_base::stat_t::inc_nodes()
   nodes++;
 }
 
-void bot_base::disable_book()
-{
-  if(book){
-    delete book;
-    book = nullptr;
-  }
-}
-
 void bot_base::disable_shell_output()
 {
   output_stream = new dummystream;
@@ -119,14 +91,8 @@ std::ostream& bot_base::output()
   return *output_stream;
 }
 
-bool bot_base::get_use_book() const
-{
-  return book!=nullptr;
-}
 
 void bot_base::on_new_game()
 {
-  if(get_use_book()){
-    book->reload();
-  }
+  return;
 }

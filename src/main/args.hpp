@@ -22,15 +22,12 @@ struct squared_args:
   int show_help();
   int show_board();
   int testing_area_mask();
-  int learn();
   int set_board();
   int randomize_board();
   int set_level();
   int add_black_bot();
   int add_white_bot();
-  int compress_book();
   int quit_if_game_over();
-  int no_book();
   int set_white_valuation();
   int set_black_valuation();
   int train_bot_ali();
@@ -40,4 +37,6 @@ struct squared_args:
   int process_pgn();
   int use_xot();
   int tournament_flag();
+  int flag_unittests();
+  int flag_forced_move();
 };

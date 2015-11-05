@@ -6,11 +6,11 @@
 #include <sys/time.h>
 
 #include "bots/bot_register.hpp"
-#include "book/book.hpp"
 #include "game/board.hpp"
 #include "util/const.hpp"
 #include "util/math.hpp"
 #include "util/dummystream.hpp"
+#include "util/string.hpp"
 
 class bot_base{
 
@@ -20,7 +20,6 @@ class bot_base{
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
-  int last_move_heur;
   
 public: 
   
@@ -39,11 +38,7 @@ public:
     void reset();
   };
   
-  
-  static const int NO_HEUR_AVAILABLE = 1000000;
-  
   stat_t stats;
-  book_t* book;
   
   // ctor
   bot_base();
@@ -57,10 +52,6 @@ public:
   // perform some action when a new game starts
   virtual void on_new_game();
   
-  // does a very rough prediction on the perfect play
-  virtual int rough_prediction(const board* b) const;
-  
-  
   // output stream to be used instead of std::cout
   // may for example return reference to dummystream
   std::ostream& output();
@@ -69,20 +60,27 @@ public:
   
   int get_perfect_depth() const;
   
-  bool get_use_book() const;
-  
   std::string get_name() const;
-  
-  int get_last_move_heur() const;
-  
-  void set_last_move_heur(int heur);
   
   void set_search_depth(int _search_depth,int _perfect_depth);
   
   void set_name(const std::string& _name);
-  
-  void disable_book();
-  
+    
   void disable_shell_output();
   
 };
+
+struct ht_item{
+  // ctor
+  ht_item(int u,int l): upper_bound(u),lower_bound(l){}
+  
+  // ctor
+  ht_item(int u,int l,int pv): upper_bound(u),lower_bound(l),pv_move(pv){}
+  
+  // bounds
+  int upper_bound,lower_bound;
+  
+  // principle variation
+  int pv_move;
+};
+

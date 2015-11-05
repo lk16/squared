@@ -7,12 +7,10 @@
 #include <string>
 
 #include "util/const.hpp"
-#include "util/csv.hpp"
 #include "util/math.hpp"
 #include "util/macros.hpp"
 #include "util/string.hpp"
 #include "bots/bot_pvs.hpp"
-#include "book/book.hpp"
 
 struct bot_ali:
   public bot_pvs
@@ -30,7 +28,7 @@ struct bot_ali:
   virtual void on_new_game();
   
   // calculates the heuristic for this->inspected
-  int heuristic();
+  virtual int heuristic(const board* b);
 
   
 };

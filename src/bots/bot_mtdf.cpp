@@ -27,21 +27,6 @@ void bot_mtdf::do_move_one_possibility(const board* b, board* res)
   output() << "only one valid move found, evaluation skipped.\n";
 }
 
-bool bot_mtdf::do_move_book(const board* b, board* res)
-{
-  if(get_use_book()){
-    book_t::value lookup = book->lookup(b,get_search_depth());
-    if(lookup.best_move != book_t::NOT_FOUND){
-      *res = *b;
-      res->do_move(lookup.best_move);
-      output() << "bot_" << get_name() << " found best move (" << lookup.best_move;
-      output() << ") in book at depth " << lookup.depth << '\n';
-      return true;
-    }
-  }
-  return false;
-}
-
 template<bool exact>
 void bot_mtdf::do_move_search(const board* b, board* res)
 {
@@ -50,14 +35,6 @@ void bot_mtdf::do_move_search(const board* b, board* res)
  
   board children[32];
   int child_count = b->get_children(children) - children;
-  
-  if(board::only_similar_siblings(children,child_count)){
-    output() << "bot_" << get_name() << " sees that all moves are similar.\n";
-    set_last_move_heur(0);
-    *res = children[0];
-    return;
-  }
-  
   
   output() << "bot_" << get_name() << " searching ";
   if(exact){
@@ -104,18 +81,6 @@ void bot_mtdf::do_move_search(const board* b, board* res)
     output() << ": " << best_heur << '\n';    
   }
   
-  set_last_move_heur(best_heur);
-  
-  if((!exact) && get_use_book()){
-    int move = b->get_move_index(res);
-    book_t::value v(move,get_search_depth(),best_heur);
-    
-    if(book->add(b,&v)){
-      output() << "board was added to book\n";
-    }
-  }
-  
-  
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -133,11 +98,7 @@ void bot_mtdf::do_move(const board* b,board* res)
   if(b->count_valid_moves() == 1){
     do_move_one_possibility(b,res);
     return;
-  }
-  if(do_move_book(b,res)){
-    return;
   }  
-  
   if(b->count_empty_fields() > get_perfect_depth()){
     hash_table.clear();
     do_move_search<false>(b,res);
@@ -169,9 +130,8 @@ int bot_mtdf::mtdf(int f,int lower_bound)
 {
   int g = f;
   int upper_bound = MAX_HEURISTIC;
-  int beta;
   while(upper_bound > lower_bound){
-    beta = g + ((g==lower_bound) ? (exact ? 2 : 1) : 0);
+    int beta = g + ((g==lower_bound) ? (exact ? 2 : 1) : 0);
     std::cout << "g = " << g << '\n';
     g = -null_window<sort,exact>(-beta);
     if(g < beta){

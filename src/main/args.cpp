@@ -10,21 +10,13 @@ squared_args::squared_args(int argc,const char **argv):
   add_modifier("--show",&squared_args::show_board,"","Print a specified board to standard output and exit. Useful for developers.");
   duplicate_modifier("-s","--show");
   
-  add_modifier("--learn",&squared_args::learn,"<num_threads>","Learn the book with.");
-  duplicate_modifier("-l","--learn");
-  
   add_modifier("--random-moves",&squared_args::randomize_board,"<num_moves>","Transform board by doing random moves.");
   duplicate_modifier("-r","--random-moves");
   
   add_modifier("--board",&squared_args::set_board,"<board_string>,","Set the start board.");
   duplicate_modifier("-b","--board");
   
-  add_modifier("--compress-book",&squared_args::compress_book,"","Remove incorrect and duplicate entries from the book.");
-  duplicate_modifier("-cb","--compress-book");
-  
   add_modifier("-q",&squared_args::quit_if_game_over,"","Quit the program after one game.");
-  
-  add_modifier("-nb",&squared_args::no_book,"","Disable the opening book.");
   
   add_modifier("--bot-type",&squared_args::set_bot_type,"<bot_name>","Specify the bot type to use.");
   
@@ -43,7 +35,21 @@ squared_args::squared_args(int argc,const char **argv):
   add_modifier("-wbot",&squared_args::add_white_bot,"","Enable a black bot. Can be used in combination with white bot.");
   
   add_modifier("--tournament",&squared_args::tournament_flag,"Mix of {-lvl <search_depth> <perfect_depth>} and any bot name","Runs a tournament between bots. Change in level applies to bots specified after the bot names only.");
+
+  add_modifier("--unittest",&squared_args::flag_unittests,"","Run unittests");
+  duplicate_modifier("-u","--unittest");
+
+  add_modifier("--forced-moves",&squared_args::flag_forced_move,"","When only one move is possible, do it automatically.");
+  duplicate_modifier("-f","--forced-moves");
+  
 }
+
+int squared_args::flag_forced_move()
+{
+  gc->do_forced_move = true;
+  return 1;
+}
+
 
 int squared_args::use_xot()
 {
@@ -59,6 +65,12 @@ int squared_args::process_pgn()
   gc->pgn_task = new pgn_task_t;
   gc->pgn_task->filename = get_subarg(1);
   gc->run_windowed_game = false;
+  return PARSING_IGNORE_OTHER_ARGS;
+}
+
+int squared_args::flag_unittests()
+{
+  gc->run_unit_test = true;
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -89,11 +101,6 @@ int squared_args::loop_game()
   return 1;
 }
 
-int squared_args::no_book()
-{
-  gc->use_book = false;
-  return 1;
-}
 
 int squared_args::show_board(){
   gc->show_board_flag = true;
@@ -103,15 +110,6 @@ int squared_args::show_board(){
 int squared_args::testing_area_mask(){
   gc->run_windowed_game = false;
   testing_area();
-  return PARSING_IGNORE_OTHER_ARGS;
-}
-
-int squared_args::learn(){
-  if(!has_enough_subargs(1)){
-    return PARSING_ERROR;
-  }
-  gc->run_windowed_game = false;
-  gc->learn_threads = from_str<int>(get_subarg(1));
   return PARSING_IGNORE_OTHER_ARGS;
 }
 
@@ -154,13 +152,6 @@ int squared_args::randomize_board()
   }
   gc->random_moves = from_str<int>(get_subarg(1));
   return 2;
-}
-
-int squared_args::compress_book()
-{
-  gc->run_windowed_game = false;
-  gc->compress_book = true;
-  return PARSING_IGNORE_OTHER_ARGS;
 }
 
 int squared_args::quit_if_game_over()
