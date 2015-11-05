@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <vector>
 
 #include <gtkmm.h>
 #include <gtkmm/stock.h>
@@ -27,9 +28,8 @@ public:
   // shows board b
   main_window(const game_control& gc);
 
-  
-  /* update from control.current */
-  void update_fields();
+  /* update from before_state to after_state */
+  void update_fields(const game_control::board_state_t* before_state,const game_control::board_state_t* after_state);
   
   /* allow easy updating of the statusbar */
   void update_status_bar(const std::string& text);
@@ -61,5 +61,6 @@ protected:
   Glib::RefPtr<Gtk::ActionGroup> action_group;
   std::string ui_file;
 
+  game_control::board_state_t *last_state;
 
 };

@@ -122,39 +122,66 @@ void main_window::on_menu_settings_preferences()
   }
 }
 
-void main_window::update_fields()
-{
-  std::string imagefile;
-  const game_control::board_state_t* state = control->current_state;
 
-  bits64 white = state->b.me;
-  bits64 black = state->b.opp;
+
+
+void main_window::update_fields(
+  const game_control::board_state_t* before_state,
+  const game_control::board_state_t* after_state
+){
+  bits64 before_white = before_state->b.me;
+  bits64 before_black = before_state->b.opp;
+  bits64 after_white = after_state->b.me;
+  bits64 after_black = after_state->b.opp;
   
-  if(state->turn == BLACK){
-    std::swap(white,black);
+  if(before_state->turn == BLACK){
+    std::swap(before_white,before_black);
   }
-  
-  
-  
+  if(after_state->turn == BLACK){
+    std::swap(after_white,after_black);
+  }
+
+  std::string before_str[64];
   for(int i=0;i<64;i++){
-    if(white.test(i)){
-      imagefile = "white.png";
+    if(before_white.test(i)){
+      before_str[i] = "white";
     }
-    else if(black.test(i)){
-      imagefile = "black.png";
+    else if(before_black.test(i)){
+      before_str[i] = "black";
     }
-    else if(state->b.is_valid_move(i)){
-      if(state->turn == WHITE){
-        imagefile = "move_white.png";
+    else if(before_state->b.is_valid_move(i)){
+      if(before_state->turn == WHITE){
+        before_str[i] = "move_white";
       }
       else{
-        imagefile = "move_black.png";
+        before_str[i] = "move_black";
       }
     }
     else{
-      imagefile = "empty.png";
+      before_str[i] = "empty";
     }
-    fields[i%8][i/8].set_image(IMAGE_PATH + imagefile);
+  }
+  
+  std::string after_str;
+  for(int i=0;i<64;i++){
+    if(after_white.test(i)){
+      after_str = "white";
+    }
+    else if(after_black.test(i)){
+      after_str = "black";
+    }
+    else if(after_state->b.is_valid_move(i)){
+      if(after_state->turn == WHITE){
+        after_str = "move_white";
+      }
+      else{
+        after_str = "move_black";
+      }
+    }
+    else{
+      after_str = "empty";
+    }
+    fields[i%8][i/8].set_image(IMAGE_PATH + before_str[i] + "_to_" + after_str + ".gif");
   }
 }
 

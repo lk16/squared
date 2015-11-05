@@ -75,6 +75,13 @@ add_executable(squared
   ${SOURCE_FILES}
 )
 
+
+add_custom_command(
+  TARGET ${PROJECT_NAME}
+  PRE_BUILD
+  COMMAND cd ./images && ./create_gifs.sh
+)
+
 target_link_libraries(squared
   ${GTKMM_LIBRARIES}
   ${GLIBMM_LIBRARIES}
