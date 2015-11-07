@@ -7,6 +7,7 @@ bot_base::bot_base():
 {
   search_depth = -1;
   perfect_depth = -1;
+  state = BOT_NOT_STARTED;
 }
 
 int bot_base::get_search_depth() const
