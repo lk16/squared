@@ -39,7 +39,7 @@ tournament_t::game_result tournament_t::play_othello_game(bot_base* black, bot_b
         break;
       }
     }
-    p[turn]->do_move(&b,&b);
+    p[turn]->do_move_no_thread(&b,&b);
     turn = 1-turn;
   }
   int me,opp;

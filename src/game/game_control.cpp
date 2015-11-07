@@ -101,7 +101,7 @@ bool game_control::do_special_tasks()
     for(int i=1;i<=60;i++){
       board dummy;
       speedrun_bot->set_search_depth(i,i);
-      speedrun_bot->do_move(&current_state->b,&dummy);
+      speedrun_bot->do_move_no_thread(&current_state->b,&dummy);
       long long unsigned speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
@@ -138,7 +138,7 @@ void game_control::on_bot_do_move()
   
   ++current_state;
   *current_state = *(current_state-1);
-  get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
+  get_bot_to_move()->do_move_no_thread(&(current_state-1)->b,&current_state->b);
   on_any_move(); 
 }
 

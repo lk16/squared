@@ -1,9 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <atomic>
 #include <ctime>
 #include <string>
 #include <sys/time.h>
+#include <thread>
 
 #include "bots/bot_register.hpp"
 #include "game/board.hpp"
@@ -14,12 +16,30 @@
 
 class bot_base{
 
+  enum bot_state{
+    BOT_NOT_STARTED,
+    BOT_THINKING,
+    BOT_DONE
+  };
 
+protected:
   
   std::string name;
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
+  
+  // perform a move on board in, put result in out
+  virtual void do_move(const board* in,board* out) = 0;
+  
+  void do_move_thread_func(const board* in);
+  
+  std::atomic<bot_state> state;
+  
+  // result of launch_do_move_thread
+  board move_thread_result;
+ 
+  std::thread* thinking_thread;
   
 public: 
   
@@ -38,7 +58,12 @@ public:
     void reset();
   };
   
+
+  
   stat_t stats;
+  
+
+  
   
   // ctor
   bot_base();
@@ -46,8 +71,17 @@ public:
   // dtor
   virtual ~bot_base() = default;
 
-  // perform a move on board in, put result in out
-  virtual void do_move(const board* in,board* out) = 0;
+  // launch thread with do move, or do nothing depending on state
+  bot_state launch_do_move_thread(const board* in);
+  
+  // get result from move thread, WARNING only valid info if state == BOT_DONE
+  board get_move_thread_result() const;
+  
+  // run do_move in same thread
+  void do_move_no_thread(const board* in,board* out);
+  
+  
+
   
   // perform some action when a new game starts
   virtual void on_new_game();
