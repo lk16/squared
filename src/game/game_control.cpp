@@ -136,9 +136,25 @@ void game_control::on_bot_do_move()
     return;
   }
   
-  ++current_state;
-  *current_state = *(current_state-1);
+
+#if 0
   get_bot_to_move()->do_move_no_thread(&(current_state-1)->b,&current_state->b);
+#else
+  bot_base::state_t state = get_bot_to_move()->launch_do_move_thread(&current_state->b);
+  switch(state){
+    case bot_base::BOT_NOT_STARTED:
+    case bot_base::BOT_THINKING:
+      std::cout << "Waiting for bot result\n";
+      break;
+    case bot_base::BOT_DONE:
+      std::cout << "bot result available!\n";
+      ++current_state;
+      *current_state = *(current_state-1);
+      current_state->b = get_bot_to_move()->get_move_thread_result();
+    default:
+      std::cout << "WARNING: game_control::on_bot_do_move() received in valid state\n";
+  }
+#endif
   on_any_move(); 
 }
 

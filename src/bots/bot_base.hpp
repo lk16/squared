@@ -16,7 +16,9 @@
 
 class bot_base{
 
-  enum bot_state{
+public:
+  
+  enum state_t{
     BOT_NOT_STARTED,
     BOT_THINKING,
     BOT_DONE
@@ -34,7 +36,7 @@ protected:
   
   void do_move_thread_func(const board* in);
   
-  std::atomic<bot_state> state;
+  std::atomic<state_t> state;
   
   // result of launch_do_move_thread
   board move_thread_result;
@@ -72,7 +74,7 @@ public:
   virtual ~bot_base() = default;
 
   // launch thread with do move, or do nothing depending on state
-  bot_state launch_do_move_thread(const board* in);
+  state_t launch_do_move_thread(const board* in);
   
   // get result from move thread, WARNING only valid info if state == BOT_DONE
   board get_move_thread_result() const;
@@ -80,8 +82,8 @@ public:
   // run do_move in same thread
   void do_move_no_thread(const board* in,board* out);
   
-  
-
+  // sets state to BOT_NOT_STARTED, but only if state is BOT_DONE
+  void reset_state();
   
   // perform some action when a new game starts
   virtual void on_new_game();
