@@ -149,6 +149,7 @@ void game_control::on_bot_do_move()
       break;
     case bot_base::BOT_DONE:
       std::cout << "bot result available!\n";
+      ++current_state;
       current_state->b = the_bot->get_move_thread_result();
       the_bot->reset_state();
       break;

@@ -36,7 +36,7 @@ protected:
   
   void do_move_thread_func(const board* in);
   
-  std::atomic<state_t> state;
+  volatile state_t state;
   
   // result of launch_do_move_thread
   board move_thread_result;
