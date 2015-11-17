@@ -20,15 +20,15 @@ struct board;
 extern bits64 (board::* const move_funcs[64])();
 
 struct board{
- 
+
   // location on board, as displayed below
-  static const bits64 location[10];    
-  
+  static const bits64 location[10];
+
   static const bits64 ordered_locations[10];
- 
+
   static const bits64 dir_mask[64][8];
-  
-  
+
+
   // 0,1,2,3,3,2,1,0,
   // 1,4,5,6,6,5,4,1,
   // 2,5,7,8,8,7,5,2,
@@ -37,14 +37,14 @@ struct board{
   // 2,5,7,8,8,7,5,2,
   // 1,4,5,6,6,5,4,1,
   // 0,1,2,3,3,2,1,0
-  
+
   enum square_names{
     X_SQUARES = 0,
     C_SQUARES = 1,
     B_SQUARES = 2,
     A_SQUARES = 3
   };
-  
+
   enum fields{
     A1,A2,A3,A4,A5,A6,A7,A8,
     B1,B2,B3,B4,B5,B6,B7,B8,
@@ -59,141 +59,141 @@ struct board{
 
   // discs of player to move
   bits64 me;
-  
+
   // discs of other player
   bits64 opp;
-  
+
   // does NOTHING; call reset() to initialize
   board();
-  
+
   // copy ctor
   board(const board& b);
 
   // move ctor
   board(const board&& b);
-  
+
   // ctor from string returned by board::to_string()
   board(const std::string& in);
-  
+
   // assigns a board from b
   board& operator=(const board& b);
-  
+
   // checks for board equality
   bool operator==(const board& b) const;
-  
+
   // checks for board inequality
   bool operator!=(const board& b) const;
-  
+
   // checks for ordering
   bool operator<(const board& b) const;
- 
+
   // resets the board to starting position
   void reset();
-  
+
   // init with random xot board
   // thanks to http://berg.earthlingz.de/xot/download.php?lang=en
   void init_xot();
-  
+
   // switches me and opp
   board* switch_turn();
-  
+
   // checks whether field_id is a valid move
   // WARNING not efficient
   bool is_valid_move(int field_id) const;
-    
+
   // returns a bitset of valid moves
   bits64 get_valid_moves() const;
-    
+
   // returns a copy of *this after count random moves
   board do_random_moves(int count) const;
-  
+
   // gets all children from this board
   // returns a pointer to the last found child
   board* get_children(board* out) const;
-  
+
   // gets all children from this board
   // returns a pointer to the last found child
   // use this when valid moves are known
   board* get_children(board* out,bits64 moves) const;
-  
+
   // returns whether this board has any valid moves
   bool has_valid_moves() const;
-  
+
   // returns the number of valid moves
   int count_valid_moves() const;
-  
+
   // returns whether the opponent has moves
   bool opponent_has_moves() const;
-  
-  // returns the number of opponent moves  
+
+  // returns the number of opponent moves
   int count_opponent_moves() const;
-  
+
   // returns a bitset of empty fields
   bits64 get_empty_fields() const;
-  
+
   // returns a bitset of non empty fields
   bits64 get_non_empty_fields() const;
-  
+
   // returns the amount of discs on the board
   int count_discs() const;
-  
+
   // returns the amount of empty fields on the board
   int count_empty_fields() const;
-    
+
   // returns string displaying this in a ascii art kind of way
   // adjusts colors for the right turn
   std::string to_ascii_art(int turn) const;
-  
+
   // prints this->ascii_art() to cout
   void show(int turn) const;
-  
-  // returns disc count difference 
+
+  // returns disc count difference
   // positive means me has more than opp
   int get_disc_diff() const;
-  
+
   // does move field_id
   // returns flipped discs
   bits64 do_move(int field_id);
-    
+
   // converts for example "a1" to 0
   // converts "--" to -1
   // converts anything else to -2
   static int position_to_index(const std::string& str);
-  
+
   // reverses position_to_index
   static std::string index_to_position(int index);
-  
+
   // does move field_id
   template<int field_id>
   bits64 do_move_internally();
-  
+
   // undoes move field_id, flips back all discs represented by undo_data
-  void undo_move(bits64 move_bit,bits64 undo_data); 
+  void undo_move(bits64 move_bit,bits64 undo_data);
 
   // returns string representation of *this
   std::string to_string() const;
-  
+
   // returns string representation of *this modulo rotation
   std::string to_database_string() const;
-  
+
   // returns index of the move done between *this and *after
   // if none found returns 64
   int get_move_index(const board* after) const;
-  
+
   // returns *this modulo rotation
   board to_database_board() const;
-  
+
   // returns a mirrored or rotated version of *this
   // 0 <= n <= 7
   board rotate(int n) const;
-  
+
   // returns how *this was rotated to get *b
   // returns -1 if no matches are found
   int get_rotation(const board* b) const;
 
   // count sum of flippable discs for all moves
   int get_mobility(bits64 moves) const;
-  
+
 };
 
 struct board_hash {
@@ -205,8 +205,8 @@ struct board_hash {
 extern bits64 (board::* const move_funcs[64])();
 
 inline bits64 board::do_move(int move_id)
-{  
-  return (this->*move_funcs[move_id])(); 
+{
+  return (this->*move_funcs[move_id])();
 }
 
 
@@ -293,11 +293,11 @@ inline bool board::opponent_has_moves() const
 
 inline int board::count_valid_moves() const
 {
-  return get_valid_moves().count();  
+  return get_valid_moves().count();
 }
 
 inline bool board::is_valid_move(int field_id) const
-{ 
+{
   return get_valid_moves().test(field_id);
 }
 
@@ -313,11 +313,11 @@ inline bits64 board::get_valid_moves() const
 
 bits64 flip_l, flip_r,mask_l, mask_r;
 bits64 res = 0ull;
-  
+
   // this funtion is a modified version of code from Edax
   const bits64 mask = opp & bits64(0x7E7E7E7E7E7E7E7Eull);
 
-  
+
   flip_l = mask & (me << 1);
   flip_l |= mask & (flip_l << 1);
   mask_l = mask & (mask << 1);
@@ -366,7 +366,7 @@ bits64 res = 0ull;
   flip_r |= mask_r & (flip_r >> 18);
   res |= (flip_l << 9) | (flip_r >> 9);
 
-  
+
   return res & get_empty_fields(); // mask with empties
 }
 
@@ -400,9 +400,9 @@ inline bits64 board::do_move_internally()
 {
 
   bits64 flipped = 0ull;
-  
+
   const bits64* mask = dir_mask[field_id];
-  
+
   for(int d=0;d<8;++d){
     bits64 line = mask[d];
     if(d<4){
@@ -415,9 +415,9 @@ inline bits64 board::do_move_internally()
     }
     flipped |= line.is_subset_of_mask(opp) & line;
   }
-  
+
   me.set(field_id) |= flipped;
   opp &= ~me;
-  switch_turn(); 
+  switch_turn();
   return flipped;
 }

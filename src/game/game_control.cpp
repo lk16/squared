@@ -8,7 +8,7 @@ game_control::game_control()
   show_board_flag = false;
   use_xot = false;
   do_forced_move = false;
-  
+
   run_speed_test = false;
   run_unit_test = false;
   pgn_task = NULL;
@@ -16,24 +16,24 @@ game_control::game_control()
   learn_threads = 0;
   run_windowed_game = true;
   tournament = NULL;
-  
+
   bot_type = "moves";
   search_depth = 10;
   perfect_depth = 16;
-  
+
   bot[BLACK] = NULL;
   bot[WHITE] = NULL;
-  
+
   // account for passed moves
   board_states = new board_state_t[100];
-  
+
   current_state = last_redo = board_states;
-  
+
   mw = nullptr;
-  
+
   current_state->b.reset();
   current_state->turn = BLACK;
-  
+
   gettimeofday(&last_move_time,NULL);
 }
 
@@ -72,7 +72,7 @@ bool game_control::do_special_tasks()
     std::cout << state->b.to_ascii_art(state->turn);
     return true;
   }
-  
+
   if(pgn_task){
     const pgn_task_t* task = pgn_task;
     bot_base* pgn_bot = bot_registration::bots()[bot_type]();
@@ -92,7 +92,7 @@ bool game_control::do_special_tasks()
       random_moves = 1;
     }
     current_state->b = current_state->b.do_random_moves(random_moves);
-    
+
     bot_base* speedrun_bot = bot_registration::bots()[bot_type]();
     speedrun_bot->disable_shell_output();
     std::cout << "testing speed of bot_" << bot_type << " on this board:\n";
@@ -113,7 +113,7 @@ bool game_control::do_special_tasks()
     tournament->run();
     return true;
   }
-  
+
   return false;
 }
 
@@ -123,7 +123,7 @@ void game_control::on_human_do_move(int field_id)
   if(get_bot_to_move() || !current_state->b.is_valid_move(field_id)){
     return;
   }
- 
+
   ++current_state;
   *current_state = *(current_state-1);
   current_state->b.do_move(field_id);
@@ -135,23 +135,23 @@ void game_control::on_bot_do_move()
   if(!current_state->b.has_valid_moves()){
     return;
   }
-  
+
   ++current_state;
   *current_state = *(current_state-1);
   get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
-  on_any_move(); 
+  on_any_move();
 }
 
 void game_control::on_any_move()
-{  
-  
+{
+
   std::cout << current_state->b.to_string() << '\n';
-  
+
   current_state->switch_turn();
   last_redo = current_state;
 
   const board* b = &current_state->b;
-  
+
   if(!b->has_valid_moves()){
     if(!b->opponent_has_moves()){
       on_game_ended();
@@ -169,7 +169,7 @@ void game_control::on_any_move()
   if(bot[BLACK] && bot[WHITE]){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
   }
-  
+
 }
 
 
@@ -189,7 +189,7 @@ void game_control::on_undo()
 }
 
 void game_control::on_redo()
-{ 
+{
   board_state_t* redo = current_state;
   do{
     ++redo;
@@ -207,7 +207,7 @@ void game_control::on_new_game()
   board_state_t before = *current_state;
   current_state = last_redo = board_states;
   current_state->turn = BLACK;
-  
+
   current_state->b.reset();
   if(use_xot){
     current_state->b.init_xot();
@@ -218,11 +218,11 @@ void game_control::on_new_game()
   if(board_string != ""){
     current_state->b = board(board_string);
   }
-  
-  
+
+
   mw->update_fields(&before,current_state);
   mw->update_status_bar(std::string("A new game has started."));
-  
+
   for(int i=0;i<2;i++){
     if(bot[i]){
       bot[i]->on_new_game();
@@ -234,21 +234,21 @@ void game_control::on_game_ended()
 {
   //current_state->b.show();
   std::cout << current_state->b.to_string() << '\n';
-  
+
   int b_count = current_state->b.opp.count();
   int w_count = current_state->b.me.count();
-  
+
   if(current_state->turn == BLACK){
     std::swap<int>(b_count,w_count);
   }
-  
-  
+
+
   std::string text = "Game has ended. White (" + to_str<int>(w_count) + ") - Black (";
   text += to_str<int>(b_count)+ ")";
-  
+
   std::cout << text << '\n';
   mw->update_status_bar(text);
-  
+
   if(quit_if_game_over){
     std::cout << current_state->b.to_ascii_art(current_state->turn);
     mw->hide();
@@ -268,7 +268,7 @@ bool game_control::timeout_handler()
     return true;
   }
   if(bot[current_state->turn]){
-    on_bot_do_move();  
+    on_bot_do_move();
   }
   else if(do_forced_move && (current_state->b.count_valid_moves() == 1)){
     ++current_state;
@@ -283,18 +283,18 @@ bool game_control::timeout_handler()
 void game_control::add_bot(int colour)
 {
   assert(colour==BLACK || colour==WHITE);
-  
+
   if(bot[colour]){
     delete bot[colour];
   }
-  bot[colour] = bot_registration::bots()[bot_type](); 
+  bot[colour] = bot_registration::bots()[bot_type]();
   bot[colour]->set_search_depth(search_depth,perfect_depth);
 }
 
 void game_control::remove_bot(int colour)
 {
   assert(colour==BLACK || colour==WHITE);
-  
+
   if(bot[colour]){
     delete bot[colour];
     bot[colour] = NULL;
@@ -305,4 +305,3 @@ bot_base* game_control::get_bot_to_move()
 {
   return bot[current_state->turn];
 }
-
