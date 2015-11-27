@@ -32,13 +32,13 @@ int bot_hill::hill_climbing(board* b,int d,int pd){
   int turn = 0;
   bot_moves* movesbot = dynamic_cast<bot_moves*>(bot_registration::bots()["moves"]());
   if(!movesbot){
-    output() << "ERROR! cannot cast bot_base up to bot_moves in bot_hill::hill_climbing()\n";
+    output() << "ERROR! cannot cast bot_base to bot_moves in bot_hill::hill_climbing()\n";
     exit(1);
   }
   movesbot->disable_shell_output();
   movesbot->set_search_depth(d,pd);
   board dummy;
-  while(64 - b->count_discs() > pd){
+  while(b->count_empty_fields() > pd){
     board best_child;
     int best_heur = MIN_HEURISTIC;
     board children[32];
