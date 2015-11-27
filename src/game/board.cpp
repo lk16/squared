@@ -127,7 +127,7 @@ board::board(bits64 _me, bits64 _opp){
 
 void board::init_xot()
 {
-  std::ifstream xot_file("xot");
+  std::ifstream xot_file("./resources/xot/xot");
   unsigned long long m,o;
   std::vector<board> xot_boards;
   std::string line;

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+mkdir -p html
+mkdir -p pgn
+
+echo "found `ls ~/Downloads/*.pgn | wc -l` pgn files"
+for f in `ls ~/Downloads/*.pgn`; do
+  ./squared --pgn 8 12 $f > ./html/`date`.html
+  echo done with $f
+  mv $f ./pgn/`date +%s`.pgn
+  sleep 1
+done

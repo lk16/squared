@@ -1,0 +1,11 @@
+#!/bin/bash
+
+mkdir -p html
+mkdir -p pgn
+
+for f in `ls ~/Downloads/*.pgn`; do
+  ./squared --pgn 10 16 $f > html/`date +%s`.html
+  echo done with $f
+  mv $f ./pgn/`date +%s`.pgn
+  sleep 1 # make sure no html output collisions occur
+done
