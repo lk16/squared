@@ -117,18 +117,28 @@ const bits64 board::ordered_locations[10] = {
   location[1],
   location[4],
   location[9]
-  
+
 };
 
-
+board::board(bits64 _me, bits64 _opp){
+  me = _me;
+  opp = _opp;
+}
 
 void board::init_xot()
 {
-//   int xot_boards_size = sizeof(xot_boards) / sizeof(xot_boards[0]);
-//   int index = rand() % xot_boards_size;
-//   me = xot_boards[index][0];
-//   opp = xot_boards[index][1];
-  std::cout << "Warning: xot() currently does nothing.\n";
+  std::ifstream xot_file("xot");
+  unsigned long long m,o;
+  std::vector<board> xot_boards;
+  std::string line;
+  while(std::getline(xot_file,line)){
+    std::istringstream iss(line);
+    if (!(iss >> std::hex >> m >> std::hex >> o)) { 
+      break; 
+    }
+    xot_boards.push_back(board(bits64(m),bits64(o)));
+  }
+  *this = xot_boards[(unsigned)rand() % xot_boards.size()];
 }
 
 
@@ -138,7 +148,7 @@ board* board::get_children(board* out_begin) const
 }
 
 board* board::get_children(board* out, bits64 moves) const
-{  
+{
   while(moves.any()){
     bits64 bit = moves.first_bit();
     int index = bit.only_bit_index();
@@ -147,7 +157,7 @@ board* board::get_children(board* out, bits64 moves) const
     out++;
     moves ^= bit;
   }
-  return out;  
+  return out;
 }
 
 int board::get_mobility(bits64 moves) const
@@ -167,10 +177,10 @@ int board::get_mobility(bits64 moves) const
 
 int board::get_disc_diff() const
 {
-  
+
   int me_count = me.count();
   int opp_count = opp.count();
-  
+
   int diff = me_count - opp_count;
   int empties = 64 - me_count - opp_count;
   if(diff > 0){
@@ -191,9 +201,9 @@ void board::show(int turn) const
 std::string board::to_ascii_art(int turn) const
 {
   std::stringstream ss;
-  
+
   bits64 x,y;
-  
+
   if(turn==0){
     x = me;
     y = opp;
@@ -202,21 +212,21 @@ std::string board::to_ascii_art(int turn) const
     x = opp;
     y = me;
   }
-  
+
   bits64 moves = get_valid_moves();
-  
-  // top line 
+
+  // top line
   ss << "+-a-b-c-d-e-f-g-h-+\n";
-  
+
   for(int f=0;f<64;f++){
-    
+
     // left line
     if(f%8 == 0){
       ss << (f/8)+1 << ' ';
     }
-    
+
     bits64 thisbit = bits64().set(f);
-    
+
     if(x & thisbit){
       ss << "\033[31;1m\u2B24\033[0m ";
     }
@@ -225,20 +235,20 @@ std::string board::to_ascii_art(int turn) const
     }
     else if(moves & thisbit){
       ss << "- ";
-    }  
+    }
     else{
       ss << "  ";
     }
-    
+
     // right line
     if(f%8 == 7){
       ss << "|\n";
     }
   }
-  
+
   // bottom line
   ss << "+-----------------+\n";
-  
+
   return ss.str();
 }
 
@@ -248,7 +258,7 @@ int board::position_to_index(const std::string& str)
   if(str == "--"){
     return -1;
   }
-  if(str.length()==2 
+  if(str.length()==2
     && str[0]>='a'
     && str[0]<='h'
     && str[1]>='1'
@@ -278,10 +288,10 @@ std::string board::to_string() const {
    * byte 16-31: hex notation of opp
    * byte 32: \0
    */
-  char res[33];  
+  char res[33];
   snprintf(res,33,"%016lx%016lx",me.get_word(),opp.get_word());
   res[32] = '\0';
-  return std::string(res);  
+  return std::string(res);
 }
 
 board::board(const std::string& in){
@@ -292,7 +302,7 @@ board::board(const std::string& in){
       break;
     }
     uint64_t me_tmp,opp_tmp;
-    
+
     if(false
       || sscanf((std::string("0x") + in.substr(0,16)).c_str(),"%lx",&me_tmp) < 0
       || sscanf((std::string("0x") + in.substr(16,16)).c_str(),"%lx",&opp_tmp) < 0
@@ -302,7 +312,7 @@ board::board(const std::string& in){
     }
     me.from_uint64(me_tmp);
     opp.from_uint64(opp_tmp);
-   
+
   }while(false);
   if(error){
     std::cerr << "Error in board ctor from string!\n";
@@ -321,28 +331,28 @@ board board::do_random_moves(int count) const
     }
     res = moves[rand() % (end-moves)];
   }
-  return res;  
+  return res;
 }
 
 board board::rotate(int n) const
 {
   board b(*this);
-  
+
   b.me = b.me.rotate(n);
   b.opp = b.opp.rotate(n);
-  
+
   return b;
 }
 
 std::string board::to_database_string() const
 {
-  return to_database_board().to_string(); 
+  return to_database_board().to_string();
 }
 
 board board::to_database_board() const
 {
   board min = *this;
-  
+
   for(int i=1;i<8;i++){
     board x = rotate(i);
     if(x.me == min.me){
@@ -354,11 +364,11 @@ board board::to_database_board() const
       min = x;
     }
   }
-  
-  return min; 
+
+  return min;
 }
 
-const bits64 board::dir_mask[64][8] = 
+const bits64 board::dir_mask[64][8] =
 {
   {
     0x0,

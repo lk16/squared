@@ -4,10 +4,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
-#include "game/xot.hpp"
 #include "util/bitset.hpp"
 #include "util/const.hpp"
 #include "util/bitset.hpp"
@@ -65,6 +65,9 @@ struct board{
 
   // does NOTHING; call reset() to initialize
   board();
+
+  // ctor from two bits64's
+  board(bits64 _me, bits64 _opp);
 
   // copy ctor
   board(const board& b);
