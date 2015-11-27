@@ -2,11 +2,11 @@
 
 #include <string>
 
-// subdirectory where images are stored
-const std::string IMAGE_PATH = "./images/";
+// directory where images are stored
+const std::string IMAGE_PATH = "./resources/images/";
 
-// subdirectory where xml files containing ui are stored
-const std::string UI_PATH = "./xml/";
+// directory where xml files containing ui are stored
+const std::string UI_PATH = "./resources/xml/";
 
 // multiplication factor for heuristics when finding an exact score 
 const int EXACT_SCORE_FACTOR = 1000;

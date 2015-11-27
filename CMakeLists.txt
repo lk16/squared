@@ -79,7 +79,7 @@ add_executable(squared
 add_custom_command(
   TARGET ${PROJECT_NAME}
   PRE_BUILD
-  COMMAND cd ./images && ./create_gifs.sh
+  COMMAND cd ./resources/images && ./create_gifs.sh
 )
 
 target_link_libraries(squared
