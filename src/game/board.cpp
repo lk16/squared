@@ -131,10 +131,9 @@ void board::init_xot()
   unsigned long long m,o;
   std::vector<board> xot_boards;
   std::string line;
-  while (std::getline(xot_file,line)){
+  while(std::getline(xot_file,line)){
     std::istringstream iss(line);
-    std::cout << line << '\n';
-    if (!(iss >> m >> o)) { 
+    if (!(iss >> std::hex >> m >> std::hex >> o)) { 
       break; 
     }
     xot_boards.push_back(board(bits64(m),bits64(o)));
