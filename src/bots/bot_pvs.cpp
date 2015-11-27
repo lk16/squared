@@ -1,12 +1,5 @@
 #include "bots/bot_pvs.hpp"
 
-bot_pvs::bot_pvs():
-  bot_base()
-{
-  last_heur = NO_HEURISTIC_AVAILABLE;
-}
-
-
 int bot_pvs::look_ahead(board* b)
 {
   return -pvs<false,false>(MIN_HEURISTIC,MAX_HEURISTIC,b);
@@ -48,8 +41,6 @@ void bot_pvs::search(const board* b, board* res)
     
   }     
   
-  last_heur = best_heur;
-
   stats.stop_timer();
   
   output() << big_number(stats.get_nodes()) << " nodes in ";
@@ -210,7 +201,6 @@ void bot_pvs::do_move(const board* b,board* res)
     board children[32];
     b->get_children(children);
     *res = children[0];
-    last_heur = NO_HEURISTIC_AVAILABLE;
     std::cout << "Only one valid move, evaluation skipped.\n";
     return;
   }
@@ -223,9 +213,27 @@ void bot_pvs::do_move(const board* b,board* res)
   }
 }
 
-int bot_pvs::last_heuristic() const
+int bot_pvs::get_search_heuristic(const board* b)
 {
-  return NO_HEURISTIC_AVAILABLE;
+  return get_search_heuristic(b,MIN_HEURISTIC,MAX_HEURISTIC);
 }
 
 
+int bot_pvs::get_search_heuristic(const board* b,int alpha,int beta)
+{  
+  stats.start_timer();
+  int heur;
+  board copy = *b;
+  /*if(b->count_valid_moves() == 1){
+    heur = NO_HEURISTIC_AVAILABLE;
+  }
+  else*/ if(b->count_empty_fields() > get_perfect_depth()){
+    moves_left = get_search_depth();    
+    heur = -pvs<false,true>(-beta,-alpha,&copy);
+  }
+  else{
+    heur = -pvs<true,true>(-beta,-alpha,&copy);
+  }
+  stats.stop_timer();
+  return heur;
+}
