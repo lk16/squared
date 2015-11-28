@@ -302,10 +302,10 @@ board::board(const std::string& in){
       break;
     }
     uint64_t me_tmp,opp_tmp;
-
+    
     if(false
-      || sscanf((std::string("0x") + in.substr(0,16)).c_str(),"%lx",&me_tmp) < 0
-      || sscanf((std::string("0x") + in.substr(16,16)).c_str(),"%lx",&opp_tmp) < 0
+      || sscanf(in.substr(0,16).c_str(),"%lx",&me_tmp) < 0
+      || sscanf(in.substr(16,16).c_str(),"%lx",&opp_tmp) < 0
     ){
       error = true;
       break;
