@@ -58,9 +58,8 @@ void game_control::run()
     main_window window;
     mw = &window;
     window.control = this;
-    window.update_fields(current_state,current_state);
-    Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     on_new_game();
+    Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     Gtk::Main::run(window);
   }
 }
@@ -144,20 +143,25 @@ void game_control::on_bot_do_move()
   bot_base::state_t state = the_bot->launch_do_move_thread(&current_state->b);
   switch(state){
     case bot_base::BOT_NOT_STARTED:
+      std::cout << "state = BOT_NOT_STARTED\n";
+      break;
     case bot_base::BOT_THINKING:
+      std::cout << "state = BOT_THINKING\n";
       std::cout << "Waiting for bot result\n";
       break;
     case bot_base::BOT_DONE:
+      std::cout << "state = BOT_DONE\n";
       std::cout << "bot result available!\n";
       ++current_state;
+      *current_state = *(current_state-1);
       current_state->b = the_bot->get_move_thread_result();
       the_bot->reset_state();
+      on_any_move(); 
       break;
     default:
       std::cout << "WARNING: game_control::on_bot_do_move() received in valid state\n";
   }
 #endif
-  on_any_move(); 
 }
 
 void game_control::on_any_move()
@@ -286,6 +290,7 @@ bool game_control::timeout_handler()
     return true;
   }
   if(bot[current_state->turn]){
+    std::cout << "on_bot_do_move() called\n";
     on_bot_do_move();  
   }
   else if(do_forced_move && (current_state->b.count_valid_moves() == 1)){

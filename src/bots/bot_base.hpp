@@ -104,6 +104,7 @@ public:
     
   void disable_shell_output();
   
+  state_t get_state() const;
 };
 
 struct ht_item{
