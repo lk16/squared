@@ -12,7 +12,6 @@ class main_window;
 
 struct game_control{
 
-
   struct board_state_t{
     board b;
     int turn;

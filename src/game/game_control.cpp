@@ -58,9 +58,8 @@ void game_control::run()
     main_window window;
     mw = &window;
     window.control = this;
-    window.update_fields(current_state,current_state);
-    Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     on_new_game();
+    Glib::signal_timeout().connect(sigc::mem_fun(this,&game_control::timeout_handler),20);
     Gtk::Main::run(window);
   }
 }
@@ -101,7 +100,7 @@ bool game_control::do_special_tasks()
     for(int i=1;i<=60;i++){
       board dummy;
       speedrun_bot->set_search_depth(i,i);
-      speedrun_bot->do_move(&current_state->b,&dummy);
+      speedrun_bot->do_move_no_thread(&current_state->b,&dummy);
       long long unsigned speed = speedrun_bot->stats.get_nodes_per_second();
       std::cout << "At depth " << i << ":\t" << big_number(speed) << " nodes/s ";
       std::cout << "\t " << big_number(speedrun_bot->stats.get_nodes()) << " nodes in \t";
@@ -136,10 +135,24 @@ void game_control::on_bot_do_move()
     return;
   }
 
-  ++current_state;
-  *current_state = *(current_state-1);
-  get_bot_to_move()->do_move(&(current_state-1)->b,&current_state->b);
-  on_any_move();
+
+  bot_base* the_bot = get_bot_to_move();
+
+  bot_base::state_t state = the_bot->launch_do_move_thread(&current_state->b);
+  switch(state){
+    case bot_base::BOT_NOT_STARTED:
+    case bot_base::BOT_THINKING:
+      break;
+    case bot_base::BOT_DONE:
+      ++current_state;
+      *current_state = *(current_state-1);
+      current_state->b = the_bot->get_move_thread_result();
+      the_bot->reset_state();
+      on_any_move(); 
+      break;
+    default:
+      std::cout << "WARNING: game_control::on_bot_do_move() received in valid state\n";
+  }
 }
 
 void game_control::on_any_move()

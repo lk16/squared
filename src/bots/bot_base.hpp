@@ -1,9 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <atomic>
 #include <ctime>
 #include <string>
 #include <sys/time.h>
+#include <thread>
 
 #include "bots/bot_register.hpp"
 #include "game/board.hpp"
@@ -14,12 +16,32 @@
 
 class bot_base{
 
+public:
+  
+  enum state_t{
+    BOT_NOT_STARTED,
+    BOT_THINKING,
+    BOT_DONE
+  };
 
+protected:
   
   std::string name;
   int search_depth;
   int perfect_depth;
   std::ostream* output_stream;
+  
+  // perform a move on board in, put result in out
+  virtual void do_move(const board* in,board* out) = 0;
+  
+  void do_move_thread_func(const board* in);
+  
+  volatile state_t state;
+  
+  // result of launch_do_move_thread
+  board move_thread_result;
+ 
+  std::thread* thinking_thread;
   
 public: 
   
@@ -38,7 +60,12 @@ public:
     void reset();
   };
   
+
+  
   stat_t stats;
+  
+
+  
   
   // ctor
   bot_base();
@@ -46,8 +73,17 @@ public:
   // dtor
   virtual ~bot_base() = default;
 
-  // perform a move on board in, put result in out
-  virtual void do_move(const board* in,board* out) = 0;
+  // launch thread with do move, or do nothing depending on state
+  state_t launch_do_move_thread(const board* in);
+  
+  // get result from move thread, WARNING only valid info if state == BOT_DONE
+  board get_move_thread_result() const;
+  
+  // run do_move in same thread
+  void do_move_no_thread(const board* in,board* out);
+  
+  // sets state to BOT_NOT_STARTED, but only if state is BOT_DONE
+  void reset_state();
   
   // perform some action when a new game starts
   virtual void on_new_game();
@@ -68,6 +104,7 @@ public:
     
   void disable_shell_output();
   
+  state_t get_state() const;
 };
 
 struct ht_item{

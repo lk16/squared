@@ -7,6 +7,7 @@ bot_base::bot_base():
 {
   search_depth = -1;
   perfect_depth = -1;
+  state = BOT_NOT_STARTED;
 }
 
 int bot_base::get_search_depth() const
@@ -95,4 +96,58 @@ std::ostream& bot_base::output()
 void bot_base::on_new_game()
 {
   return;
+}
+
+void bot_base::do_move_thread_func(const board* in)
+{
+  state = BOT_THINKING;
+  do_move(in,&move_thread_result);
+  state = BOT_DONE;
+}
+
+
+bot_base::state_t bot_base::launch_do_move_thread(const board* in)
+{
+  if(state == BOT_DONE){
+    if(thinking_thread){
+      delete thinking_thread;
+      thinking_thread = nullptr;
+    }
+  }
+  else if(state == BOT_THINKING){
+    // do nothing
+  }
+  else if(state == BOT_NOT_STARTED){
+    thinking_thread = new std::thread(&bot_base::do_move_thread_func,this,in);
+    thinking_thread->detach();
+  }
+  else{
+    std::cout << "WARNING: do_move_thread with invalid state\n";
+  }
+  return state;
+}
+
+board bot_base::get_move_thread_result() const
+{
+  return move_thread_result;
+}
+
+void bot_base::do_move_no_thread(const board* in, board* out)
+{
+  do_move(in,out);
+}
+
+void bot_base::reset_state()
+{
+  if(state == BOT_DONE){
+    state = BOT_NOT_STARTED;
+  }
+  else{
+    std::cout << "WARNING: bot_base::reset_state() called with state != BOT_DONE\n";
+  }
+}
+
+bot_base::state_t bot_base::get_state() const
+{
+  return state;
 }
