@@ -8,6 +8,7 @@ bot_base::bot_base():
   search_depth = -1;
   perfect_depth = -1;
   state = BOT_NOT_STARTED;
+  thinking_thread = nullptr;
 }
 
 int bot_base::get_search_depth() const
@@ -145,9 +146,4 @@ void bot_base::reset_state()
   else{
     std::cout << "WARNING: bot_base::reset_state() called with state != BOT_DONE\n";
   }
-}
-
-bot_base::state_t bot_base::get_state() const
-{
-  return state;
 }

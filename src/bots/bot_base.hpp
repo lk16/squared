@@ -104,20 +104,4 @@ public:
     
   void disable_shell_output();
   
-  state_t get_state() const;
 };
-
-struct ht_item{
-  // ctor
-  ht_item(int u,int l): upper_bound(u),lower_bound(l){}
-  
-  // ctor
-  ht_item(int u,int l,int pv): upper_bound(u),lower_bound(l),pv_move(pv){}
-  
-  // bounds
-  int upper_bound,lower_bound;
-  
-  // principle variation
-  int pv_move;
-};
-
