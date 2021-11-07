@@ -1,0 +1,8 @@
+.kdev4/
+Makefile
+build/
+images/
+pgn/
+resources/images/*.gif
+squared
+
